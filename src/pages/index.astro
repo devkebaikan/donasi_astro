@@ -1,0 +1,41 @@
+---
+import MainLayout from '../layouts/MainLayout.astro';
+---
+
+<MainLayout
+  title="Beranda"
+  description="Starter project Astro + Tailwind CSS yang ringan, bersih, dan siap dikembangkan lebih lanjut."
+  type="website"
+>
+  <main class="container py-16">
+    <div class="max-w-2xl mx-auto text-center space-y-6">
+      <h1 class="text-5xl font-bold tracking-tight text-primary-600">
+        Astro + Tailwind CSS
+      </h1>
+
+      <p class="text-lg text-gray-500">
+        Starter project yang ringan, bersih, dan siap dikembangkan lebih lanjut.
+      </p>
+
+      <div class="flex items-center justify-center gap-4 pt-4">
+        <a
+          href="https://docs.astro.build"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center px-6 py-3 rounded-lg bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors"
+        >
+          Baca Dokumentasi
+        </a>
+
+        <a
+          href="https://tailwindcss.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center px-6 py-3 rounded-lg border border-gray-300 text-gray-700 font-medium hover:border-primary-400 hover:text-primary-600 transition-colors"
+        >
+          Tailwind CSS
+        </a>
+      </div>
+    </div>
+  </main>
+</MainLayout>

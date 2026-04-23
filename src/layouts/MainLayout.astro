@@ -1,0 +1,21 @@
+---
+import '../styles/global.css';
+import Seo from '../components/Seo.astro';
+import type { SeoProps } from '../lib/seo';
+
+type Props = SeoProps;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <Seo {...Astro.props} />
+  </head>
+  <body class="min-h-screen bg-white text-gray-900 antialiased">
+    <slot />
+  </body>
+</html>
