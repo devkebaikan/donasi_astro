@@ -1,0 +1,62 @@
+---
+const menuItems = [
+  {
+    href: "/donasi",
+    src: "/images/icons/menu/1. Donasi.webp",
+    label: "Donasi",
+    alt: "Donasi",
+  },
+  {
+    href: "/infaq",
+    src: "/images/icons/menu/2. Infaq.webp",
+    label: "Infaq",
+    alt: "Infaq",
+  },
+  {
+    href: "/hitung-zakat",
+    src: "/images/icons/menu/3. Zakat.webp",
+    label: "Zakat",
+    alt: "Zakat",
+  },
+  {
+    href: "/donasi-rutin",
+    src: "/images/icons/menu/6. Donasi rutin.webp",
+    label: "Rutin",
+    alt: "Donasi Rutin",
+    badge: "NEW",
+  },
+];
+---
+
+<section class="bg-white mb-3">
+  <div class="grid grid-cols-4 gap-y-4 px-4 pt-4 pb-5">
+    {
+      menuItems.map((item) => (
+        <a
+          href={item.href}
+          class="relative flex flex-col items-center gap-1.5 group"
+        >
+          <div class="relative">
+            {item.badge && (
+              <span class="absolute -top-2 -right-2 z-10 text-[8px] font-bold bg-linear-to-r from-emerald-400 to-teal-500 text-white px-1.5 py-0.5 rounded-full shadow-sm animate-pulse leading-none">
+                {item.badge}
+              </span>
+            )}
+            <img
+              src={item.src}
+              alt={item.alt}
+              width="48"
+              height="48"
+              class="w-12 h-12 object-contain group-hover:scale-110 transition-transform duration-200"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <span class="text-[11px] text-neutral-600 font-medium leading-none">
+            {item.label}
+          </span>
+        </a>
+      ))
+    }
+  </div>
+</section>

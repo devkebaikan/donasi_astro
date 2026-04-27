@@ -1,13 +1,28 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import tailwindcss from '@tailwindcss/vite';
+import { defineConfig } from "astro/config";
+import tailwindcss from "@tailwindcss/vite";
+import sitemap from "@astrojs/sitemap";
 
-// https://astro.build/config
 export default defineConfig({
-  // Ganti dengan domain production Anda — digunakan untuk canonical URL & OG image
-  site: 'https://example.com',
+  site: process.env.SITE_URL || "http://localhost:4321",
+
+  integrations: [sitemap()],
 
   vite: {
     plugins: [tailwindcss()],
+  },
+
+  output: "static",
+
+  compressHTML: true,
+
+  prefetch: {
+    prefetchAll: true,
+  },
+
+  image: {
+    service: {
+      entrypoint: "astro/assets/services/sharp",
+    },
   },
 });

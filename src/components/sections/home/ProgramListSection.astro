@@ -1,0 +1,67 @@
+---
+import CampaignList from "@/components/ui/CampaignList.astro";
+import SectionTitle from "@/components/ui/SectionTitle.astro";
+
+const campaign = [
+  {
+    link: "/campaign/1",
+    title: "Bantu Renovasi Masjid Al-Ikhlas",
+    image: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: {
+      name: "Yayasan Al-Ikhlas",
+    },
+    category: {
+      name: "Renovasi",
+    },
+    progress_achieved: 75,
+    nominal_achieved: 7500000,
+    time_target: 10,
+  },
+  {
+    link: "/campaign/2",
+    title: "Dukung Pendidikan Anak Yatim Piatu",
+    image: "/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: {
+      name: "Yayasan Peduli Anak",
+    },
+    category: {
+      name: "Pendidikan",
+    },
+    progress_achieved: 60,
+    nominal_achieved: 6000000,
+    time_target: 20,
+  },
+  {
+    link: "/campaign/3",
+    title: "Bantu Pembangunan Sumur Wakaf",
+    image: "/images/thumbnail/Artboard22-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: {
+      name: "Yayasan Air Bersih",
+    },
+    category: {
+      name: "Wakaf",
+    },
+    progress_achieved: 90,
+    nominal_achieved: 9000000,
+    time_target: 5,
+  },
+];
+---
+
+<!-- Program List -->
+<section class="py-4 bg-white space-y-2 px-2">
+  {
+    campaign.map((campaign) => (
+      <CampaignList
+        link={campaign.link}
+        title={campaign.title}
+        image={campaign.image}
+        mitra={campaign.mitra.name}
+        category={campaign.category.name}
+        progress_achieved={campaign.progress_achieved}
+        collected_amount={campaign.nominal_achieved}
+        days_left={campaign.time_target}
+      />
+    ))
+  }
+</section>

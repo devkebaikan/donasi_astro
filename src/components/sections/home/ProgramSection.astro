@@ -1,0 +1,152 @@
+---
+import SectionTitle from "@/components/ui/SectionTitle.astro";
+import { fmt } from "@/lib/formatter";
+
+interface Program {
+  id: string;
+  href: string;
+  image: string;
+  category: string;
+  title: string;
+  collected: number;
+  target: number;
+  daysLeft: number;
+  badge?: string;
+}
+
+
+
+const programs: Program[] = [
+  {
+    id: 'qurban-pelosok',
+    href: '/donasi/qurban-pelosok',
+    image: '/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp',
+    category: 'Qurban',
+    title: 'Qurban untuk Saudara di Pelosok Nusantara',
+    collected: 28_500_000,
+    target: 50_000_000,
+    daysLeft: 14,
+    badge: 'Urgent',
+  },
+  {
+    id: 'sedekah-rutin',
+    href: '/donasi-rutin',
+    image: '/images/thumbnail/Slide-sedekah-rutin-ezgif.com-jpg-to-webp-converter.webp',
+    category: 'Rutin',
+    title: 'Sedekah Rutin Setiap Hari untuk Kaum Dhuafa',
+    collected: 15_200_000,
+    target: 30_000_000,
+    daysLeft: 30,
+    badge: 'Populer',
+  },
+  {
+    id: 'masjid-pondok',
+    href: '/donasi/masjid-pondok',
+    image: '/images/thumbnail/kebaikan-berkelanjutan1.webp',
+    category: 'Masjid',
+    title: 'Wakaf Pembangunan Masjid & Pondok Quran',
+    collected: 42_000_000,
+    target: 100_000_000,
+    daysLeft: 45,
+  },
+  {
+    id: 'beasiswa-tahfidz',
+    href: '/donasi/beasiswa-tahfidz',
+    image: '/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp',
+    category: 'Pendidikan',
+    title: 'Beasiswa Santri Tahfidz Generasi Qurani',
+    collected: 8_750_000,
+    target: 25_000_000,
+    daysLeft: 20,
+  },
+];
+---
+<section
+  id="program-section"
+  class="mb-3 py-4 bg-white"
+ 
+>
+  <SectionTitle
+    title="#BarenganJadiRingan"
+    description="Pilih program yang sesuai dengan niat baikmu, dan mari wujudkan perubahan bersama."
+  />
+
+  <div id="program-scroll" class="flex gap-3 items-center overflow-x-auto px-4 h-[280px] md:h-[320px] snap-x "
+   style="background-image: url('/images/jumat-berkah.jpg'); background-size: cover; background-position: center;">
+    <!-- spacer kiri biar awal agak ke kanan -->
+  <div class="shrink-0 w-32 md:w-48"></div>
+      {programs.map((p, i) => {
+    const pct = Math.min(Math.round((p.collected / p.target) * 100), 100);
+    return (
+      <a
+        href={p.href}
+        class="shrink-0 w-[190px] h-fit snap-start bg-white rounded-xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
+      >
+          <!-- Thumbnail -->
+          <div class="relative">
+            <img
+              src={p.image}
+              alt={p.title}
+              width="190"
+              height="110"
+              class="w-full h-[105px] object-cover"
+              loading={i < 2 ? 'eager' : 'lazy'}
+              decoding="async"
+            />
+            <span class="absolute bottom-0 left-0 text-[9px] font-semibold bg-primary-500 text-white px-2 py-0.5 rounded-tr-lg">
+              {p.category}
+            </span>
+            {p.badge && (
+              <span class="absolute top-2 right-2 text-[9px] font-bold bg-secondary-500 text-white px-2 py-0.5 rounded-full leading-none">
+                {p.badge}
+              </span>
+            )}
+          </div>
+
+          <!-- Content -->
+          <div class="p-3 flex flex-col flex-1">
+            <p class="text-[11px] font-semibold text-neutral-700 line-clamp-2 leading-relaxed mb-2 flex-1">
+              {p.title}
+            </p>
+
+            <!-- Progress bar -->
+            <div class="w-full h-1 bg-neutral-100 rounded-full overflow-hidden mb-1.5">
+              <div
+                class="h-full bg-linear-to-r from-primary-400 to-primary-600 rounded-full"
+                style={`width:${pct}%`}
+              />
+            </div>
+
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="text-[10px] font-bold text-primary-600">Rp {fmt(p.collected)}</span>
+              <span class="text-[10px] text-neutral-400">{pct}% · {p.daysLeft}h</span>
+            </div>
+
+            <button
+              class="hidden md:inline w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-[11px] font-semibold py-1.5 rounded-lg transition-all duration-150"
+              aria-label={`Donasi untuk ${p.title}`}
+            >
+              Donasi Sekarang
+            </button>
+          </div>
+        </a>
+      );
+    })}
+  </div>
+</section>
+
+<script>
+  const scrollEl = document.getElementById("program-scroll");
+
+  if (scrollEl) {
+    scrollEl.addEventListener("scroll", () => {
+      const progress = scrollEl.scrollLeft;
+
+      // semakin ke kanan → semakin hilang
+      const opacity = Math.max(0, 1.5 - progress / 100);
+
+      scrollEl.style.backgroundColor = `rgba(255,255,255,${1 - opacity})`;
+      scrollEl.style.backgroundBlendMode = "lighten";
+    });
+  }
+</script>

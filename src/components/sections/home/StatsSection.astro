@@ -1,0 +1,20 @@
+---
+const stats = [
+  { value: '12.500+', label: 'Total Donatur' },
+  { value: 'Rp 2,5M+', label: 'Dana Tersalurkan' },
+  { value: '50+', label: 'Program Aktif' },
+];
+---
+
+<section class="mx-4 mb-3">
+  <div class="bg-gradient-to-r from-primary-600 to-teal-500 rounded-xl p-4">
+    <div class="grid grid-cols-3">
+      {stats.map((stat, i) => (
+        <div class={`text-center ${i < stats.length - 1 ? 'border-r border-white/20' : ''}`}>
+          <p class="text-base font-bold text-white leading-tight">{stat.value}</p>
+          <p class="text-[10px] text-white/75 mt-0.5 leading-tight">{stat.label}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

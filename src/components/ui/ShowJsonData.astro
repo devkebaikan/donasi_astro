@@ -1,0 +1,8 @@
+---
+const { data } = Astro.props;
+---
+
+<pre
+  class="bg-slate-900 container text-slate-100 p-4 rounded-lg text-sm overflow-x-auto leading-relaxed">
+      {JSON.stringify(data, null, 2)}
+    </pre>

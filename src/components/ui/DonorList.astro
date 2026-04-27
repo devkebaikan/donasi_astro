@@ -1,0 +1,271 @@
+---
+import { formatRupiah, getInitialName } from "@/lib/formatter";
+
+interface Props {
+  donor: {
+    id: string;
+    name: string;
+    nominal_donasi: number;
+    time?: string;
+    date: string;
+    bank_name: string;
+    source?: string;
+    doa?: string;
+    liked?: number;
+  };
+  programLink: string;
+}
+
+const { donor, programLink } = Astro.props;
+
+function donationTime(time?: string, date?: string): string {
+  if (!date) return "";
+
+  const donationDate = new Date(date);
+  const now = new Date();
+  const diffInMs = now.getTime() - donationDate.getTime();
+  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
+  const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+  const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
+
+  if (diffInMinutes < 1) return "Baru saja";
+  if (diffInMinutes < 60) return `${diffInMinutes} menit yang lalu`;
+  if (diffInHours < 24) return `${diffInHours} jam yang lalu`;
+  if (diffInDays < 7) return `${diffInDays} hari yang lalu`;
+
+  return donationDate.toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const initials = getInitialName(donor.name);
+const formattedAmount = formatRupiah(donor.nominal_donasi);
+const timeAgo = donationTime(donor.time, donor.date);
+const likeCount = donor.liked || 0;
+---
+
+<div
+  class="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100"
+  data-donor-id={donor.id}
+>
+  <!-- Donor Info -->
+  <div class="flex items-start gap-3 mb-3">
+    <!-- Avatar -->
+    <div
+      class="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-[var(--primary-400)] to-[var(--primary-600)] flex items-center justify-center shadow-md"
+    >
+      <span class="text-white text-base font-bold">{initials}</span>
+    </div>
+
+    <!-- Info -->
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2 mb-1">
+        <h4 class="font-semibold text-gray-900 text-base truncate">
+          {donor.name}
+        </h4>
+        {
+          donor.source === "RUTIN" && (
+            <a
+              href={`/donasi-rutin/program/${programLink}`}
+              class="flex-shrink-0 w-7 h-7 relative group"
+              title="Donasi Rutin"
+            >
+              <img
+                src="/img/icons/menu/6. Donasi rutin.webp"
+                alt="Donasi Rutin"
+                class="w-full h-full object-contain"
+                width="28"
+                height="28"
+              />
+              <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                Donasi Rutin
+              </span>
+            </a>
+          )
+        }
+      </div>
+      <p class="text-sm text-gray-600">
+        {timeAgo} Via {donor.bank_name}
+      </p>
+    </div>
+
+    <!-- Amount -->
+    <div class="flex-shrink-0">
+      <p class="font-bold text-[var(--primary-600)] text-base md:text-lg">
+        {formattedAmount}
+      </p>
+    </div>
+  </div>
+
+  <!-- Doa Section -->
+  {
+    donor.doa && (
+      <div class="bg-gray-50 rounded-lg p-4 mt-3">
+        <p class="text-gray-700 text-sm leading-relaxed mb-3">{donor.doa}</p>
+
+        <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+          <div class="text-sm text-gray-600">
+            <span class="like-count" data-count={likeCount}>
+              {likeCount === 0 ? (
+                "Yuk aminkan doa saudara kita"
+              ) : (
+                <span>
+                  <strong class="text-[var(--primary-600)]">{likeCount}</strong>{" "}
+                  orang mengaminkan doa ini
+                </span>
+              )}
+            </span>
+          </div>
+
+          <button
+            class="like-button flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--primary-500)] text-[var(--primary-500)] font-semibold text-sm transition-all duration-300 hover:bg-[var(--primary-100)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            data-donor-id={donor.id}
+          >
+            <svg
+              class="w-4 h-4 heart-icon"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            <span class="button-text">Aamiin</span>
+          </button>
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  // Like functionality
+  document.addEventListener("DOMContentLoaded", () => {
+    const likeButtons = document.querySelectorAll(".like-button");
+
+    likeButtons.forEach((button) => {
+      button.addEventListener(
+        "click",
+        async function (this: HTMLButtonElement) {
+          const donorId = this.getAttribute("data-donor-id");
+          if (!donorId) return;
+
+          // Get current state from localStorage
+          const hasLiked = localStorage.getItem(`liked_${donorId}`) === "true";
+
+          if (hasLiked) return; // Already liked
+
+          // Optimistic UI update
+          const donorCard = this.closest("[data-donor-id]");
+          const likeCountSpan = donorCard?.querySelector(".like-count");
+          const currentCount = parseInt(
+            likeCountSpan?.getAttribute("data-count") || "0",
+          );
+          const newCount = currentCount + 1;
+
+          // Update count
+          if (likeCountSpan) {
+            likeCountSpan.setAttribute("data-count", newCount.toString());
+            likeCountSpan.innerHTML = `<strong class="text-[var(--primary-600)]">${newCount}</strong> orang mengaminkan doa ini`;
+          }
+
+          // Update button state
+          this.classList.remove(
+            "border-[var(--primary-500)]",
+            "text-[var(--primary-500)]",
+            "hover:bg-[var(--primary-100)]",
+          );
+          this.classList.add(
+            "bg-[var(--primary-500)]",
+            "text-white",
+            "border-[var(--primary-500)]",
+          );
+          this.disabled = true;
+
+          // Update heart icon color
+          const heartIcon = this.querySelector(".heart-icon");
+          if (heartIcon) {
+            heartIcon.classList.add("text-white");
+          }
+
+          // Save to localStorage
+          localStorage.setItem(`liked_${donorId}`, "true");
+
+          // Call API
+          try {
+            const response = await fetch("/amin/${transactionId}/like", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ id: donorId }),
+            });
+
+            if (!response.ok) {
+              throw new Error("Failed to record like");
+            }
+
+            console.log("Like recorded successfully");
+          } catch (error) {
+            console.error("Like error:", error);
+
+            // Rollback on error
+            if (likeCountSpan) {
+              likeCountSpan.setAttribute("data-count", currentCount.toString());
+              if (currentCount === 0) {
+                likeCountSpan.textContent = "Yuk aminkan doa saudara kita";
+              } else {
+                likeCountSpan.innerHTML = `<strong class="text-[var(--primary-600)]">${currentCount}</strong> orang mengaminkan doa ini`;
+              }
+            }
+
+            this.classList.add(
+              "border-[var(--primary-500)]",
+              "text-[var(--primary-500)]",
+              "hover:bg-[var(--primary-100)]",
+            );
+            this.classList.remove("bg-[var(--primary-500)]", "text-white");
+            this.disabled = false;
+
+            if (heartIcon) {
+              heartIcon.classList.remove("text-white");
+            }
+
+            localStorage.removeItem(`liked_${donorId}`);
+          }
+        },
+      );
+    });
+
+    // Initialize button states from localStorage
+    likeButtons.forEach((button) => {
+      const donorId = button.getAttribute("data-donor-id");
+      if (!donorId) return;
+
+      const hasLiked = localStorage.getItem(`liked_${donorId}`) === "true";
+
+      if (hasLiked) {
+        button.classList.remove(
+          "border-[var(--primary-500)]",
+          "text-[var(--primary-500)]",
+          "hover:bg-[var(--primary-100)]",
+        );
+        button.classList.add(
+          "bg-[var(--primary-500)]",
+          "text-white",
+          "border-[var(--primary-500)]",
+        );
+        (button as HTMLButtonElement).disabled = true;
+
+        const heartIcon = button.querySelector(".heart-icon");
+        if (heartIcon) {
+          heartIcon.classList.add("text-white");
+        }
+      }
+    });
+  });
+</script>

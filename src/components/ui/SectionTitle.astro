@@ -1,0 +1,19 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  border?: boolean;
+}
+
+const { title, description, border = true } = Astro.props;
+---
+
+<div class={`px-4 mb-3 pb-3 ${border ? "border-b border-gray-200" : ""}`}>
+  <h2 class="font-bold text-neutral-700">{title}</h2>
+
+  {
+    description && (
+      <p class="text-xs md:text-sm text-neutral-500">{description}</p>
+    )
+  }
+</div>

@@ -1,0 +1,74 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+import Header from "@/components/layouts/Header.astro";
+import Footer from "@/components/layouts/Footer.astro";
+import BottomNav from "@/components/layouts/BottomNav.astro";
+import HeroSection from "@/components/sections/home/HeroSection.astro";
+import MenuSection from "@/components/sections/home/MenuSection.astro";
+import ProgramSection from "@/components/sections/home/ProgramSection.astro";
+import { Image } from "astro:assets";
+import ProgramListSection from "@/components/sections/home/ProgramListSection.astro";
+import ProjectListSection from "@/components/sections/home/ProjectListSection.astro";
+import SliderBanner from "@/components/sections/home/SliderBanner.astro";
+---
+
+<MainLayout
+  title="Beranda"
+  description="Aksiberbagi.com — platform donasi online terpercaya. Salurkan infaq, sedekah, zakat, dan qurban ke seluruh penjuru Indonesia dengan mudah dan transparan."
+  type="website"
+>
+  <Header />
+
+  <main class="container pb-16">
+    <HeroSection />
+    <MenuSection />
+
+    <a href="/">
+      <Image
+        src="/images/banner/home-banner.avif"
+        alt="Aksiberbagi Banner"
+        width={360}
+        height={100}
+        class="w-full h-auto mb-3"
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+
+    <ProgramSection />
+
+    <a href="/">
+      <Image
+        src="/images/banner/bannerForm.webp"
+        alt="Aksiberbagi Banner"
+        width={360}
+        height={100}
+        class="w-full h-auto mb-3"
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+
+    <ProjectListSection />
+
+    <a href="/">
+      <Image
+        src="/images/banner/JadiFundraiser.webp"
+        alt="Aksiberbagi Banner"
+        width={360}
+        height={100}
+        class="w-full h-auto mb-3"
+        loading="lazy"
+        decoding="async"
+      />
+    </a>
+
+    <SliderBanner />
+
+    <ProgramListSection />
+
+    <Footer />
+  </main>
+
+  <BottomNav active="home" />
+</MainLayout>

@@ -1,0 +1,74 @@
+---
+import { formatRupiah } from "@/lib/formatter";
+
+const {
+  qrPayload,
+  donationAmount,
+  imgUrl,
+  accountBehalf = "Aksiberbagi",
+} = Astro.props;
+---
+
+<div class="payment-white-wrapper pb-6">
+  <div class="flex flex-col items-center text-center gap-4">
+    <!-- Header -->
+    <div class="flex items-center gap-2">
+      <img src={imgUrl} alt="QRIS" width="48" height="16" loading="lazy" />
+      <span class="text-sm text-gray-600">Pembayaran QRIS</span>
+    </div>
+
+    <h3 class="text-lg font-semibold text-gray-800">Scan untuk Membayar</h3>
+
+    <p class="text-sm text-gray-500">
+      a.n <b>{accountBehalf}</b>
+    </p>
+
+    <!-- QR Container -->
+    <div
+      id="qris-qrcode"
+      class="bg-white p-4 rounded-2xl shadow-md border border-gray-100"
+      data-qr-payload={qrPayload}
+    >
+    </div>
+
+    <!-- Nominal -->
+    <div class="bg-gray-50 rounded-xl px-4 py-3 w-full">
+      <p class="text-xs text-gray-500">Total Pembayaran</p>
+      <p class="text-xl font-bold text-gray-800">
+        {formatRupiah(donationAmount)}
+      </p>
+    </div>
+
+    <!-- Instructions -->
+    <ul class="text-sm text-gray-600 space-y-1">
+      <li>• Buka aplikasi e-wallet / m-banking</li>
+      <li>• Pilih menu <b>Scan QR</b></li>
+      <li>• Arahkan kamera ke QR di atas</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+  import EasyQRCode from "easyqrcodejs";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const container = document.getElementById("qris-qrcode");
+    const qrPayload = container?.getAttribute("data-qr-payload");
+
+    if (container && qrPayload) {
+      // Clear container first
+      container.innerHTML = "";
+
+      new EasyQRCode(container, {
+        text: qrPayload,
+        width: 220,
+        height: 220,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: EasyQRCode.CorrectLevel.M,
+        quietZone: 12,
+        quietZoneColor: "#ffffff",
+      });
+    }
+  });
+</script>

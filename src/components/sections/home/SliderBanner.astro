@@ -1,0 +1,180 @@
+---
+import { Image } from "astro:assets";
+
+const banners = [
+  {
+    src: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
+    alt: "Program Ramadhan Aksiberbagi",
+    href: "/donasi",
+  },
+  {
+    src: "/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp",
+    alt: "Sedekah di Bulan Ramadhan",
+    href: "/donasi",
+  },
+  {
+    src: "/images/thumbnail/Artboard23-ezgif.com-jpg-to-webp-converter.webp",
+    alt: "Donasi Peduli Sesama",
+    href: "/donasi-rutin",
+  },
+  {
+    src: "/images/thumbnail/Artboard24-ezgif.com-jpg-to-webp-converter.webp",
+    alt: "Kebaikan Bersama Aksiberbagi",
+    href: "/donasi",
+  },
+];
+---
+
+<section class="mb-3">
+  <!-- Slider Wrapper -->
+  <div class="relative">
+    <!-- Viewport: overflow-x auto + scroll-snap -->
+    <div
+      id="slider-vp"
+      class="flex overflow-x-auto gap-3 px-4 scroll-smooth snap-x snap-mandatory scrollbar-none"
+    >
+      {
+        banners.map((b) => (
+          <a
+            href={b.href}
+            class="shrink-0 snap-start rounded overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 block"
+            style="width: calc(100% - 60px);"
+          >
+            <Image
+              src={b.src}
+              alt={b.alt}
+              width="420"
+              height="210"
+              class="w-full h-auto block"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+        ))
+      }
+
+      <!-- Trailing spacer agar slide terakhir bisa snap ke posisi kiri -->
+      <div class="shrink-0 w-4" aria-hidden="true"></div>
+    </div>
+
+    <!-- Right fade gradient: visual cue ada konten berikutnya -->
+    <div
+      class="absolute top-0 right-0 h-full w-16 pointer-events-none"
+      style="background: linear-gradient(to left, rgba(242,242,242,0.85), transparent);"
+      aria-hidden="true"
+    >
+    </div>
+  </div>
+
+  <!-- Dot Indicators -->
+  <div class="flex justify-center items-center gap-1.5 mt-3" role="tablist">
+    {
+      banners.map((b, i) => (
+        <button
+          class="slider-dot block h-1.5 rounded-full transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-400"
+          style={
+            i === 0
+              ? "width: 1.5rem; background-color: #19b697;"
+              : "width: 0.375rem; background-color: #d4d4d4;"
+          }
+          data-index={i}
+          role="tab"
+          aria-label={`Slide ${i + 1}: ${b.alt}`}
+          aria-selected={i === 0 ? "true" : "false"}
+        />
+      ))
+    }
+  </div>
+</section>
+
+<script>
+  (() => {
+    const vp = document.getElementById("slider-vp") as HTMLElement | null;
+    const dots = document.querySelectorAll<HTMLButtonElement>(".slider-dot");
+    if (!vp || !dots.length) return;
+
+    const slides = Array.from(vp.querySelectorAll<HTMLAnchorElement>("a"));
+    const total = dots.length;
+    let current = 0;
+    let touching = false;
+    let autoTimer: ReturnType<typeof setInterval>;
+
+    /* ─── dot state ─── */
+    function activateDot(idx: number) {
+      current = ((idx % total) + total) % total;
+      dots.forEach((d, i) => {
+        const on = i === current;
+        d.style.width = on ? "1.5rem" : "0.375rem";
+        d.style.backgroundColor = on ? "#19b697" : "#d4d4d4";
+        d.setAttribute("aria-selected", String(on));
+      });
+    }
+
+    /* ─── scroll ke slide tertentu ─── */
+    function scrollTo(idx: number) {
+      const slide = slides[idx];
+      if (!slide) return;
+      vp!.scrollTo({ left: slide.offsetLeft - 16, behavior: "smooth" });
+    }
+
+    /* ─── auto-play ─── */
+    function startAuto() {
+      clearInterval(autoTimer);
+      autoTimer = setInterval(() => {
+        if (!touching) {
+          const next = (current + 1) % total;
+          activateDot(next);
+          scrollTo(next);
+        }
+      }, 4200);
+    }
+
+    /* ─── sinkronisasi dot saat user swipe manual ─── */
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const best = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (!best) return;
+        const idx = slides.indexOf(best.target as HTMLAnchorElement);
+        if (idx !== -1 && idx !== current) activateDot(idx);
+      },
+      { root: vp, threshold: 0.55 },
+    );
+    slides.forEach((s) => observer.observe(s));
+
+    /* ─── dot click ─── */
+    dots.forEach((dot, i) => {
+      dot.addEventListener("click", () => {
+        activateDot(i);
+        scrollTo(i);
+        startAuto();
+      });
+    });
+
+    /* ─── pause on touch, resume on release ─── */
+    vp.addEventListener(
+      "touchstart",
+      () => {
+        touching = true;
+      },
+      { passive: true },
+    );
+    vp.addEventListener(
+      "touchend",
+      () => {
+        touching = false;
+        startAuto();
+      },
+      { passive: true },
+    );
+
+    /* ─── pause saat tab tidak aktif ─── */
+    document.addEventListener("visibilitychange", () => {
+      document.hidden ? clearInterval(autoTimer) : startAuto();
+    });
+
+    activateDot(0);
+    startAuto();
+  })();
+</script>
