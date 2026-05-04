@@ -1,7 +1,7 @@
 ---
-import '../styles/global.css';
-import Seo from '../components/Seo.astro';
-import type { SeoProps } from '../lib/seo';
+import "../styles/global.css";
+import Seo from "../components/Seo.astro";
+import type { SeoProps } from "../lib/seo";
 
 type Props = SeoProps;
 ---
@@ -12,7 +12,7 @@ type Props = SeoProps;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/images/icons/logo.ico" />
+    <link rel="icon" href="/images/logo.ico" />
     <meta name="generator" content={Astro.generator} />
 
     <!-- Inter font: preconnect lalu load non-blocking -->
@@ -39,6 +39,14 @@ type Props = SeoProps;
     <Seo {...Astro.props} />
   </head>
   <body class="min-h-screen bg-neutral-100 text-neutral-700 antialiased">
-    <slot />
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-9999 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-md focus:shadow-lg focus:text-sm focus:font-semibold"
+    >
+      Lewati ke konten utama
+    </a>
+    <main id="main-content">
+      <slot />
+    </main>
   </body>
 </html>

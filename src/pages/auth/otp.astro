@@ -1,0 +1,314 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const baseUrl = import.meta.env.ASTRO_API_URL;
+---
+
+<MainLayout
+  title="Verifikasi OTP"
+  description="Masukkan kode OTP yang dikirimkan ke nomor telepon Anda."
+>
+  <Header type="notshare" text="Verifikasi OTP" link="/auth/register" />
+
+  <div
+    data-base-url={baseUrl}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100"
+  >
+    <div class="container space-y-3">
+      <!-- Heading -->
+      <div
+        class="bg-white rounded-2xl shadow-sm overflow-hidden px-4 py-5 mt-[64px]"
+      >
+        <h1 class="text-xl font-bold text-gray-800 mb-1">
+          Pastikan Kepemilikan Akun Ini
+        </h1>
+        <p class="text-xs text-gray-400 leading-relaxed">
+          Masukkan 6 digit kode yang dikirimkan ke nomor
+          <span id="display-phone" class="font-semibold text-gray-600"></span>
+        </p>
+      </div>
+
+      <!-- Error Banner -->
+      <div
+        id="otp-error"
+        class="hidden flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl px-3 py-2.5"
+      >
+        <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            fill-rule="evenodd"
+            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+            clip-rule="evenodd"></path>
+        </svg>
+        <span id="otp-error-text">Kode OTP tidak valid</span>
+      </div>
+
+      <!-- Form Card -->
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+          <span class="w-1 h-5 bg-teal-500 rounded-full"></span>
+          <span class="text-sm font-semibold text-gray-700"
+            >Kode Verifikasi</span
+          >
+        </div>
+
+        <div class="px-4 py-6 space-y-6">
+          <!-- 6-digit OTP inputs -->
+          <div id="otp-inputs" class="flex items-center justify-center gap-2">
+            {
+              [0, 1, 2, 3, 4, 5].map((i) => (
+                <input
+                  id={`otp-${i}`}
+                  type="number"
+                  inputmode="numeric"
+                  maxlength="1"
+                  data-index={i}
+                  class="otp-input w-11 h-12 text-center text-lg font-bold bg-gray-100 border border-transparent rounded-xl text-gray-800 focus:border-teal-400 focus:bg-white transition-colors outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+              ))
+            }
+          </div>
+
+          <!-- Tombol Verifikasi -->
+          <button
+            id="btn-verify"
+            type="button"
+            class="w-full bg-teal-500 hover:bg-teal-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold py-3.5 rounded-xl transition-all duration-150"
+          >
+            Verifikasi
+          </button>
+
+          <!-- Resend OTP -->
+          <div class="text-center space-y-1">
+            <p class="text-xs text-gray-400">Belum menerima kode OTP?</p>
+
+            <!-- Countdown (tampil saat countdown > 0) -->
+            <p id="otp-countdown" class="text-xs text-gray-500">
+              Kirim ulang dalam
+              <span id="countdown-value" class="font-semibold text-teal-600"
+                >03:00</span
+              >
+            </p>
+
+            <!-- Tombol Kirim Ulang (tampil saat countdown = 0) -->
+            <button
+              id="btn-resend"
+              type="button"
+              class="hidden w-full border border-teal-400 text-teal-600 text-sm font-semibold py-2.5 rounded-xl hover:bg-teal-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              Kirim Ulang Kode
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+
+  // Baca baseUrl dari data attribute (di luar DOMContentLoaded)
+  const baseUrl = (document.querySelector("[data-base-url]") as HTMLElement)
+    ?.dataset.baseUrl;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    // ── Elemen ─────────────────────────────────────────────────────────────
+    const btnVerify = document.getElementById(
+      "btn-verify",
+    ) as HTMLButtonElement;
+    const btnResend = document.getElementById(
+      "btn-resend",
+    ) as HTMLButtonElement;
+    const errorBox = document.getElementById("otp-error") as HTMLElement;
+    const errorText = document.getElementById("otp-error-text") as HTMLElement;
+    const countdownEl = document.getElementById("otp-countdown") as HTMLElement;
+    const countdownVal = document.getElementById(
+      "countdown-value",
+    ) as HTMLElement;
+    const displayPhone = document.getElementById(
+      "display-phone",
+    ) as HTMLElement;
+    const otpInputs = document.querySelectorAll<HTMLInputElement>(".otp-input");
+
+    // ── Baca phone dari cookie ──────────────────────────────────────────────
+    const phone = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("authphone="))
+      ?.split("=")[1];
+
+    const decodedPhone = phone ? decodeURIComponent(phone) : "";
+
+    // if (!decodedPhone) {
+    //   // Jika tidak ada phone cookie, redirect ke register
+    //   window.location.href = "/auth/register";
+    //   return;
+    // }
+
+    displayPhone.textContent = decodedPhone;
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function showError(msg: string) {
+      errorText.textContent = msg;
+      errorBox.classList.remove("hidden");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function hideError() {
+      errorBox.classList.add("hidden");
+    }
+
+    function setLoading(
+      state: boolean,
+      btn: HTMLButtonElement,
+      defaultText: string,
+    ) {
+      btn.disabled = state;
+      btn.textContent = state ? "Memuat..." : defaultText;
+    }
+
+    function getOtpValue(): string {
+      return Array.from(otpInputs)
+        .map((input) => input.value.trim())
+        .join("");
+    }
+
+    function clearOtp() {
+      otpInputs.forEach((input) => (input.value = ""));
+      otpInputs[0]?.focus();
+    }
+
+    // ── Format countdown MM:SS ─────────────────────────────────────────────
+    function formatCountdown(seconds: number): string {
+      const m = Math.floor(seconds / 60)
+        .toString()
+        .padStart(2, "0");
+      const s = (seconds % 60).toString().padStart(2, "0");
+      return `${m}:${s}`;
+    }
+
+    // ── Countdown timer ────────────────────────────────────────────────────
+    let countdown = 180;
+    let timerInterval: ReturnType<typeof setInterval> | null = null;
+
+    function startCountdown() {
+      countdown = 180;
+      countdownVal.textContent = formatCountdown(countdown);
+      countdownEl.classList.remove("hidden");
+      btnResend.classList.add("hidden");
+
+      if (timerInterval) clearInterval(timerInterval);
+
+      timerInterval = setInterval(() => {
+        countdown -= 1;
+        countdownVal.textContent = formatCountdown(countdown);
+
+        if (countdown <= 0) {
+          clearInterval(timerInterval!);
+          countdownEl.classList.add("hidden");
+          btnResend.classList.remove("hidden");
+        }
+      }, 1000);
+    }
+
+    // Mulai countdown saat halaman load
+    startCountdown();
+
+    // ── OTP input behavior ─────────────────────────────────────────────────
+    otpInputs.forEach((input, index) => {
+      // Auto-advance ke input berikutnya
+      input.addEventListener("input", () => {
+        // Ambil hanya 1 digit terakhir
+        input.value = input.value.slice(-1).replace(/\D/g, "");
+
+        if (input.value && index < otpInputs.length - 1) {
+          otpInputs[index + 1].focus();
+        }
+
+        // Auto-submit jika semua input terisi
+        if (getOtpValue().length === 6) {
+          btnVerify.focus();
+        }
+      });
+
+      // Backspace mundur ke input sebelumnya
+      input.addEventListener("keydown", (e: KeyboardEvent) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+          otpInputs[index - 1].focus();
+        }
+      });
+
+      // Paste handler — tempel semua digit sekaligus
+      input.addEventListener("paste", (e: ClipboardEvent) => {
+        e.preventDefault();
+        const pasted =
+          e.clipboardData?.getData("text").replace(/\D/g, "") ?? "";
+        if (pasted.length === 6) {
+          otpInputs.forEach((inp, i) => (inp.value = pasted[i] ?? ""));
+          otpInputs[5].focus();
+        }
+      });
+    });
+
+    // ── Submit OTP ─────────────────────────────────────────────────────────
+    btnVerify.addEventListener("click", async () => {
+      hideError();
+
+      const otpString = getOtpValue();
+
+      if (otpString.length < 6) {
+        showToast("Masukkan 6 digit kode OTP", "error");
+        return;
+      }
+
+      setLoading(true, btnVerify, "Verifikasi");
+
+      try {
+        const res = await fetch(`${baseUrl}/otp`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ otp: otpString, phone: decodedPhone }),
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.message ?? "Kode OTP tidak valid");
+
+        showToast("Verifikasi berhasil!", "success");
+        window.location.href = "/set-password";
+      } catch (err: any) {
+        showError(err.message ?? "Kode OTP tidak valid");
+        clearOtp();
+      } finally {
+        setLoading(false, btnVerify, "Verifikasi");
+      }
+    });
+
+    // ── Kirim Ulang OTP ────────────────────────────────────────────────────
+    btnResend.addEventListener("click", async () => {
+      hideError();
+      setLoading(true, btnResend, "Kirim Ulang Kode");
+
+      try {
+        const res = await fetch(`${baseUrl}/register`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ phone: decodedPhone }),
+        });
+
+        const json = await res.json();
+        if (!res.ok)
+          throw new Error(json?.message ?? "Gagal mengirim ulang OTP");
+
+        showToast("Kode OTP berhasil dikirim ulang", "success");
+        clearOtp();
+        startCountdown();
+      } catch (err: any) {
+        showError(err.message ?? "Gagal mengirim ulang OTP");
+      } finally {
+        setLoading(false, btnResend, "Kirim Ulang Kode");
+      }
+    });
+  });
+</script>

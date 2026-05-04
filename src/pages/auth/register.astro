@@ -1,0 +1,250 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+---
+
+<MainLayout title="Register" description="Daftar akun baru">
+  <Header type="notshare" text="Register" />
+
+  <div class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100">
+    <div class="container space-y-3">
+      <div
+        class="bg-white rounded-2xl shadow-sm overflow-hidden px-4 py-5 mt-[64px]"
+      >
+        <h1 class="text-xl font-bold text-gray-800 mb-1">
+          Mendaftar dan sebarkan kebaikan
+        </h1>
+        <p class="text-xs text-gray-400">
+          Isi data diri kamu untuk mulai berdonasi
+        </p>
+      </div>
+
+      <div
+        id="register-error"
+        class="hidden bg-red-50 border border-red-200 text-red-600 text-sm rounded-xl px-4 py-3"
+      >
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+          <span class="w-1 h-5 bg-primary-500 rounded-full"></span>
+          <span class="text-sm font-semibold text-gray-700">Data Diri</span>
+        </div>
+
+        <div class="px-4 py-4 space-y-4">
+          <div>
+            <label
+              for="input-name"
+              class="block text-xs font-medium text-gray-600 mb-1.5"
+            >
+              Nama Pengguna <span class="text-red-400">*</span>
+            </label>
+            <input
+              id="input-name"
+              type="text"
+              placeholder="Masukkan Nama Lengkap Anda"
+              class="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-sm focus:border-primary-400 focus:bg-white transition-colors outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              for="input-phone"
+              class="block text-xs font-medium text-gray-600 mb-1.5"
+            >
+              Nomor Telepon <span class="text-red-400">*</span>
+            </label>
+            <input
+              id="input-phone"
+              type="text"
+              placeholder="Masukkan Nomor Telepon"
+              class="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-sm focus:border-primary-400 focus:bg-white transition-colors outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              for="input-email"
+              class="block text-xs font-medium text-gray-600 mb-1.5"
+            >
+              Email
+              <span class="text-gray-400 font-normal">(opsional)</span>
+            </label>
+            <input
+              id="input-email"
+              type="email"
+              placeholder="Masukkan Email"
+              class="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-sm focus:border-primary-400 focus:bg-white transition-colors outline-none"
+            />
+          </div>
+
+          <!-- recaptcha -->
+          <div class="flex justify-center">
+            <div id="recaptcha-container"></div>
+          </div>
+
+          <p class="text-xs text-center text-gray-400 leading-relaxed">
+            Dengan mendaftar berarti kamu setuju dengan&nbsp;
+            <a href="/syarat-ketentuan" class="text-primary-500 font-medium">
+              Syarat & Ketentuan
+            </a>
+            &nbsp;dan&nbsp;
+            <a href="/syarat-ketentuan" class="text-primary-500 font-medium">
+              Kebijakan Privasi
+            </a>
+            &nbsp;Aksiberbagi.com
+          </p>
+
+          <button
+            id="btn-register"
+            type="button"
+            class="w-full bg-primary-500 hover:bg-primary-600 text-white text-sm font-semibold py-3.5 rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            Mendaftar
+          </button>
+
+          <p class="text-xs text-center text-gray-400">
+            Sudah punya akun?&nbsp;
+            <a
+              href="/auth/login"
+              class="text-primary-500 font-semibold hover:underline"
+            >
+              Login disini
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script
+    is:inline
+    src="https://www.google.com/recaptcha/api.js?render=explicit"
+    async
+    defer></script>
+
+  <script>
+    import { showToast } from "@/lib/toast";
+
+    const API_URL = import.meta.env.ASTRO_API_URL;
+    const SITE_KEY = import.meta.env.ASTRO_PUBLIC_SITE_KEY_CAPTCHA;
+
+    let captchaVerified = false;
+    let captchaWidgetId: number | null = null;
+
+    (window as any).onCaptchaVerified = () => {
+      captchaVerified = true;
+    };
+
+    (window as any).onCaptchaExpired = () => {
+      captchaVerified = false;
+    };
+
+    // window.load guarantees the async reCAPTCHA script has executed
+    window.addEventListener("load", () => {
+      const container = document.getElementById("recaptcha-container");
+      if (!container || !(window as any).grecaptcha) return;
+
+      captchaWidgetId = (window as any).grecaptcha.render(container, {
+        sitekey: SITE_KEY,
+        callback: (window as any).onCaptchaVerified,
+        "expired-callback": (window as any).onCaptchaExpired,
+      });
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const btnRegister = document.getElementById(
+        "btn-register",
+      ) as HTMLButtonElement;
+      const inputName = document.getElementById(
+        "input-name",
+      ) as HTMLInputElement;
+      const inputPhone = document.getElementById(
+        "input-phone",
+      ) as HTMLInputElement;
+      const inputEmail = document.getElementById(
+        "input-email",
+      ) as HTMLInputElement;
+      const errorBanner = document.getElementById(
+        "register-error",
+      ) as HTMLDivElement;
+
+      function showError(msg: string) {
+        errorBanner.textContent = msg;
+        errorBanner.classList.remove("hidden");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+
+      function hideError() {
+        errorBanner.classList.add("hidden");
+        errorBanner.textContent = "";
+      }
+
+      function setLoading(state: boolean) {
+        btnRegister.disabled = state;
+        btnRegister.textContent = state ? "Memproses..." : "Mendaftar";
+      }
+
+      btnRegister.addEventListener("click", async () => {
+        hideError();
+
+        const name = inputName.value.trim();
+        const phone = inputPhone.value.trim();
+        const email = inputEmail.value.trim();
+
+        if (!name || !phone) {
+          showToast("Harap isi semua field yang wajib diisi", "error");
+          return;
+        }
+
+        if (!captchaVerified) {
+          showToast("Harap verifikasi bahwa Anda bukan robot", "error");
+          return;
+        }
+
+        const captchaToken = (window as any).grecaptcha?.getResponse(
+          captchaWidgetId,
+        );
+        if (!captchaToken) {
+          showToast("Gagal mendapatkan token ReCAPTCHA", "error");
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const response = await fetch(`${API_URL}/register`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name,
+              phone,
+              email,
+              "g-recaptcha-response": captchaToken,
+            }),
+          });
+
+          if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.message ?? "Registrasi gagal, coba lagi");
+          }
+
+          const expires = new Date(Date.now() + 86400 * 1000).toUTCString();
+          document.cookie = `authphone=${encodeURIComponent(phone)}; expires=${expires}; path=/`;
+
+          showToast("Registrasi berhasil!", "success");
+          window.location.href = "/auth/login-otp";
+        } catch (err: any) {
+          const message = err?.message ?? "Terjadi kesalahan";
+          showError(message);
+          (window as any).grecaptcha?.reset(captchaWidgetId);
+          captchaVerified = false;
+        } finally {
+          setLoading(false);
+        }
+      });
+    });
+  </script>
+</MainLayout>

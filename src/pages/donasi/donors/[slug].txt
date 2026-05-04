@@ -1,0 +1,373 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import {
+  getProgramByLink,
+  getProgramLinkDonors,
+  getProgramLinkFundraisers,
+} from "@/lib/FetchData";
+import { formatRupiah, initialName } from "@/lib/formatter";
+
+const { id } = Astro.params;
+
+if (!id) return Astro.redirect("/");
+
+// Ambil program id dari link
+const programRes = await getProgramByLink(id);
+const programId = programRes?.data?.id;
+
+if (!programId) return Astro.redirect("/");
+
+// Fetch donatur halaman pertama & fundraiser (server-side)
+const [donaturRes, fundraiserRes] = await Promise.all([
+  getProgramLinkDonors(programId, { limit: 5, mode: "pagination", page: 1 }),
+  getProgramLinkFundraisers(programId, {
+    limit: 0,
+    mode: "pagination",
+    page: 1,
+  }),
+]);
+
+const donaturTotal = donaturRes?.data?.total ?? 0;
+const donaturList = donaturRes?.data?.data ?? [];
+const donaturHasNext = Boolean(donaturRes?.data?.next_page_url);
+
+const fundraiserList = fundraiserRes?.data?.data ?? [];
+---
+
+<MainLayout
+  title="Donatur & Fundraiser"
+  description="Lihat siapa saja yang telah berdonasi untuk program ini."
+>
+  <Header type="title" text="Donatur & Fundraiser" />
+
+  <section
+    id="df-page"
+    data-program-id={programId}
+    data-program-link={id}
+    class="min-h-screen bg-gray-50"
+  >
+    <div class="max-w-[480px] mx-auto px-4 py-4 pb-28 space-y-3">
+      {/* ── DONATUR ── */}
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div
+          class="flex items-center justify-between px-4 py-3 border-b border-gray-100"
+        >
+          <div class="flex items-center gap-2">
+            <div class="w-1 h-5 bg-teal-500 rounded-full"></div>
+            <h2 class="text-sm font-semibold text-gray-800">Donatur</h2>
+          </div>
+          <span
+            class="text-xs font-semibold bg-teal-50 text-teal-700 px-2.5 py-1 rounded-full"
+          >
+            {donaturTotal}
+          </span>
+        </div>
+
+        <div id="donatur-list" class="divide-y divide-gray-50">
+          {
+            donaturList.map((donor: any) => (
+              <div class="flex items-center gap-3 px-4 py-3">
+                <div class="shrink-0">
+                  {donor.img ? (
+                    <img
+                      src={donor.img}
+                      alt={donor.name}
+                      class="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-xs font-semibold text-teal-700">
+                      {initialName(donor.name)}
+                    </div>
+                  )}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 truncate">
+                    {donor.name}
+                  </p>
+                  {donor.message && (
+                    <p class="text-xs text-gray-400 truncate">
+                      {donor.message}
+                    </p>
+                  )}
+                </div>
+                <span class="text-xs font-semibold text-teal-600 whitespace-nowrap">
+                  {formatRupiah(donor.amount)}
+                </span>
+              </div>
+            ))
+          }
+
+          {
+            donaturList.length === 0 && (
+              <div class="flex flex-col items-center py-10 text-center">
+                <p class="text-sm font-medium text-gray-700">
+                  Belum ada Donatur
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  Ayo jadi bagian dari #JembatanKebaikan
+                </p>
+              </div>
+            )
+          }
+        </div>
+
+        {
+          donaturHasNext && (
+            <div
+              id="donatur-loadmore"
+              class="px-4 py-3 border-t border-gray-100"
+            >
+              <button
+                id="btn-donatur-more"
+                data-page="2"
+                class="w-full text-sm font-medium text-teal-600 hover:text-teal-700 py-2 rounded-xl hover:bg-teal-50 transition-colors"
+              >
+                Lihat lebih banyak
+              </button>
+            </div>
+          )
+        }
+      </div>
+
+      {/* ── FUNDRAISER ── */}
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div
+          class="flex items-center justify-between px-4 py-3 border-b border-gray-100"
+        >
+          <div class="flex items-center gap-2">
+            <div class="w-1 h-5 bg-orange-400 rounded-full"></div>
+            <h2 class="text-sm font-semibold text-gray-800">Fundraiser</h2>
+          </div>
+          <span
+            class="text-xs font-semibold bg-orange-50 text-orange-600 px-2.5 py-1 rounded-full"
+          >
+            {fundraiserList.length}
+          </span>
+        </div>
+
+        <div id="fundraiser-list" class="divide-y divide-gray-50">
+          {
+            fundraiserList.slice(0, 6).map((fr: any) => (
+              <div class="flex items-center gap-3 px-4 py-3">
+                <div class="shrink-0">
+                  {fr.img ? (
+                    <img
+                      src={fr.img}
+                      alt={fr.name}
+                      class="w-10 h-10 rounded-full object-cover"
+                    />
+                  ) : (
+                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-xs font-semibold text-orange-700">
+                      {initialName(fr.name)}
+                    </div>
+                  )}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-gray-800 truncate">
+                    {fr.name}
+                  </p>
+                  <p class="text-xs text-gray-500">
+                    Mengajak{" "}
+                    <strong class="font-semibold text-gray-700">
+                      {fr.total_donatur} orang
+                    </strong>{" "}
+                    berdonasi
+                  </p>
+                  <p class="text-xs font-semibold text-orange-500 mt-0.5">
+                    {formatRupiah(fr.total_donasi)}
+                  </p>
+                </div>
+              </div>
+            ))
+          }
+
+          {
+            fundraiserList.length === 0 && (
+              <div class="flex flex-col items-center py-10 text-center">
+                <p class="text-sm font-medium text-gray-700">
+                  Belum ada Fundraiser
+                </p>
+                <p class="text-xs text-gray-400 mt-1">
+                  Ayo jadi bagian dari #JembatanKebaikan
+                </p>
+              </div>
+            )
+          }
+        </div>
+
+        {
+          /* Load more fundraiser — dihandle client-side dari data yg sudah ada */
+        }
+        {
+          fundraiserList.length > 6 && (
+            <div
+              id="fundraiser-loadmore"
+              data-all={JSON.stringify(fundraiserList)}
+              data-visible="6"
+              class="px-4 py-3 border-t border-gray-100"
+            >
+              <button
+                id="btn-fundraiser-more"
+                class="w-full text-sm font-medium text-orange-500 hover:text-orange-600 py-2 rounded-xl hover:bg-orange-50 transition-colors"
+              >
+                Lihat lebih banyak
+              </button>
+            </div>
+          )
+        }
+
+        {/* CTA Fundraiser — ditampilkan client-side jika tidak login */}
+        <div
+          id="fundraiser-cta"
+          class="hidden px-4 py-5 bg-teal-50 border-t border-gray-100"
+        >
+          <p class="text-xs text-gray-600 text-center leading-relaxed mb-3">
+            Ayo ikut berkontribusi dengan menjadi&nbsp;
+            <span class="font-semibold text-teal-600">fundraiser</span>.
+            Daftarkan diri dan undang teman anda.
+          </p>
+
+          href="/login" class="block w-full text-center text-sm font-semibold
+          text-teal-600 border border-teal-400 rounded-xl py-2.5
+          hover:bg-teal-600 hover:text-white transition-all duration-200" > Jadi
+          Fundraiser
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ── Sticky Donate Button ── */}
+  <div
+    class="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-100 shadow-lg"
+  >
+    <div class="max-w-[480px] mx-auto px-4 py-3">
+      <button
+        id="btn-donasi"
+        data-program-id={programId}
+        data-program-link={id}
+        class="w-full bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white text-sm font-semibold rounded-xl py-3.5 transition-all duration-150"
+      >
+        Donasi Sekarang
+      </button>
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  import { formatRupiah, initialName } from "@/lib/formatter";
+
+  const API_URL = import.meta.env.PUBLIC_API_URL;
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const page = document.getElementById("df-page") as HTMLElement;
+    const progId = page?.dataset.programId ?? "";
+    const progLink = page?.dataset.programLink ?? "";
+
+    // ── Tombol Donasi ──────────────────────────────────────────────────────
+    document.getElementById("btn-donasi")?.addEventListener("click", () => {
+      window.location.href = `/donasi/detail/${progLink}/form?id=${progId}`;
+    });
+
+    // ── CTA Fundraiser: tampilkan jika tidak login ─────────────────────────
+    const isLoggedIn = document.cookie.includes("authToken=");
+    if (!isLoggedIn) {
+      document.getElementById("fundraiser-cta")?.classList.remove("hidden");
+    }
+
+    // ── Load more Donatur (fetch next pages) ──────────────────────────────
+    const btnDonaturMore = document.getElementById(
+      "btn-donatur-more",
+    ) as HTMLButtonElement | null;
+    const donaturList = document.getElementById("donatur-list");
+
+    btnDonaturMore?.addEventListener("click", async () => {
+      const nextPage = Number(btnDonaturMore.dataset.page ?? 2);
+      btnDonaturMore.textContent = "Loading...";
+      btnDonaturMore.disabled = true;
+
+      try {
+        const res = await fetch(
+          `${API_URL}/program/${progId}/donors?limit=5&mode=pagination&page=${nextPage}`,
+        );
+        const json = await res.json();
+        const donors: any[] = json?.data?.data ?? [];
+        const hasNext = Boolean(json?.data?.next_page_url);
+
+        donors.forEach((donor) => {
+          const avatarHtml = donor.img
+            ? `<img src="${donor.img}" alt="${donor.name}" class="w-10 h-10 rounded-full object-cover"/>`
+            : `<div class="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-xs font-semibold text-teal-700">${initialName(donor.name)}</div>`;
+
+          donaturList?.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="flex items-center gap-3 px-4 py-3">
+              <div class="shrink-0">${avatarHtml}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">${donor.name}</p>
+                ${donor.message ? `<p class="text-xs text-gray-400 truncate">${donor.message}</p>` : ""}
+              </div>
+              <span class="text-xs font-semibold text-teal-600 whitespace-nowrap">${formatRupiah(donor.amount)}</span>
+            </div>
+          `,
+          );
+        });
+
+        if (hasNext) {
+          btnDonaturMore.dataset.page = String(nextPage + 1);
+          btnDonaturMore.textContent = "Lihat lebih banyak";
+          btnDonaturMore.disabled = false;
+        } else {
+          document.getElementById("donatur-loadmore")?.remove();
+        }
+      } catch {
+        btnDonaturMore.textContent = "Gagal memuat, coba lagi";
+        btnDonaturMore.disabled = false;
+      }
+    });
+
+    // ── Load more Fundraiser (dari data JSON yg sudah ada di DOM) ─────────
+    const frLoadmore = document.getElementById(
+      "fundraiser-loadmore",
+    ) as HTMLElement | null;
+    const btnFrMore = document.getElementById("btn-fundraiser-more");
+    const frList = document.getElementById("fundraiser-list");
+
+    btnFrMore?.addEventListener("click", () => {
+      if (!frLoadmore) return;
+
+      const allFr: any[] = JSON.parse(frLoadmore.dataset.all ?? "[]");
+      let visible = Number(frLoadmore.dataset.visible ?? 6);
+      const nextVisible = Math.min(visible + 4, allFr.length);
+
+      allFr.slice(visible, nextVisible).forEach((fr) => {
+        const avatarHtml = fr.img
+          ? `<img src="${fr.img}" alt="${fr.name}" class="w-10 h-10 rounded-full object-cover"/>`
+          : `<div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-xs font-semibold text-orange-700">${initialName(fr.name)}</div>`;
+
+        frList?.insertAdjacentHTML(
+          "beforeend",
+          `
+          <div class="flex items-center gap-3 px-4 py-3">
+            <div class="shrink-0">${avatarHtml}</div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-800 truncate">${fr.name}</p>
+              <p class="text-xs text-gray-500">Mengajak <strong class="font-semibold text-gray-700">${fr.total_donatur} orang</strong> berdonasi</p>
+              <p class="text-xs font-semibold text-orange-500 mt-0.5">${formatRupiah(fr.total_donasi)}</p>
+            </div>
+          </div>
+        `,
+        );
+      });
+
+      frLoadmore.dataset.visible = String(nextVisible);
+
+      if (nextVisible >= allFr.length) {
+        frLoadmore.remove();
+      }
+    });
+  });
+</script>

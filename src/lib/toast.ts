@@ -12,7 +12,7 @@ export function showToast(
   toast.style.transform = "translateY(-10px)";
 
   toast.innerHTML = `
-    <span class="mr-2 font-bold">${type === "error" ? "❌" : "✓"}</span>
+    <span class="mr-2 text-white font-bold">${type === "error" ? "x" : "✓"}</span>
     ${message}
   `;
 

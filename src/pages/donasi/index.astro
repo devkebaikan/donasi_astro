@@ -1,0 +1,546 @@
+---
+export const prerender = false;
+
+import BottomNav from "@/components/layouts/BottomNav.astro";
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+import { getAllCampaigns, getCampaignCategories } from "@/lib/FetchData";
+import CampaignList from "@/components/ui/CampaignList.astro";
+
+const searchQuery = Astro.url.searchParams.get("q") ?? null;
+const categoryId = Astro.url.searchParams.get("category") ?? null;
+
+// Fetch data pertama & kategori secara paralel (server-side)
+const [programRes, categoryRes] = await Promise.all([
+  getAllCampaigns({
+    limit: 5,
+    mode: "pagination",
+    page: 1,
+    category: categoryId || undefined,
+    search: searchQuery || undefined,
+  }),
+  getCampaignCategories(),
+]);
+
+const programList = programRes?.data?.data ?? [];
+// const programTotal = programRes?.data?.total ?? 0;
+const hasNextPage = Boolean(programRes?.data?.next_page_url);
+const categoryList = categoryRes?.data ?? [];
+
+const selectedCategoryName = categoryId
+  ? (categoryList.find((c: any) => String(c.id) === categoryId)?.name ?? null)
+  : null;
+---
+
+<MainLayout
+  title={searchQuery ? `Hasil pencarian: ${searchQuery}` : "Program Donasi"}
+  description="Temukan program donasi terpercaya dan salurkan kebaikanmu bersama Aksiberbagi."
+>
+  <Header type="search" text={searchQuery ?? ""} />
+
+  <section
+    id="campaign-page"
+    data-api-url={import.meta.env.ASTRO_API_URL}
+    data-category-id={categoryId}
+    data-search={searchQuery}
+    data-has-next={String(hasNextPage)}
+    class="min-h-screen bg-gray-50"
+  >
+    <div class="container min-h-screen pb-24 pt-[64px] bg-white">
+      {/* ── Filter Bar (sticky) ── */}
+      <div
+        class="sticky top-0 z-20 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm"
+      >
+        <div class="flex items-center justify-between px-4 py-3 gap-3">
+          <div class="flex items-center gap-2 flex-1 min-w-0">
+            {/* Tombol toggle filter */}
+            <button
+              id="btn-toggle-filter"
+              class="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border-2 border-gray-200 text-gray-700 hover:border-teal-300 transition-all duration-200 shrink-0"
+              aria-expanded="false"
+            >
+              <svg
+                id="filter-icon"
+                class="w-4 h-4"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              <svg
+                id="close-icon"
+                class="w-4 h-4 hidden"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"></path>
+              </svg>
+              <span>Kategori</span>
+            </button>
+
+            {/* Chip kategori aktif */}
+            <div
+              id="active-category-chip"
+              class={`${selectedCategoryName ? "flex" : "hidden"} items-center gap-1.5 px-3 py-2 bg-teal-50 text-teal-700 border border-teal-200 rounded-xl text-xs font-medium min-w-0`}
+            >
+              <span id="active-category-name" class="truncate">
+                {selectedCategoryName}
+              </span>
+              <button
+                id="btn-reset-chip"
+                class="shrink-0 p-0.5 hover:bg-teal-100 rounded-full transition-colors"
+                aria-label="Hapus filter kategori"
+              >
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L10 11.414l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Reset button */}
+          <button
+            id="btn-reset-filter"
+            class={`${categoryId ? "block" : "hidden"} text-xs font-medium text-teal-600 hover:text-teal-700 shrink-0`}
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+
+      {/* ── Sliding Category Panel ── */}
+      <div
+        id="category-panel"
+        class="overflow-hidden transition-all duration-400 ease-in-out max-h-0 opacity-0"
+      >
+        <div class="bg-white border-b border-gray-100 shadow-md px-4 py-4">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-1 h-4 bg-teal-500 rounded-full"></div>
+            <h3 class="text-sm font-semibold text-gray-700">Pilih Kategori</h3>
+          </div>
+
+          {/* Skeleton kategori */}
+          <div id="category-skeleton" class="space-y-2">
+            {
+              Array.from({ length: 4 }).map(() => (
+                <div class="h-14 bg-gray-100 rounded-xl animate-pulse" />
+              ))
+            }
+          </div>
+
+          {/* List kategori */}
+          <div
+            id="category-list"
+            class="space-y-2 max-h-[360px] overflow-y-auto hidden"
+          >
+            {
+              categoryList.map((item: any) => (
+                <button
+                  class="category-item group w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-gray-50 hover:bg-teal-50 hover:shadow-sm transition-all duration-200"
+                  data-id={item.id}
+                  data-name={item.name}
+                >
+                  <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg overflow-hidden border-2 border-gray-200 group-hover:border-teal-300 shrink-0 transition-colors">
+                      <img
+                        src={item.image_url}
+                        alt={item.name}
+                        class="w-full h-full object-cover"
+                      />
+                    </div>
+                    <span class="text-sm font-medium text-gray-700 group-hover:text-teal-700 transition-colors">
+                      {item.name}
+                    </span>
+                  </div>
+                  <svg
+                    class="w-4 h-4 text-gray-400 group-hover:text-teal-500 group-hover:translate-x-0.5 transition-all"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+
+      {/* ── Campaign List ── */}
+      <div class="py-4 px-2 space-y-3">
+        {/* Skeleton loading awal */}
+        <div id="campaign-skeleton" class="space-y-3 hidden">
+          {
+            Array.from({ length: 3 }).map(() => (
+              <div class="bg-white rounded-2xl overflow-hidden shadow-sm animate-pulse">
+                <div class="h-40 bg-gray-200" />
+                <div class="p-4 space-y-2">
+                  <div class="h-4 bg-gray-200 rounded w-3/4" />
+                  <div class="h-3 bg-gray-100 rounded w-1/2" />
+                  <div class="h-2 bg-gray-100 rounded w-full mt-2" />
+                  <div class="flex justify-between mt-2">
+                    <div class="h-3 bg-gray-100 rounded w-1/3" />
+                    <div class="h-3 bg-gray-100 rounded w-1/4" />
+                  </div>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        {/* Hasil list */}
+        <div id="campaign-list" class="space-y-3">
+          {
+            programList.map((item: any) => (
+              <CampaignList
+                link={item.link}
+                title={item.title}
+                image={item.image}
+                mitra={item.mitra.name}
+                category={item.category.name}
+                progress_achieved={item.progress_achieved}
+                collected_amount={item.nominal_achieved}
+                days_left={item.time_target}
+              />
+            ))
+          }
+        </div>
+
+        {/* Empty state */}
+        <div
+          id="campaign-empty"
+          class="hidden flex flex-col items-center py-16 text-center"
+        >
+          <div
+            class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4"
+          >
+            <svg
+              class="w-8 h-8 text-gray-300"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.5"
+                d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              ></path>
+            </svg>
+          </div>
+          <p class="text-sm font-semibold text-gray-700">
+            Tidak ada program ditemukan
+          </p>
+          <p class="text-xs text-gray-400 mt-1">
+            Coba ubah filter atau kata kunci pencarian
+          </p>
+        </div>
+
+        {/* Infinite scroll sentinel */}
+        <div id="scroll-sentinel" class="h-4"></div>
+
+        {/* Loading spinner */}
+        <div id="loadmore-spinner" class="hidden py-4">
+          <div
+            class="flex justify-center items-center gap-2 text-sm text-gray-400"
+          >
+            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>Memuat...</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <BottomNav active="program" />
+</MainLayout>
+
+<script>
+  import { formatRupiah } from "@/lib/formatter";
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const page = document.getElementById("campaign-page") as HTMLElement;
+
+    // ── State ──────────────────────────────────────────────────────────────
+    const API_URL = page.dataset.apiUrl ?? "";
+    let currentCategory: string | null = page.dataset.categoryId || null;
+    let currentSearch: string | null = page.dataset.search || null;
+    let currentPage = 2;
+    let isFilterOpen = false;
+    let hasMore = page.dataset.hasNext === "true";
+    let isLoadingMore = false;
+    let observer: IntersectionObserver | null = null;
+
+    // ── Elements ───────────────────────────────────────────────────────────
+    const btnToggleFilter = document.getElementById(
+      "btn-toggle-filter",
+    ) as HTMLButtonElement;
+    const filterIcon = document.getElementById("filter-icon") as HTMLElement;
+    const closeIcon = document.getElementById("close-icon") as HTMLElement;
+    const categoryPanel = document.getElementById(
+      "category-panel",
+    ) as HTMLElement;
+    const categoryList = document.getElementById(
+      "category-list",
+    ) as HTMLElement;
+    const categorySkeleton = document.getElementById(
+      "category-skeleton",
+    ) as HTMLElement;
+    const campaignList = document.getElementById(
+      "campaign-list",
+    ) as HTMLElement;
+    const campaignSkeleton = document.getElementById(
+      "campaign-skeleton",
+    ) as HTMLElement;
+    const campaignEmpty = document.getElementById(
+      "campaign-empty",
+    ) as HTMLElement;
+    const scrollSentinel = document.getElementById(
+      "scroll-sentinel",
+    ) as HTMLElement;
+    const loadmoreSpinner = document.getElementById(
+      "loadmore-spinner",
+    ) as HTMLElement;
+    const activeCategoryChip = document.getElementById(
+      "active-category-chip",
+    ) as HTMLElement;
+    const activeCategoryName = document.getElementById(
+      "active-category-name",
+    ) as HTMLElement;
+    const btnResetFilter = document.getElementById(
+      "btn-reset-filter",
+    ) as HTMLButtonElement;
+    const btnResetChip = document.getElementById(
+      "btn-reset-chip",
+    ) as HTMLButtonElement;
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function buildCampaignCard(item: any): string {
+      const progress = Math.min(Math.max(item.progress_achieved ?? 0, 0), 100);
+      const mitra = item.mitra?.name ?? "";
+      const category = item.category?.name ?? "";
+      const collected = formatRupiah(item.nominal_achieved ?? 0);
+      const daysLeft = item.time_target ?? "-";
+
+      return `
+        <a href="/donasi/${item.link}/" class="group flex flex-row items-stretch bg-white rounded border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 w-full">
+          <div class="relative flex-shrink-0 w-[160px] md:w-[180px] m-2.5 rounded-lg overflow-hidden bg-gray-100">
+            <img src="${item.image}" alt="${item.title}" width="140" height="140" loading="lazy" decoding="async" class="w-full h-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]" />
+          </div>
+          <div class="flex flex-col justify-between flex-1 min-w-0 py-3 pr-3 pl-1">
+            <h2 class="text-[12px] truncate font-semibold text-gray-800 leading-snug line-clamp-2 mb-2 group-hover:text-primary-600 transition-colors duration-150">${item.title}</h2>
+            <div class="flex items-center gap-1.5 mb-2.5">
+              <img src="/images/icons/verif/Verifikasi II.png" alt="verified" width="12" height="12" loading="lazy" decoding="async" class="w-3 h-3 flex-shrink-0 object-contain" />
+              <span class="text-[11px] text-gray-500 font-medium truncate max-w-[90px]" title="${mitra}">${mitra}</span>
+              <span class="text-[10px] font-medium bg-orange-50 text-orange-700 rounded-full px-2 py-0.5 truncate max-w-[80px] md:max-w-[110px] flex-shrink-0" title=${category}> ${category} </span>
+            </div>
+            <div class="w-full bg-gray-100 rounded-full h-[5px] mb-2.5 overflow-hidden">
+              <div class="bg-teal-500 h-full rounded-full" style="width:${progress}%" role="progressbar" aria-valuenow="${progress}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+            <div class="flex justify-between items-end">
+              <div>
+                <p class="text-[10px] text-gray-400 mb-0.5 leading-none">Terkumpul</p>
+                <p class="text-[12px] font-semibold text-teal-700 leading-none">${collected}</p>
+              </div>
+              <div class="text-right">
+                <p class="text-[10px] text-gray-400 mb-0.5 leading-none">Sisa hari</p>
+                <p class="text-[12px] font-semibold text-gray-700 leading-none">${daysLeft}</p>
+              </div>
+            </div>
+          </div>
+        </a>`;
+    }
+
+    // ── Infinite scroll observer ───────────────────────────────────────────
+    function setupObserver() {
+      if (observer) observer.disconnect();
+      if (!hasMore) return;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+            loadNextPage();
+          }
+        },
+        { rootMargin: "0px 0px 200px 0px" },
+      );
+      observer.observe(scrollSentinel);
+    }
+
+    async function loadNextPage() {
+      isLoadingMore = true;
+      loadmoreSpinner.classList.remove("hidden");
+
+      try {
+        const params = new URLSearchParams({
+          limit: "5",
+          mode: "pagination",
+          page: String(currentPage),
+        });
+        if (currentCategory) params.set("category", currentCategory);
+        if (currentSearch) params.set("search", currentSearch);
+
+        const res = await fetch(`${API_URL}/program?${params}`);
+        const json = await res.json();
+        const items: any[] = json?.data?.data ?? [];
+        hasMore = Boolean(json?.data?.next_page_url);
+
+        items.forEach((item) => {
+          campaignList.insertAdjacentHTML("beforeend", buildCampaignCard(item));
+        });
+
+        currentPage++;
+        if (!hasMore) observer?.disconnect();
+      } catch {
+        // silent fail — observer tetap aktif agar bisa retry saat scroll
+      } finally {
+        isLoadingMore = false;
+        loadmoreSpinner.classList.add("hidden");
+      }
+    }
+
+    // ── Fetch & render ulang campaign ──────────────────────────────────────
+    async function fetchCampaigns(resetList = true) {
+      if (resetList) {
+        campaignList.innerHTML = "";
+        campaignSkeleton.classList.remove("hidden");
+        campaignEmpty.classList.add("hidden");
+        observer?.disconnect();
+        currentPage = 2;
+        hasMore = false;
+      }
+
+      try {
+        const params = new URLSearchParams({
+          limit: "5",
+          mode: "pagination",
+          page: "1",
+        });
+        if (currentCategory) params.set("category", currentCategory);
+        if (currentSearch) params.set("search", currentSearch);
+
+        const res = await fetch(`${API_URL}/program?${params}`);
+        const json = await res.json();
+        const items: any[] = json?.data?.data ?? [];
+        hasMore = Boolean(json?.data?.next_page_url);
+
+        campaignSkeleton.classList.add("hidden");
+
+        if (items.length === 0) {
+          campaignEmpty.classList.remove("hidden");
+          return;
+        }
+
+        items.forEach((item) => {
+          campaignList.insertAdjacentHTML("beforeend", buildCampaignCard(item));
+        });
+
+        setupObserver();
+      } catch {
+        campaignSkeleton.classList.add("hidden");
+        campaignEmpty.classList.remove("hidden");
+      }
+    }
+
+    // ── Toggle panel kategori ──────────────────────────────────────────────
+    btnToggleFilter.addEventListener("click", () => {
+      isFilterOpen = !isFilterOpen;
+
+      categoryPanel.style.maxHeight = isFilterOpen
+        ? `${categoryPanel.scrollHeight + 400}px`
+        : "0";
+      categoryPanel.style.opacity = isFilterOpen ? "1" : "0";
+      filterIcon.classList.toggle("hidden", isFilterOpen);
+      closeIcon.classList.toggle("hidden", !isFilterOpen);
+      btnToggleFilter.setAttribute("aria-expanded", String(isFilterOpen));
+
+      // Tampilkan list kategori (sudah di-render server-side)
+      if (isFilterOpen) {
+        categorySkeleton.classList.add("hidden");
+        categoryList.classList.remove("hidden");
+      }
+    });
+
+    // ── Pilih kategori ─────────────────────────────────────────────────────
+    document
+      .querySelectorAll<HTMLButtonElement>(".category-item")
+      .forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentCategory = btn.dataset.id ?? null;
+          const name = btn.dataset.name ?? "";
+
+          // Update chip
+          activeCategoryName.textContent = name;
+          activeCategoryChip.classList.remove("hidden");
+          btnResetFilter.classList.remove("hidden");
+
+          // Tutup panel
+          isFilterOpen = false;
+          categoryPanel.style.maxHeight = "0";
+          categoryPanel.style.opacity = "0";
+          filterIcon.classList.remove("hidden");
+          closeIcon.classList.add("hidden");
+
+          // Highlight item terpilih
+          document
+            .querySelectorAll<HTMLButtonElement>(".category-item")
+            .forEach((b) => {
+              const isSelected = b.dataset.id === currentCategory;
+              b.classList.toggle("bg-teal-500", isSelected);
+              b.classList.toggle("text-white", isSelected);
+              b.classList.toggle("bg-gray-50", !isSelected);
+            });
+
+          fetchCampaigns();
+        });
+      });
+
+    // ── Reset filter ───────────────────────────────────────────────────────
+    function resetFilter() {
+      currentCategory = null;
+      activeCategoryChip.classList.add("hidden");
+      btnResetFilter.classList.add("hidden");
+
+      document
+        .querySelectorAll<HTMLButtonElement>(".category-item")
+        .forEach((b) => {
+          b.classList.remove("bg-teal-500", "text-white");
+          b.classList.add("bg-gray-50");
+        });
+
+      fetchCampaigns();
+    }
+
+    btnResetFilter.addEventListener("click", resetFilter);
+    btnResetChip.addEventListener("click", resetFilter);
+
+    // ── Init infinite scroll untuk data SSR pertama ────────────────────────
+    setupObserver();
+  });
+</script>

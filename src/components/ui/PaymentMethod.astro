@@ -7,18 +7,14 @@ const { paymentMethods = [] } = Astro.props;
   class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
 >
   <div
-    class="bg-white rounded-xl max-w-[640px] w-full max-h-[85vh] sm:max-h-[80vh] overflow-hidden"
+    class="bg-white rounded-xl max-w-110 w-full max-h-[85vh] overflow-hidden"
   >
     <!-- Header -->
-    <div
-      class="p-4 sm:p-6 border-b border-gray-200 flex justify-between items-center"
-    >
-      <h3 class="text-base sm:text-xl font-bold text-gray-900">
-        Pilih Metode Pembayaran
-      </h3>
+    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+      <h3 class="text-sm font-bold text-gray-900">Pilih Metode Pembayaran</h3>
       <button
         data-close-modal
-        class="text-gray-500 hover:text-gray-700 text-lg sm:text-xl"
+        class="text-gray-500 hover:text-gray-700 text-lg"
         aria-label="Tutup"
       >
         ✕
@@ -26,18 +22,16 @@ const { paymentMethods = [] } = Astro.props;
     </div>
 
     <!-- Content -->
-    <div
-      class="overflow-y-auto max-h-[calc(85vh-64px)] sm:max-h-[calc(80vh-80px)] p-4 sm:p-6"
-    >
+    <div class="overflow-y-auto max-h-[calc(85vh-64px)] p-4">
       <!-- BANK TRANSFER -->
-      <h2 class="py-2 sm:py-3 text-sm sm:text-lg text-gray-500">
+      <h2 class="py-2 text-sm text-gray-500">
         Transfer bank
-        <span class="block text-xs sm:text-sm">
+        <span class="block text-xs">
           (verifikasi manual 1x24 jam, minimal nominal Rp 10.000)
         </span>
       </h2>
 
-      <div class="space-y-2 sm:space-y-3">
+      <div class="space-y-2">
         {
           paymentMethods
             .filter((method: any) => method.type === "bank")
@@ -45,26 +39,26 @@ const { paymentMethods = [] } = Astro.props;
             .map((method: any) => (
               <button
                 type="button"
-                class="payment-method-item w-full flex items-center gap-3 sm:gap-4
-                     p-3 sm:p-4 border-2 border-gray-200 rounded-md
-                     hover:border-[var(--primary-500)]
-                     hover:bg-[var(--primary-100)]
+                class="payment-method-item w-full flex items-center gap-3 
+                     p-3  border-2 border-gray-200 rounded-md
+                     hover:border-primary-500
+                     hover:bg-primary-100
                      transition-all"
                 data-id={method.id}
                 data-name={method.name}
                 data-image={method.image_url}
               >
                 <div
-                  class="overflow-hidden w-[80px] sm:w-[100px]
+                  class="overflow-hidden w-[80px] 
                        flex items-center justify-center"
                 >
                   <img
                     src={method.image_url}
                     alt={method.name}
-                    class="h-5 sm:h-6 w-auto object-contain"
+                    class="h-5  w-auto object-contain"
                   />
                 </div>
-                <span class="flex-1 text-left text-sm sm:text-base font-medium text-gray-800">
+                <span class="flex-1 text-left text-sm font-medium text-gray-800">
                   {method.name}
                 </span>
               </button>
@@ -73,14 +67,14 @@ const { paymentMethods = [] } = Astro.props;
       </div>
 
       <!-- EWALLET -->
-      <h2 class="mt-4 sm:mt-6 py-2 sm:py-3 text-sm sm:text-lg text-gray-500">
+      <h2 class="mt-4 py-2 text-sm text-gray-500">
         Pembayaran instan
-        <span class="block text-xs sm:text-sm">
+        <span class="block text-xs">
           (verifikasi otomatis, minimal nominal Rp 10.000)
         </span>
       </h2>
 
-      <div class="space-y-2 sm:space-y-3">
+      <div class="space-y-2">
         {
           paymentMethods
             .filter((method: any) => method.type === "e_wallet")
@@ -88,26 +82,26 @@ const { paymentMethods = [] } = Astro.props;
             .map((method: any) => (
               <button
                 type="button"
-                class="payment-method-item w-full flex items-center gap-3 sm:gap-4
-                     p-3 sm:p-4 border-2 border-gray-200 rounded-md
-                     hover:border-[var(--primary-500)]
-                     hover:bg-[var(--primary-100)]
+                class="payment-method-item w-full flex items-center gap-3
+                     p-3 border-2 border-gray-200 rounded-md
+                     hover:border-primary-500
+                     hover:bg-primary-100
                      transition-all"
                 data-id={method.id}
                 data-name={method.name}
                 data-image={method.image_url}
               >
                 <div
-                  class="overflow-hidden w-[80px] sm:w-[100px]
+                  class="overflow-hidden w-[80px]
                        flex items-center justify-center"
                 >
                   <img
                     src={method.image_url}
                     alt={method.name}
-                    class="h-5 sm:h-6 w-auto object-contain"
+                    class="h-5 w-auto object-contain"
                   />
                 </div>
-                <span class="flex-1 text-left text-sm sm:text-base font-medium text-gray-800">
+                <span class="flex-1 text-left text-sm font-medium text-gray-800">
                   {method.name}
                 </span>
               </button>

@@ -54,7 +54,7 @@ const likeCount = donor.liked || 0;
   <div class="flex items-start gap-3 mb-3">
     <!-- Avatar -->
     <div
-      class="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-[var(--primary-400)] to-[var(--primary-600)] flex items-center justify-center shadow-md"
+      class="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-md"
     >
       <span class="text-white text-base font-bold">{initials}</span>
     </div>
@@ -93,7 +93,7 @@ const likeCount = donor.liked || 0;
 
     <!-- Amount -->
     <div class="flex-shrink-0">
-      <p class="font-bold text-[var(--primary-600)] text-base md:text-lg">
+      <p class="font-bold text-primary-600 text-base md:text-lg">
         {formattedAmount}
       </p>
     </div>
@@ -112,15 +112,15 @@ const likeCount = donor.liked || 0;
                 "Yuk aminkan doa saudara kita"
               ) : (
                 <span>
-                  <strong class="text-[var(--primary-600)]">{likeCount}</strong>{" "}
-                  orang mengaminkan doa ini
+                  <strong class="text-primary-600">{likeCount}</strong> orang
+                  mengaminkan doa ini
                 </span>
               )}
             </span>
           </div>
 
           <button
-            class="like-button flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-[var(--primary-500)] text-[var(--primary-500)] font-semibold text-sm transition-all duration-300 hover:bg-[var(--primary-100)] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="like-button flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary-500 text-primary-500 font-semibold text-sm transition-all duration-300 hover:bg-primary-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             data-donor-id={donor.id}
           >
             <svg
@@ -170,19 +170,19 @@ const likeCount = donor.liked || 0;
           // Update count
           if (likeCountSpan) {
             likeCountSpan.setAttribute("data-count", newCount.toString());
-            likeCountSpan.innerHTML = `<strong class="text-[var(--primary-600)]">${newCount}</strong> orang mengaminkan doa ini`;
+            likeCountSpan.innerHTML = `<strong class="text-primary-600">${newCount}</strong> orang mengaminkan doa ini`;
           }
 
           // Update button state
           this.classList.remove(
-            "border-[var(--primary-500)]",
-            "text-[var(--primary-500)]",
-            "hover:bg-[var(--primary-100)]",
+            "border-primary-500",
+            "text-primary-500",
+            "hover:bg-primary-100",
           );
           this.classList.add(
-            "bg-[var(--primary-500)]",
+            "bg-primary-500",
             "text-white",
-            "border-[var(--primary-500)]",
+            "border-primary-500",
           );
           this.disabled = true;
 
@@ -219,16 +219,16 @@ const likeCount = donor.liked || 0;
               if (currentCount === 0) {
                 likeCountSpan.textContent = "Yuk aminkan doa saudara kita";
               } else {
-                likeCountSpan.innerHTML = `<strong class="text-[var(--primary-600)]">${currentCount}</strong> orang mengaminkan doa ini`;
+                likeCountSpan.innerHTML = `<strong class="text-primary-600">${currentCount}</strong> orang mengaminkan doa ini`;
               }
             }
 
             this.classList.add(
-              "border-[var(--primary-500)]",
-              "text-[var(--primary-500)]",
-              "hover:bg-[var(--primary-100)]",
+              "border-primary-500",
+              "text-primary-500",
+              "hover:bg-primary-100",
             );
-            this.classList.remove("bg-[var(--primary-500)]", "text-white");
+            this.classList.remove("bg-primary-500", "text-white");
             this.disabled = false;
 
             if (heartIcon) {
@@ -250,14 +250,14 @@ const likeCount = donor.liked || 0;
 
       if (hasLiked) {
         button.classList.remove(
-          "border-[var(--primary-500)]",
-          "text-[var(--primary-500)]",
-          "hover:bg-[var(--primary-100)]",
+          "border-primary-500",
+          "text-primary-500",
+          "hover:bg-primary-100",
         );
         button.classList.add(
-          "bg-[var(--primary-500)]",
+          "bg-primary-500",
           "text-white",
-          "border-[var(--primary-500)]",
+          "border-primary-500",
         );
         (button as HTMLButtonElement).disabled = true;
 

@@ -1,0 +1,503 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { getInvoice, getReportByLink } from "@/lib/FetchData";
+import { formatDate, formatRupiah } from "@/lib/formatter";
+import { Image } from "astro:assets";
+
+const { slug } = Astro.params;
+
+if (!slug) return Astro.redirect("/");
+
+const invoiceRes = await getInvoice(slug);
+const invoice = invoiceRes?.data;
+
+if (!invoice) return Astro.redirect("/");
+
+const items = invoice.items ?? [];
+const payment = invoice.payment_method ?? {};
+const status = invoice.status ?? "";
+const isPending = status === "Pending";
+
+// Fetch reports untuk setiap item yang punya project
+const reportsMap: Record<string, any> = {};
+for (const item of items) {
+  if (item.project?.id) {
+    const res = await getReportByLink(slug);
+    reportsMap[item.project.id] = res?.data?.[0] ?? null;
+  }
+}
+
+const statusLabel =
+  status === "Canceled"
+    ? "Transaksi Dibatalkan"
+    : status === "Pending"
+      ? "Menunggu Pembayaran"
+      : "Sudah Dibayar";
+
+const STEPS = ["Pembayaran", "Menunggu Salur", "Proses Salur", "Selesai Salur"];
+
+const IMAGE_STEPS = [
+  {
+    title: "Pembayaran",
+    imageActive: "/images/icons/icon-tracking/1. Pembayaran.png",
+    image: "/images/icons/icon-tracking/1. Pembayaran I.png",
+  },
+  {
+    title: "Menunggu Salur",
+    imageActive: "/images/icons/icon-tracking/2. Menunggu salur.png",
+    image: "/images/icons/icon-tracking/2. Menunggu salur I.png",
+  },
+  {
+    title: "Proses Salur",
+    imageActive: "/images/icons/icon-tracking/3. proses salur.png",
+    image: "/images/icons/icon-tracking/3. proses salur I.png",
+  },
+  {
+    title: "Selesai Salur",
+    imageActive: "/images/icons/icon-tracking/4. Selesai salur.png",
+    image: "/images/icons/icon-tracking/4. Selesai salur I.png",
+  },
+];
+
+function getStepStatuses(activity: string, hasProject: boolean) {
+  return STEPS.map((_, i) => {
+    let isActive = false,
+      isPending = false,
+      isFailed = false;
+    switch (activity) {
+      case "Waiting for payment":
+        isPending = i === 0;
+        break;
+      case "Refunding":
+        isActive = i === 0;
+        break;
+      case "Pending":
+        if (hasProject) {
+          isActive = i <= 1;
+          isPending = i === 2;
+        } else {
+          isActive = i === 0;
+          isPending = i === 1;
+        }
+        break;
+      case "Process":
+        isActive = i <= 2;
+        isPending = i === 3;
+        break;
+      case "Done":
+        isActive = true;
+        break;
+      default:
+        isFailed = true;
+        break;
+    }
+    return { isActive, isPending, isFailed };
+  });
+}
+
+function stepBg(s: {
+  isActive: boolean;
+  isPending: boolean;
+  isFailed: boolean;
+}) {
+  if (s.isFailed) return "bg-red-500";
+  if (s.isActive) return "bg-primary-500";
+  if (s.isPending) return "bg-secondary-300";
+  return "bg-gray-200";
+}
+
+function connectorBg(s: {
+  isActive: boolean;
+  isPending: boolean;
+  isFailed: boolean;
+}) {
+  if (s.isFailed) return "bg-red-400";
+  if (s.isActive) return "bg-primary-400";
+  if (s.isPending) return "bg-secondary-300";
+  return "bg-gray-200";
+}
+---
+
+<MainLayout
+  title="Status Donasi"
+  description="Lacak status donasi dan penyaluran program Anda di Aksiberbagi."
+>
+  <Header type="notshare" text="Status Donasi" />
+
+  <section class="min-h-screen bg-gray-50">
+    <div class="container pb-10 space-y-3">
+      {
+        items.map((item: any) => {
+          const statuses = getStepStatuses(
+            item.activity,
+            Boolean(item.project),
+          );
+          const report = item.project?.id ? reportsMap[item.project.id] : null;
+
+          return (
+            <div class="space-y-3">
+              {/* ── Stepper Card ── */}
+              <div class="bg-white rounded-2xl shadow-sm px-4 pt-20 pb-4 space-y-3">
+                <div>
+                  <h3 class="text-sm font-bold text-primary-600 leading-tight mb-3">
+                    {item.program.title}
+                  </h3>
+                  <p class="text-base font-bold text-gray-700 mt-0.5">
+                    {formatRupiah(item.nominal_donasi)}
+                  </p>
+                </div>
+
+                {/* img step */}
+                <div class="flex justify-between px-2">
+                  {IMAGE_STEPS.map((step, i) => {
+                    const s = statuses[i];
+                    const isActive = s.isActive || s.isPending;
+
+                    return (
+                      <div class="w-6 h-6">
+                        <Image
+                          width={30}
+                          height={30}
+                          src={isActive ? step.imageActive : step.image}
+                          alt={step.title}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Step dots + connectors */}
+                <div class="flex items-center px-1">
+                  {statuses.map((s, i) => (
+                    <div
+                      class={`flex items-center ${i < statuses.length - 1 ? "flex-1" : ""}`}
+                    >
+                      <div
+                        class={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${stepBg(s)}`}
+                      >
+                        {(s.isActive || s.isFailed) && (
+                          <svg
+                            class="w-3.5 h-3.5 text-white"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              stroke-width="3"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        )}
+                        {s.isPending && (
+                          <div class="w-2 h-2 rounded-full bg-white opacity-80" />
+                        )}
+                      </div>
+                      {i < statuses.length - 1 && (
+                        <div class={`flex-1 h-0.5 mx-0.5 ${connectorBg(s)}`} />
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Step labels */}
+                <div class="flex justify-between">
+                  {STEPS.map((label) => (
+                    <div>
+                      <p class="text-[10px] text-center text-gray-500 leading-tight">
+                        {label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Program Card ── */}
+              <div class="bg-white rounded-2xl shadow-sm px-4 py-4">
+                <a
+                  href={`/donasi/${item.program.link}`}
+                  class="flex flex-col gap-3 rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                >
+                  <img
+                    src={item.program.image}
+                    alt={item.program.title}
+                    class="w-full h-36 object-cover"
+                  />
+                  <div class="flex justify-between items-start px-3 pb-3">
+                    <div>
+                      <p class="text-sm font-bold text-gray-800 leading-snug">
+                        {item.program.title}
+                      </p>
+                      <p class="text-xs text-gray-400 mt-0.5">
+                        {item.program?.mitra?.name ?? ""}
+                      </p>
+                    </div>
+                    <svg
+                      class="w-4 h-4 text-primary-500 shrink-0 mt-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </div>
+                </a>
+              </div>
+
+              {/* ── Detail Projek (jika ada) ── */}
+              {item.project && (
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+                    <div class="w-1 h-5 bg-purple-400 rounded-full" />
+                    <h2 class="text-sm font-semibold text-gray-800">
+                      Detail Projek
+                    </h2>
+                  </div>
+                  <div class="px-4 py-3 divide-y divide-gray-50">
+                    {[
+                      ["Nama Projek", item.project.title],
+                      ["Lokasi", item.project.location],
+                      ["Mitra Salur", item.project.mitra?.name ?? "-"],
+                      [
+                        "Tanggal Project",
+                        formatDate(item.project.excecution_time),
+                      ],
+                      ["Jumlah Penerima", `${item.project.beneficiary} Orang`],
+                    ].map(([label, val]) => (
+                      <div class="flex justify-between py-2.5">
+                        <span class="text-xs text-gray-500">{label}</span>
+                        <span class="text-xs font-medium text-gray-700 text-right max-w-[55%]">
+                          {val}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {item.project.activity !== "selesai" &&
+                    item.project.image && (
+                      <div class="px-4 pb-3">
+                        <img
+                          src={item.project.image}
+                          alt="project"
+                          class="w-full rounded-xl object-cover"
+                        />
+                      </div>
+                    )}
+
+                  {item.project.activity !== "selesai" &&
+                    item.project.description && (
+                      <div
+                        class="px-4 pb-4 text-xs text-gray-600 leading-relaxed prose prose-sm max-w-none"
+                        set:html={item.project.description}
+                      />
+                    )}
+                </div>
+              )}
+
+              {/* ── Update Salur (jika ada report) ── */}
+              {report && (
+                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+                    <div class="w-1 h-5 bg-blue-400 rounded-full" />
+                    <h2 class="text-sm font-semibold text-gray-800">
+                      Update Salur
+                    </h2>
+                  </div>
+                  <div class="px-4 py-3 space-y-3">
+                    <div class="flex items-center gap-3">
+                      {report.mitra?.[0]?.image_url ? (
+                        <img
+                          src={report.mitra[0].image_url}
+                          alt={report.mitra[0].name}
+                          class="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-xs font-bold text-primary-700">
+                          {(report.mitra?.[0]?.name ?? "A")[0]}
+                        </div>
+                      )}
+                      <div>
+                        <p class="text-sm font-semibold text-gray-800">
+                          {report.mitra?.[0]?.name ?? "Aksiberbagi"}
+                        </p>
+                        <p class="text-xs text-gray-400">
+                          {formatDate(report.date)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {(report.wa_image ?? report.kegiatan?.image) && (
+                      <img
+                        src={report.wa_image ?? report.kegiatan?.image}
+                        alt="update salur"
+                        class="w-full rounded-xl object-cover"
+                      />
+                    )}
+
+                    {(report.title ?? report.kegiatan?.title) && (
+                      <p class="text-sm font-semibold text-gray-800">
+                        {report.title ?? report.kegiatan?.title}
+                      </p>
+                    )}
+
+                    {(report.wa_caption ?? report.kegiatan?.deskripsi) && (
+                      <div
+                        class="text-xs text-gray-600 leading-relaxed"
+                        set:html={
+                          report.wa_caption ?? report.kegiatan?.deskripsi
+                        }
+                      />
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })
+      }
+
+      {/* ── Detail Pembayaran ── */}
+      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+          <div class="w-1 h-5 bg-primary-500 rounded-full"></div>
+          <h2 class="text-sm font-semibold text-gray-800">Detail Pembayaran</h2>
+        </div>
+        <div class="px-4 py-3 divide-y divide-gray-50">
+          {
+            [
+              //   ["Bank / Dompet", payment.bank ?? "-"],
+              [
+                "Metode Pembayaran",
+                `${payment.name ?? ""} ${payment.account_number && payment.account_number !== "0" ? payment.account_number : ""}`.trim(),
+              ],
+              ["Nominal", formatRupiah(invoice.nominal)],
+              ["Tanggal Donasi", formatDate(invoice.date)],
+            ].map(([label, val]) => (
+              <div class="flex justify-between py-2.5">
+                <span class="text-xs text-gray-500">{label}</span>
+                <span class="text-xs font-medium text-gray-700 text-right">
+                  {val}
+                </span>
+              </div>
+            ))
+          }
+
+          <div class="flex justify-between py-2.5">
+            <span class="text-xs text-gray-500">Status Pembayaran</span>
+            <span
+              class={`text-xs font-semibold ${status === "Pending" || status === "Canceled" ? "text-red-500" : "text-primary-600"}`}
+            >
+              {statusLabel}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Instruksi Pembayaran (Pending only) ── */}
+      {
+        isPending && (
+          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+            <button
+              id="btn-instruksi"
+              class="w-full flex items-center justify-between px-4 py-3 text-left"
+              aria-expanded="false"
+            >
+              <div class="flex items-center gap-2">
+                <div class="w-1 h-5 bg-secondary-400 rounded-full" />
+                <span class="text-sm font-semibold text-gray-800">
+                  Instruksi Pembayaran
+                </span>
+              </div>
+              <svg
+                id="instruksi-caret"
+                class="w-4 h-4 text-gray-400 transition-transform duration-200"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+            <div
+              id="instruksi-body"
+              class="hidden border-t border-gray-100 px-4 py-4 space-y-2 text-xs text-gray-600"
+            >
+              <p>
+                Silakan lakukan pembayaran sebesar
+                <strong class="text-gray-800">
+                  {formatRupiah(invoice.nominal)}
+                </strong>
+                melalui metode yang kamu pilih.
+              </p>
+              <p>
+                Setelah pembayaran berhasil, status donasi akan diperbarui
+                otomatis.
+              </p>
+              <p>Jika dalam 1×24 jam status belum berubah, hubungi tim kami.</p>
+            </div>
+          </div>
+        )
+      }
+
+      {/* ── CTA Bawah ── */}
+      <div class="bg-white rounded-2xl shadow-sm px-4 py-4 space-y-3">
+        <!-- <p class="text-sm font-semibold text-gray-800">
+          Pembayaran belum terverifikasi?
+        </p>
+        <p class="text-xs text-gray-500 leading-relaxed">
+          Jika pembayaran belum terverifikasi selama 1×24 jam, lakukan
+          verifikasi manual lewat fitur verifikasi di aplikasi AksiBerbagi.
+        </p> -->
+
+        <a
+          href="https://www.instagram.com/aksiberbagicom"
+          target="_blank"
+          rel="noopener"
+          class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+        >
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+            ></path>
+          </svg>
+          Follow Instagram Kami
+        </a>
+        <a
+          href="/donasi"
+          class="flex items-center justify-center w-full py-2.5 rounded-xl border border-primary-400 text-primary-600 text-sm font-semibold hover:bg-primary-50 transition-colors"
+        >
+          Donasi ke Program Lain
+        </a>
+      </div>
+    </div>
+  </section>
+</MainLayout>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const btnInstruksi = document.getElementById("btn-instruksi");
+    const instruksiBody = document.getElementById("instruksi-body");
+    const caret = document.getElementById("instruksi-caret");
+
+    btnInstruksi?.addEventListener("click", () => {
+      const isOpen = !instruksiBody?.classList.contains("hidden");
+      instruksiBody?.classList.toggle("hidden", isOpen);
+      if (caret) caret.style.transform = isOpen ? "" : "rotate(180deg)";
+      btnInstruksi.setAttribute("aria-expanded", String(!isOpen));
+    });
+  });
+</script>

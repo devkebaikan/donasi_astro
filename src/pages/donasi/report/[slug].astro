@@ -1,0 +1,140 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import {
+  getAllReportByLink,
+} from "@/lib/FetchData";
+import { formatDate, formatRupiah } from "@/lib/formatter";
+import { Image } from "astro:assets";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const [dataReport] = await Promise.all([
+  getAllReportByLink(slug),
+]);
+
+const reports = dataReport?.data || [];
+
+---
+
+<MainLayout
+  title="Laporan Penyaluran"
+  description="Informasi lengkap tentang proyek penyaluran donasi."
+>
+<Header type="title" text="Laporan Penyaluran" />
+  <div class="container bg-white min-h-screen pb-24 pt-12">
+
+  <h2 class="font-bold text-gray-700 mb-3 mt-4 text-center text-lg">Proyek Salur Terbaru</h2>
+
+  <div class="relative ml-4 pl-[18px]  border-l-2 border-primary-100 flex flex-col gap-4">
+    <!-- Proyek Terbaru -->
+   {reports.map((item: any) => {
+    const mitra = item.mitra?.[0]; // array → ambil pertama
+
+    return (
+     <section class="mr-4 mt-5">
+      <div class="relative">
+        
+        <!-- Timeline dot -->
+        <div class="absolute -left-[25px] top-4 w-3 h-3 rounded-full bg-primary-500 border-2 border-white ring-2 ring-primary-200"></div>
+
+        <div class="bg-primary-50 rounded-xl border border-gray-100 overflow-hidden">
+
+          <!-- META -->
+          <div class="flex items-center justify-between px-3 pt-3 pb-2 gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+
+              {mitra?.image_url
+                ? <img src={mitra.image_url} class="w-8 h-8 rounded-full object-contain border" />
+                : <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center text-primary-600 font-bold text-sm">
+                    {mitra?.name?.charAt(0) ?? "M"}
+                  </div>
+              }
+
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">
+                  {mitra?.name ?? "Mitra"}
+                </p>
+                <p class="text-xs text-gray-400">
+                  {formatDate(item.date)}
+                </p>
+              </div>
+            </div>
+
+            <!-- STATUS (hardcode karena tidak ada di API) -->
+            <span class="text-xs font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-700">
+              Selesai
+            </span>
+          </div>
+
+          <!-- IMAGE -->
+          {item.kegiatan?.image && (
+            <div class="w-full overflow-hidden">
+              <Image
+              width={120}
+              height={180}
+                src={item.kegiatan.image}
+                alt={item.kegiatan.title}
+                class="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+          )}
+
+          <!-- BODY -->
+          <div class="px-3 pt-3 pb-4">
+            <h3 class="text-sm font-bold text-gray-900 leading-snug mb-1">
+              {item.kegiatan?.title ?? item.project?.title}
+            </h3>
+
+            {item.project?.location && (
+              <div class="flex items-center gap-1 mb-3">
+                <svg class="w-3 h-3 text-primary-500" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/>
+                </svg>
+                <span class="text-xs text-gray-400 truncate">
+                  {item.project.location}
+                </span>
+              </div>
+            )}
+
+            <!-- BENEFICIARY dari WA caption -->
+            <div class="text-xs text-gray-500 mb-3">
+              {item.wa_caption?.match(/Jumlah Penerima Manfaat : (.*)/)?.[1] ?? "-"}
+            </div>
+
+            <!-- DESCRIPTION -->
+            {item.kegiatan?.deskripsi && (
+              <p class="text-xs text-gray-500 leading-relaxed">
+                {item.kegiatan.deskripsi
+                  .replace(/<[^>]*>/g, " ")
+                  .trim()
+                  .substring(0, 200)}...
+              </p>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
+})}
+
+  </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-40">
+    <div class="max-w-[480px] mx-auto">
+      <a
+        href={`/donasi/${slug}`}
+        class="block w-full py-3.5 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-bold text-center rounded-xl transition-all duration-150"
+      >
+        Donasi Sekarang
+      </a>
+    </div>
+  </div>
+</MainLayout>

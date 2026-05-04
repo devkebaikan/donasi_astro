@@ -1,0 +1,43 @@
+---
+import TitleBorder from "@/components/ui/TitleBorder.astro";
+import DonorList from "@/components/ui/DonorList.astro";
+
+const { donors, programLink } = Astro.props;
+---
+
+<div class="bg-white rounded-lg shadow-sm p-4 md:p-6" id="donateUser ">
+  <div class="black-card">
+    <div class="flex items-end justify-between mb-6">
+      <TitleBorder title={"Donatur"} amount={donors.total} />
+      <!-- <a
+        id="semua-donatur"
+        href={`/donasi/donors/${programLink}`}
+        class="button-link"
+      >
+        <span
+          class="text-green text-sm flex gap-1 items-center hover:underline hover:text-primary-700 transition-colors group"
+        >
+          Lihat Semua
+
+          <svg
+            class="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"></path>
+          </svg>
+        </span>
+      </a> -->
+    </div>
+    <div class="donate-body-content pb-0">
+      {
+        donors.data.map((donor: any) => (
+          <DonorList donor={donor} programLink={programLink} />
+        ))
+      }
+    </div>
+  </div>
+</div>

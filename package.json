@@ -7,15 +7,17 @@
     "node": ">=22.12.0"
   },
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --port 3000",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/node": "^10.0.6",
     "@astrojs/sitemap": "^3.7.2",
     "@tailwindcss/vite": "^4.2.4",
     "astro": "^6.1.8",
+    "easyqrcodejs": "^4.6.2",
     "tailwindcss": "^4.2.4"
   }
 }

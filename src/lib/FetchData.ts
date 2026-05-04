@@ -1,26 +1,20 @@
 const baseUrl = import.meta.env.ASTRO_API_URL;
 
-// get campaign for ramadhan
-// categiry ramadhan 13
 export async function getCampaignRamadhan() {
-  const res = await fetch(`${baseUrl}/program-show/ramadhan`, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
+  try {
+    const res = await fetch(`${baseUrl}/program-show/ramadhan`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
 
-  //   const res = await fetch(`${baseUrl}/program?category=6&limit=5`, {
-  //   headers: {
-  //     Accept: "application/json",
-  //   },
-  // });
+    if (!res.ok) throw new Error("Failed to fetch ramadhan campaign");
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch campaign data");
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching ramadhan campaign:", error);
+    return null;
   }
-
-  const data = await res.json();
-  return data;
 }
 
 // get campaign by link
@@ -63,7 +57,7 @@ export async function getReportByLink(link: string) {
 export async function getDonorsByLink(link: string) {
   try {
     const res = await fetch(
-      `${baseUrl}/program/link/${link}/donors?limit=5&mode=pagination&page=1`,
+      `${baseUrl}/program/link/${link}/donors?limit=10&mode=pagination&page=1`,
 
       {
         headers: {
@@ -87,7 +81,7 @@ export async function getDonorsByLink(link: string) {
 export async function getFundraisersByLink(link: string) {
   try {
     const res = await fetch(
-      `${baseUrl}/program/link/${link}/fundraisers?limit=3&mode=pagination&page=1`,
+      `${baseUrl}/program/link/${link}/fundraisers?limit=6&mode=pagination&page=1`,
       {
         headers: {
           Accept: "application/json",
@@ -165,6 +159,193 @@ export async function getInvoice(inv: string | null) {
     return await res.json();
   } catch (error) {
     console.error(`Error fetching invoice with inv ${inv}:`, error);
+    return null;
+  }
+}
+
+// get report by link
+export async function getAllReportByLink(link: string | null) {
+  try {
+    const res = await fetch(`${baseUrl}/report?program_link=${link}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch report for link: ${link}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching report with link ${link}:`, error);
+    return null;
+  }
+}
+
+// get project by link
+export async function getProjectByLink(link: string | null) {
+  try {
+    const res = await fetch(`${baseUrl}/project?program_link=${link}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch project summary for link: ${link}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching project summary with link ${link}:`, error);
+    return null;
+  }
+}
+
+// get project summary by link
+export async function getProjectSummaryByLink(link: string | null) {
+  try {
+    const res = await fetch(`${baseUrl}/project/summary?program_link=${link}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch project summary for link: ${link}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching project summary with link ${link}:`, error);
+    return null;
+  }
+}
+
+// get project mitra salur by link
+export async function getMitraSalurByLink(link: string | null) {
+  try {
+    const res = await fetch(
+      `${baseUrl}/program/mitra-salur?program_link=${link}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch mitra project for link: ${link}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error(`Error fetching mitra project with link ${link}:`, error);
+    return null;
+  }
+}
+
+// get all donors
+export async function getAllDonors() {
+  try {
+    const res = await fetch(`/program/link/${baseUrl}/donors`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch all donors");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching all donors:", error);
+    return null;
+  }
+}
+
+// get all campaign category
+export async function getCampaignCategories() {
+  try {
+    const res = await fetch(`${baseUrl}/program-category`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch campaign categories");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching campaign categories:", error);
+    return null;
+  }
+}
+
+export interface CampaignParams {
+  limit?: number;
+  mode?: string;
+  page?: number;
+  category?: string | null;
+  search?: string | null;
+}
+
+// get all campaign
+export async function getAllCampaigns(params: CampaignParams = {}) {
+  try {
+    const query = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== null && v !== undefined && v !== "") {
+        query.set(k, String(v));
+      }
+    }
+
+    const res = await fetch(`${baseUrl}/program?${query}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch programs");
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching programs:", error);
+    return null;
+  }
+}
+
+// validate token (throws if invalid — gunakan di middleware)
+export async function getIsTokenValid(token: string): Promise<boolean> {
+  const res = await fetch(`${baseUrl}/validate-token`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  if (!res.ok) throw new Error("Invalid token");
+  return true;
+}
+
+// get authenticated user profile
+export async function getUserProfile(token: string) {
+  try {
+    const res = await fetch(`${baseUrl}/user`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error("Unauthorized");
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
     return null;
   }
 }

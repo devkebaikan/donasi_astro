@@ -1,0 +1,577 @@
+---
+export const prerender = false;
+
+import Banner from "@/components/sections/donasi/Banner.astro";
+import ProfileMitra from "@/components/sections/donasi/ProfileMitra.astro";
+import Story from "@/components/sections/donasi/Story.astro";
+import Donor from "@/components/sections/donasi/Donor.astro";
+import Fundraiser from "@/components/sections/donasi/Fundraiser.astro";
+import Report from "@/components/sections/donasi/Report.astro";
+
+import {
+  getCampaignByLink,
+  getReportByLink,
+  getDonorsByLink,
+  getFundraisersByLink,
+  getNominalOptions,
+} from "@/lib/FetchData";
+import MainLayout from "@/layouts/MainLayout.astro";
+import Header from "@/components/layouts/Header.astro";
+import BoxGuaratee from "@/components/sections/donasi/BoxGuaratee.astro";
+import { formatRupiah } from "@/lib/formatter";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/");
+}
+
+const utm = Astro.url.searchParams.toString();
+const isUtmPresent = Astro.url.searchParams.has("utm_source");
+
+if (isUtmPresent) {
+  Astro.cookies.set("utm_params", utm, {
+    path: "/",
+    maxAge: 60 * 60 * 24, // 1 hari
+  });
+}
+
+const [
+  dataCampaign,
+  dataReport,
+  dataDonor,
+  dataFundraiser,
+  dataNominalOptions,
+] = await Promise.all([
+  getCampaignByLink(slug),
+  getReportByLink(slug),
+  getDonorsByLink(slug),
+  getFundraisersByLink(slug),
+  getNominalOptions(slug),
+]);
+
+const nominalOptions = dataNominalOptions?.data ?? [];
+const detailCampaign = dataCampaign?.data ?? null;
+const report = dataReport ?? null;
+const donors = dataDonor?.data ?? null;
+const fundraiser = dataFundraiser?.data.data ?? null;
+
+const isActive = detailCampaign?.status === "PUBLISH";
+
+// SEO
+const campaignTitle = detailCampaign?.title ?? "Detail Donasi";
+const campaignImage = detailCampaign?.image ?? null;
+
+const campaignJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Beranda",
+          item: Astro.url.origin + "/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Donasi",
+          item: Astro.url.origin + "/donasi",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: campaignTitle,
+          item: Astro.url.href,
+        },
+      ],
+    },
+    {
+      "@type": "DonateAction",
+      name: `Donasi — ${campaignTitle}`,
+      url: Astro.url.href,
+      recipient: {
+        "@type": "Organization",
+        name: detailCampaign?.mitra?.name ?? "Aksiberbagi.com",
+      },
+    },
+  ],
+});
+
+// Tab configuration
+const tabs = [
+  { id: "cerita", label: "Cerita", show: true },
+  {
+    id: "salur",
+    label: "Salur",
+    show: true,
+  },
+  { id: "donatur", label: "Donatur", show: true },
+  { id: "fundraiser", label: "Fundraiser", show: true },
+];
+---
+
+<MainLayout
+  title={campaignTitle}
+  description={detailCampaign?.short_description ??
+    "Detail kampanye donasi di Aksiberbagi.com"}
+  image={campaignImage ?? undefined}
+  imageAlt={campaignTitle}
+  type="article"
+  publishedTime={detailCampaign?.created_at}
+  modifiedTime={detailCampaign?.updated_at}
+  robots={isActive ? "index, follow" : "noindex, follow"}
+>
+  <Header
+    type="title"
+    text={detailCampaign ? detailCampaign.title : "Detail Donasi"}
+    link="/home"
+  />
+
+  <script is:inline type="application/ld+json" set:html={campaignJsonLd} />
+
+  <div class="bg-white min-h-screen max-w-120 mx-auto">
+    <div class="mx-auto mb-24 max-w-120">
+      <!-- Banner -->
+      <Banner
+        active={isActive}
+        detailCampaign={detailCampaign}
+        donors={donors}
+      />
+
+      <BoxGuaratee />
+
+      <!-- Profile Donasi -->
+      <ProfileMitra
+        programLink={detailCampaign?.link}
+        programId={detailCampaign?.id}
+        report={!!(report?.data?.[0] || report?.news?.[0])}
+        projekSalur={detailCampaign?.last_two_projects}
+      />
+
+      <!-- Tab Navigation -->
+      <div
+        class="grid grid-cols-4 mt-1 gap-2 px-2"
+        role="tablist"
+        aria-label="Navigasi konten program"
+      >
+        {
+          tabs.map(
+            (tab, i) =>
+              tab.show && (
+                <button
+                  id={`tab-btn-${tab.id}`}
+                  data-tab={tab.id}
+                  role="tab"
+                  aria-selected={i === 0 ? "true" : "false"}
+                  aria-controls={`tab-${tab.id}`}
+                  tabindex={i === 0 ? 0 : -1}
+                  class="tab-button min-h-[38px] w-full text-sm md:text-base font-medium rounded-md transition-all duration-300 bg-white text-gray-700 shadow-md"
+                >
+                  {tab.label}
+                </button>
+              ),
+          )
+        }
+      </div>
+
+      <!-- Tab Content -->
+      <div class="mt-4 transition-all duration-300 ease-in-out">
+        <!-- Cerita Tab -->
+        <article
+          id="tab-cerita"
+          role="tabpanel"
+          aria-labelledby="tab-btn-cerita"
+          tabindex="0"
+          class="tab-content"
+        >
+          <Story
+            story={detailCampaign?.content}
+            date={detailCampaign?.updated_at}
+          />
+        </article>
+
+        <!-- Report Tab -->
+        <section
+          id="tab-salur"
+          role="tabpanel"
+          aria-labelledby="tab-btn-salur"
+          tabindex="-1"
+          class="tab-content hidden"
+        >
+          {
+            report?.data?.[0] || report?.news?.[0] ? (
+              <Report report={report} programLink={detailCampaign?.link} />
+            ) : (
+              // No Report Available
+              <div class="text-center py-12">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg
+                      class="w-16 h-16 text-gray-300"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.5"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                      />
+                    </svg>
+                  </div>
+                  <div>
+                    <h5 class="text font-semibold text-gray-600 mb-1">
+                      Belum ada Laporan Penyaluran
+                    </h5>
+                    {/* <p class="text-sm text-gray-500">Jadilah fundraiser pertama untuk program ini</p> */}
+                  </div>
+                </div>
+              </div>
+            )
+          }
+        </section>
+
+        <!-- Donatur Tab -->
+        <section
+          id="tab-donatur"
+          role="tabpanel"
+          aria-labelledby="tab-btn-donatur"
+          tabindex="-1"
+          class="tab-content hidden"
+        >
+          <Donor donors={donors} programLink={detailCampaign?.link} />
+        </section>
+
+        <!-- Fundraiser Tab -->
+        <section
+          id="tab-fundraiser"
+          role="tabpanel"
+          aria-labelledby="tab-btn-fundraiser"
+          tabindex="-1"
+          class="tab-content hidden"
+        >
+          <Fundraiser
+            fundraiser={fundraiser}
+            programLink={detailCampaign?.link}
+          />
+        </section>
+      </div>
+    </div>
+
+    <!-- Sticky Button -->
+    <div
+      id="sticky-donate"
+      aria-label="Aksi donasi cepat"
+      class="donate-sticky fixed bottom-0 left-0 right-0 z-40 animate-fade-up"
+    >
+      <div class="mx-auto max-w-120">
+        <div
+          class="donate-sticky-content bg-white/70 shadow-lg rounded-t-xl p-4 flex gap-3"
+        >
+          <button
+            id="btn-share-dp"
+            class="btn flex items-center bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
+              ></path>
+            </svg>
+            Bagikan
+          </button>
+
+          <button
+            id="btn-donasi-sekarang"
+            data-program-id={detailCampaign?.id}
+            data-program-link={detailCampaign?.link}
+            data-active={isActive}
+            class="btn w-2/3 py-2.5 px-4 rounded-md font-semibold transition-all duration-300 text-sm md:text-base"
+            class:list={[
+              isActive
+                ? "bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed",
+            ]}
+          >
+            {isActive ? "DONASI SEKARANG" : "BELUM DIBUKA"}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- pop up nominal -->
+    <div
+      id="donate-panel"
+      class="fixed bottom-0 left-0 right-0 z-50 translate-y-full transition-transform duration-300"
+    >
+      <div
+        class="mx-auto max-w-120 rounded-t-2xl shadow-lg border-2 border-neutral-300"
+      >
+        <div class="bg-white rounded-t-xl shadow-lg p-4 space-y-4">
+          <!-- HEADER -->
+          <div class="flex justify-between items-center">
+            <h3 class="font-semibold text-base">Masukkan Nominal</h3>
+            <button id="close-panel" class="text-gray-500">✕</button>
+          </div>
+
+          <!-- PRESET -->
+          <div class="grid grid-cols-2 gap-2">
+            {
+              nominalOptions.map((amount: any, index: number) => (
+                <button
+                  type="button"
+                  data-value={amount.nominal}
+                  class="preset-btn group relative border-2 border-primary-200
+                         hover:border-primary-500 rounded-md p-3 sm:p-4
+                         transition-all duration-300 hover:shadow-md"
+                >
+                  {index === 1 && (
+                    <span
+                      class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
+                             bg-linear-to-r from-secondary-400 to-secondary-500
+                             text-white text-[10px] text-xs font-semibold px-2 py-1
+                             rounded-t-full rounded-br-full"
+                    >
+                      Nominal Favorit
+                    </span>
+                  )}
+
+                  <div class="flex flex-col items-center gap-1 ">
+                    <span class="text-sm font-bold text-amount ">
+                      {formatRupiah(amount.nominal)}
+                    </span>
+                  </div>
+                </button>
+              ))
+            }
+          </div>
+
+          <!-- INPUT -->
+          <input
+            id="donation-amount"
+            type="text"
+            inputmode="numeric"
+            placeholder="Masukkan nominal"
+            class="w-full border rounded-md px-3 py-2"
+          />
+
+          <!-- ACTION -->
+          <button
+            id="submit-donation"
+            class="w-full bg-orange-500 text-white py-2 rounded-md font-semibold"
+          >
+            Lanjut Donasi
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { showToast } from "@/lib/toast";
+
+    // Tab system — ARIA-compliant (WCAG 2.1 §4.1.2)
+    const tabButtons = Array.from(
+      document.querySelectorAll<HTMLElement>("[role='tab']"),
+    );
+    const tabPanels = Array.from(
+      document.querySelectorAll<HTMLElement>("[role='tabpanel']"),
+    );
+
+    function activateTab(btn: HTMLElement) {
+      const tabId = btn.dataset.tab;
+
+      tabButtons.forEach((b) => {
+        const active = b === btn;
+        b.setAttribute("aria-selected", active ? "true" : "false");
+        b.setAttribute("tabindex", active ? "0" : "-1");
+        b.classList.toggle("bg-primary-500", active);
+        b.classList.toggle("text-white", active);
+        b.classList.toggle("shadow-sm", active);
+        b.classList.toggle("bg-white", !active);
+        b.classList.toggle("text-gray-700", !active);
+        b.classList.toggle("shadow-md", !active);
+      });
+
+      tabPanels.forEach((panel) => {
+        const active = panel.id === `tab-${tabId}`;
+        panel.classList.toggle("hidden", !active);
+        panel.setAttribute("tabindex", active ? "0" : "-1");
+      });
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => activateTab(btn));
+
+      btn.addEventListener("keydown", (e) => {
+        const key = e.key;
+        const idx = tabButtons.indexOf(btn);
+        const last = tabButtons.length - 1;
+
+        const moves: Record<string, number> = {
+          ArrowRight: (idx + 1) % tabButtons.length,
+          ArrowDown: (idx + 1) % tabButtons.length,
+          ArrowLeft: (idx - 1 + tabButtons.length) % tabButtons.length,
+          ArrowUp: (idx - 1 + tabButtons.length) % tabButtons.length,
+          Home: 0,
+          End: last,
+        };
+
+        if (key in moves) {
+          e.preventDefault();
+          const target = tabButtons[moves[key]];
+          target.focus();
+          activateTab(target);
+        }
+      });
+    });
+
+    if (tabButtons[0]) activateTab(tabButtons[0]);
+
+    // Sticky button on scroll
+    const stickyButton = document.getElementById("sticky-donate");
+    const sentinel = document.createElement("div");
+    document.body.prepend(sentinel);
+
+    // const observer = new IntersectionObserver(([e]) => {
+    //   if (stickyButton) {
+    //     stickyButton.classList.toggle("hidden", e.isIntersecting);
+    //   }
+    // });
+
+    // observer.observe(sentinel);
+
+    // Handle donate button click
+    // const donateButton = document.getElementById("btn-donasi-sekarang");
+    // if (donateButton) {
+    //   donateButton.addEventListener("click", () => {
+    //     const isActive = donateButton.getAttribute("data-active") === "true";
+    //     const programId = donateButton.getAttribute("data-program-id");
+    //     const programLink = donateButton.getAttribute("data-program-link");
+
+    //     if (isActive && programId && programLink) {
+    //       window.location.assign(
+    //         `/donasi/form/${programLink}/?id=${programId}`,
+    //       );
+    //     }
+    //   });
+    // }
+
+    // Share modal
+    const shareButton = document.getElementById("btn-share-dp");
+    if (shareButton) {
+      shareButton.addEventListener("click", () => {
+        const reffCode = localStorage.getItem("save_reff_code") || "";
+        const url = new URL(window.location.href);
+        url.searchParams.set("reff_code", reffCode);
+
+        const shareUrl = url.toString();
+        if (navigator.share) {
+          navigator
+            .share({
+              title: document.title,
+              url: shareUrl,
+            })
+            .catch((err) => console.log("Error sharing:", err));
+        } else {
+          // Fallback: copy to clipboard
+          navigator.clipboard.writeText(shareUrl).then(() => {
+            alert("Link berhasil disalin!");
+          });
+        }
+      });
+    }
+
+    // Handle URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const reffCode = urlParams.get("reff_code");
+    const leads = urlParams.get("leads");
+
+    if (reffCode) {
+      localStorage.setItem("reffCode", reffCode);
+    }
+    if (leads) {
+      localStorage.setItem("leads", leads);
+    }
+
+    // nominal preset buttons
+    const panel = document.getElementById("donate-panel");
+    const openBtn = document.getElementById("btn-donasi-sekarang");
+    const closeBtn = document.getElementById("close-panel");
+    const input = document.getElementById("donation-amount");
+    const presetBtns = document.querySelectorAll(".preset-btn");
+    const submitBtn = document.getElementById("submit-donation");
+
+    // FORMAT RUPIAH
+    function formatRupiah(value: number) {
+      return new Intl.NumberFormat("id-ID").format(value);
+    }
+
+    function parseNumber(value: string) {
+      return Number(value.replace(/\D/g, "")) || 0;
+    }
+
+    // OPEN PANEL
+    openBtn?.addEventListener("click", () => {
+      const isActive = openBtn.getAttribute("data-active") === "true";
+      if (!isActive || !panel) return;
+
+      panel.classList.remove("translate-y-full");
+    });
+
+    // CLOSE PANEL
+    closeBtn?.addEventListener("click", () => {
+      if (!panel) return;
+      panel.classList.add("translate-y-full");
+    });
+
+    // PRESET CLICK
+    presetBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const value = btn.getAttribute("data-value");
+        if (!value || !input) return;
+
+        (input as HTMLInputElement).value = formatRupiah(Number(value));
+      });
+    });
+
+    // INPUT FORMAT
+    input?.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement | null;
+      if (!target) return;
+      const raw = parseNumber(target.value);
+      target.value = raw ? formatRupiah(raw) : "";
+    });
+
+    // SUBMIT
+    submitBtn?.addEventListener("click", () => {
+      if (!input) return;
+      const raw = parseNumber((input as HTMLInputElement).value);
+
+      // VALIDASI (anti bug)
+      if (!raw || raw < 10000) {
+        showToast("Minimal donasi Rp 10.000");
+        return;
+      }
+
+      // SIMPAN (SAFE)
+      const payload = {
+        amount: raw,
+        updatedAt: Date.now(),
+      };
+
+      localStorage.setItem("nominal_donation", JSON.stringify(payload));
+
+      if (!openBtn) return;
+
+      const programId = openBtn.getAttribute("data-program-id");
+      const programLink = openBtn.getAttribute("data-program-link");
+
+      // REDIRECT
+      window.location.assign(`/donasi/form/${programLink}/?id=${programId}`);
+    });
+  </script>
+</MainLayout>

@@ -1,0 +1,537 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
+import { getNominalOptions, getPaymentMethod } from "@/lib/FetchData.ts";
+import { formatRupiah } from "@/lib/formatter";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/");
+}
+
+const programId = Astro.url.searchParams.get("id");
+
+if (!programId) {
+  return Astro.redirect(`/donasi/${slug}/`);
+}
+
+const programLink = slug;
+const baseUrl = import.meta.env.ASTRO_API_URL;
+
+const utm = Astro.cookies.get("utm_params")?.value;
+const utmParams = utm ?? null;
+
+const dataPaymentMethods = await getPaymentMethod(slug);
+
+const paymentMethods = dataPaymentMethods?.data ?? [];
+---
+
+<MainLayout
+  title="Form Donasi | Aksiberbagi.com"
+  description="Formulir pembayaran donasi untuk program pilihan Anda."
+>
+  <Header
+    type="notshare"
+    text="Konfirmasi Donasi"
+    link={`/donasi/${programLink}/`}
+  />
+
+  <div
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100"
+    id="donation-page"
+    data-program-id={programId}
+    data-program-link={programLink}
+    data-base-url={baseUrl}
+    data-utm={utmParams}
+  >
+    <section class="container pb-4 md:pb-6">
+      <div class="bg-white rounded-b-2xl shadow-lg overflow-hidden pt-18">
+        <form id="donation-form" class="p-4 sm:p-6 space-y-5 sm:space-y-6">
+          <!-- Nominal Section -->
+          <div class="space-y-3 sm:space-y-4">
+            <h5 class="text-base font-semibold text-gray-800">
+              Nominal Donasi
+            </h5>
+            <!-- Quick Amount Buttons -->
+            <!-- <span class="text-gray-400 italic mb-2">Pilih nominal donasi</span> -->
+
+            <div class="relative">
+              <span
+                class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm sm:text-base"
+              >
+                Rp
+              </span>
+              <input
+                id="nominalRupiah"
+                type="text"
+                name="total"
+                class="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 border-2 border-gray-200 rounded-lg
+                     focus:border-(--primary-500) focus:ring-2 focus:ring-(--primary-100)
+                     outline-none transition-all text-base sm:text-lg font-medium"
+                placeholder="Masukkan Nominal"
+              />
+            </div>
+          </div>
+
+          <!-- Payment Method Section -->
+          <div class="space-y-2 sm:space-y-3">
+            <h5 class="text-sm font-semibold text-gray-800">
+              Metode Pembayaran
+            </h5>
+
+            <div
+              class="flex items-center justify-between p-2.5 bg-gray-50
+                   border-2 border-gray-200 rounded-lg hover:border-(--primary-300)
+                   transition-colors"
+            >
+              <img
+                id="payment-image"
+                class="h-6 w-auto object-contain hidden"
+                alt="Payment Method"
+              />
+
+              <div class="flex-1 px-3 sm:px-4">
+                <span
+                  id="payment-name"
+                  class="text-sm text-gray-700 font-medium"
+                >
+                  Pilih Metode Pembayaran
+                </span>
+              </div>
+
+              <button
+                type="button"
+                id="btn-select-payment"
+                class="px-4 py-2 rounded-lg font-medium
+                     text-sm transition-all
+                     bg-gray-200 text-gray-400 cursor-not-allowed"
+                disabled
+              >
+                Pilih
+              </button>
+            </div>
+          </div>
+
+          <!-- Personal Info Section -->
+          <div class="space-y-4 pt-1 sm:pt-2">
+            <h5 class="text-base font-semibold text-gray-800">Data Donatur</h5>
+
+            <!-- Name -->
+            <div class="space-y-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">
+                Nama Lengkap
+              </label>
+              <input
+                id="fullName"
+                type="text"
+                name="name"
+                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200
+                     rounded-lg focus:border-(--primary-500)
+                     focus:ring-2 focus:ring-(--primary-100) outline-none"
+                placeholder="Masukkan nama lengkap"
+                required
+              />
+
+              <div class="flex items-center gap-2 pt-1">
+                <input
+                  type="checkbox"
+                  id="hideNameCheck"
+                  class="w-4 h-4 sm:w-5 sm:h-5 accent-(--primary-500) cursor-pointer"
+                />
+                <label
+                  for="hideNameCheck"
+                  class="text-xs sm:text-sm text-gray-600 cursor-pointer"
+                >
+                  Sembunyikan nama <span class="italic"
+                    >(Sebagai Hamba Allah)</span
+                  >
+                </label>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="space-y-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">
+                Nomor WhatsApp
+              </label>
+              <input
+                id="noWa"
+                type="tel"
+                name="phone"
+                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200
+                     rounded-lg focus:border-(--primary-500)
+                     focus:ring-2 focus:ring-(--primary-100) outline-none"
+                placeholder="Contoh: 08123456789"
+                required
+              />
+            </div>
+
+            <!-- Message -->
+            <div class="space-y-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700">
+                Pesan dan Doa <span class="text-gray-400 font-normal"
+                  >(Opsional)</span
+                >
+              </label>
+              <textarea
+                id="message"
+                name="doa"
+                rows="3"
+                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200
+                     rounded-lg focus:border-(--primary-500)
+                     focus:ring-2 focus:ring-(--primary-100) outline-none resize-none"
+                placeholder="Tuliskan doa atau pesan..."></textarea>
+            </div>
+          </div>
+
+          <!-- Submit -->
+          <div class="pt-1 sm:pt-2">
+            <button
+              type="submit"
+              id="btn-konfirmasi"
+              class="w-full py-3 sm:py-4 px-6 rounded-lg
+                   text-base sm:text-lg font-semibold text-white
+                   bg-linear-to-r from-(--secondary-500) to-(--secondary-500)
+                   hover:from-(--secondary-600) hover:to-(--secondary-600)
+                   transition-all duration-300 shadow-lg hover:shadow-xl
+                   disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span id="btn-text">Konfirmasi Donasi</span>
+              <span
+                id="btn-loading"
+                class="hidden flex items-center justify-center gap-2"
+              >
+                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle
+                    class="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="4"
+                    fill="none"></circle>
+                  <path
+                    class="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                Memproses...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Trust Badge -->
+      <div class="mt-4 sm:mt-6 text-center">
+        <p class="text-xs sm:text-sm text-gray-500">
+          Transaksi aman dan terpercaya 🔒
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- Payment Modal -->
+  <PaymentMethodModal paymentMethods={paymentMethods} />
+
+  <script>
+    // import { trackBeginCheckout } from "@/lib/tracking";
+
+    import { showToast } from "@/lib/toast";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const nominalInput = document.getElementById("nominalRupiah");
+
+      let initialAmount = 0;
+
+      const dataNominal = localStorage.getItem("nominal_donation");
+
+      if (dataNominal) {
+        try {
+          const parsed = JSON.parse(dataNominal);
+          initialAmount = parsed.amount || 0;
+        } catch (e) {
+          localStorage.removeItem("nominal_donation");
+        }
+      }
+
+      if (nominalInput && initialAmount > 0) {
+        (nominalInput as HTMLInputElement).value = new Intl.NumberFormat(
+          "id-ID",
+        ).format(initialAmount);
+
+        // 🔥 penting: sync ke state & UI lain
+        formState.total = initialAmount;
+        setActiveAmount(initialAmount);
+        updatePaymentButton();
+      }
+    });
+
+    const formState = {
+      total: 0,
+      payment_method_id: null,
+      name: "",
+      phone: "",
+      doa: "",
+      hideName: false,
+    };
+
+    function setLoading(isLoading: boolean) {
+      const btn = document.getElementById(
+        "btn-konfirmasi",
+      ) as HTMLButtonElement;
+      const text = document.getElementById("btn-text");
+      const loading = document.getElementById("btn-loading");
+
+      if (!btn || !text || !loading) return;
+
+      btn.disabled = isLoading;
+      text.classList.toggle("hidden", isLoading);
+      loading.classList.toggle("hidden", !isLoading);
+    }
+
+    const parseNumber = (val: any) =>
+      Number(String(val).replace(/\D/g, "")) || 0;
+
+    const formatRupiah = (num: number) =>
+      num ? num.toLocaleString("id-ID") : "";
+
+    function resetPayment() {
+      formState.payment_method_id = null;
+
+      const paymentName = document.getElementById("payment-name");
+      const paymentImage = document.getElementById("payment-image");
+
+      if (paymentName) {
+        paymentName.textContent = "Pilih Metode Pembayaran";
+      }
+
+      if (paymentImage) {
+        paymentImage.classList.add("hidden");
+      }
+    }
+
+    function updatePaymentButton() {
+      const btn = document.getElementById(
+        "btn-select-payment",
+      ) as HTMLButtonElement;
+      if (!btn) return;
+
+      const enabled = formState.total > 0;
+
+      btn.disabled = !enabled;
+
+      btn.classList.toggle("cursor-not-allowed", !enabled);
+      btn.classList.toggle("bg-gray-200", !enabled);
+      btn.classList.toggle("text-gray-400", !enabled);
+
+      btn.classList.toggle("bg-primary-500", enabled);
+      btn.classList.toggle("text-white", enabled);
+      btn.classList.toggle("shadow-sm", enabled);
+    }
+
+    function setActiveAmount(amount: number) {
+      document.querySelectorAll(".amount-button").forEach((btn) => {
+        const htmlBtn = btn as HTMLElement;
+        const btnAmount = Number(htmlBtn.dataset.amount || 0);
+        const isActive = btnAmount === amount;
+
+        htmlBtn.classList.remove("border-primary-500", "bg-primary-500");
+        htmlBtn.classList.add("border-primary-200");
+
+        const text = htmlBtn.querySelector(".text-amount");
+
+        if (text) {
+          text.classList.remove("text-white");
+          text.classList.add("text-primary-700");
+        }
+
+        if (isActive) {
+          htmlBtn.classList.remove("border-primary-200");
+          htmlBtn.classList.add("border-primary-500", "bg-primary-500");
+
+          if (text) {
+            text.classList.remove("text-primary-700");
+            text.classList.add("text-white");
+          }
+        }
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const nominalInput = document.getElementById("nominalRupiah");
+      const el = document.getElementById("donation-page");
+
+      const programId = el?.dataset.programId;
+      const programName = el?.dataset.programLink;
+      const baseUrl = el?.dataset.baseUrl;
+      const utmParams = el?.dataset.utm ?? null;
+
+      nominalInput?.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement | null;
+        if (!target) return;
+        const value = parseNumber(target.value);
+        formState.total = value;
+        target.value = formatRupiah(value);
+
+        setActiveAmount(value);
+        resetPayment();
+        updatePaymentButton();
+      });
+
+      document.querySelectorAll(".amount-button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const htmlBtn = btn as HTMLElement;
+          const amount = Number(htmlBtn.dataset.amount || 0);
+          formState.total = amount;
+
+          if (nominalInput) {
+            (nominalInput as HTMLInputElement).value = formatRupiah(amount);
+          }
+
+          setActiveAmount(amount);
+          resetPayment();
+          updatePaymentButton();
+        });
+      });
+
+      window.addEventListener("payment:selected", (e) => {
+        const { id, name, image } = (e as CustomEvent).detail;
+
+        formState.payment_method_id = id;
+
+        const paymentName = document.getElementById("payment-name");
+        const img = document.getElementById("payment-image");
+
+        if (paymentName) paymentName.textContent = name;
+        if (img) {
+          (img as HTMLImageElement).src = image;
+          img.classList.remove("hidden");
+        }
+      });
+
+      document
+        .getElementById("btn-select-payment")
+        ?.addEventListener("click", () => {
+          if (formState.total <= 0) return;
+          // @ts-ignore
+          window.openPaymentModal?.();
+        });
+
+      document.getElementById("fullName")?.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement | null;
+        if (!target) return;
+        formState.name = target.value;
+      });
+
+      document.getElementById("noWa")?.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement | null;
+        if (!target) return;
+        formState.phone = target.value;
+      });
+
+      document.getElementById("message")?.addEventListener("input", (e) => {
+        const target = e.target as HTMLInputElement | null;
+        if (!target) return;
+        formState.doa = target.value;
+      });
+
+      document
+        .getElementById("hideNameCheck")
+        ?.addEventListener("change", (e) => {
+          const target = e.target as HTMLInputElement | null;
+          if (!target) return;
+          formState.hideName = target.checked;
+        });
+
+      let isSubmitting = false;
+
+      document
+        .getElementById("donation-form")
+        ?.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          if (isSubmitting) return;
+
+          const name = formState.hideName ? "Hamba Allah" : formState.name;
+
+          if (!name || !formState.phone) {
+            showToast("Nama dan WhatsApp wajib diisi");
+            return;
+          }
+
+          if (formState.total < 10000) {
+            showToast("Donasi minimal Rp 10.000");
+            return;
+          }
+
+          if (!formState.payment_method_id) {
+            showToast("Pilih metode pembayaran");
+            return;
+          }
+
+          isSubmitting = true;
+          setLoading(true);
+
+          const dataForm: {
+            type: string;
+            program_type: string;
+            items: (string | undefined)[];
+            total: number[];
+            doa: string;
+            payment_method_id: any;
+            phone: string;
+            name: string;
+            status: string;
+            parameter_detail?: any;
+          } = {
+            type: "donation",
+            program_type: "infaq",
+            items: [programId],
+            total: [formState.total],
+            doa: formState.doa,
+            payment_method_id: formState.payment_method_id,
+            phone: formState.phone,
+            name,
+            status: "Pending",
+          };
+
+          if (utmParams) {
+            dataForm.parameter_detail = utmParams;
+          }
+
+          try {
+            const res = await fetch(`${baseUrl}/transactions/store`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                accept: "application/json",
+              },
+              body: JSON.stringify(dataForm),
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error();
+
+            const invoiceNumber = data.data.invoice;
+            // const totalAmount = data.data.total;
+
+            // trackBeginCheckout({
+            //   programId: programId || "",
+            //   programName: programName || "",
+            //   value: totalAmount,
+            // });
+            window.location.href = `/invoice/${invoiceNumber}/`;
+          } catch (error) {
+            showToast("Transaksi gagal, coba lagi");
+            isSubmitting = false;
+            setLoading(false);
+          }
+        });
+    });
+  </script>
+</MainLayout>

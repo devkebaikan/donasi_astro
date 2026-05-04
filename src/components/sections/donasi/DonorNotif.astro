@@ -1,0 +1,77 @@
+---
+import { Image } from "astro:assets";
+
+const { donatur = [] } = Astro.props;
+---
+
+{
+  donatur.length > 0 && (
+    <div
+      id="donatur-notif"
+      class="z-10 max-w-[200px] md:max-w-[270px] flex items-center gap-2
+    bg-white/80 rounded-md px-3 py-2 overflow-hidden
+    transition-all duration-700 ease-out
+    opacity-0 pointer-events-none"
+    >
+      <div class="min-w-6 max-w-6 md:max-w-8 md:min-w-8  overflow-hidden flex items-center justify-center">
+        <Image
+          width={80}
+          height={60}
+          src="/images/logo.avif"
+          alt="notif donatur terbaru"
+          class="w-full object-contain"
+        />
+      </div>
+
+      <div class="text-xs md:text-sm">
+        <span id="donatur-name" class="font-semibold text-tosca-primary" />
+        &nbsp;baru saja berdonasi sebesar&nbsp;
+        <span id="donatur-nominal" class="font-semibold text-tosca-primary" />
+      </div>
+    </div>
+  )
+}
+
+<script define:vars={{ donatur }}>
+  let index = 0;
+
+  const notif = document.getElementById("donatur-notif");
+  const nameEl = document.getElementById("donatur-name");
+  const nominalEl = document.getElementById("donatur-nominal");
+
+  const formatRupiah = (value) =>
+    new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(value);
+
+  if (donatur.length && notif) {
+    const showDonatur = () => {
+      // HIDE dulu
+      notif.classList.add("opacity-0");
+      notif.classList.remove("opacity-90", "translate-y-0");
+
+      // tunggu animasi hide selesai
+      setTimeout(() => {
+        const data = donatur[index];
+
+        nameEl.textContent = data.name;
+        nominalEl.textContent = formatRupiah(data.nominal_donasi);
+
+        // next index
+        index = (index + 1) % donatur.length;
+
+        // force repaint
+        requestAnimationFrame(() => {
+          notif.classList.remove("opacity-0");
+          notif.classList.add("opacity-90", "translate-y-0");
+        });
+      }, 2000); // sama dengan duration-700
+    };
+
+    showDonatur();
+
+    setInterval(showDonatur, 5500);
+  }
+</script>

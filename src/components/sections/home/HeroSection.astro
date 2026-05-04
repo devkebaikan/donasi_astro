@@ -1,4 +1,8 @@
 ---
+import { getServerToken } from "@/lib/auth";
+
+const isAuthenticated = getServerToken(Astro.cookies) !== null;
+
 const banners = [
   {
     src: "/images/banner/banner-qurban.avif",
@@ -60,7 +64,11 @@ const banners = [
   </div>
 
   <!-- Wallet / Saldo Card -->
-  <div class="relative -mt-5 mx-4 pb-3 z-10">
+  <div
+    id="data-wallet"
+    data-api-url={import.meta.env.ASTRO_API_URL}
+    class="relative -mt-5 mx-4 pb-3 z-10"
+  >
     <div
       class="bg-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-md border border-neutral-100"
     >
@@ -89,20 +97,36 @@ const banners = [
           Rp <span id="saldo-display">0</span>
         </p>
       </div>
-      <a
-        href="/top-up"
-        class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150"
-      >
-        Top Up
-      </a>
+      {
+        isAuthenticated ? (
+          <a
+            href="/top-up"
+            class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150"
+          >
+            Top Up
+          </a>
+        ) : (
+          <a
+            href="/auth/login"
+            class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150"
+          >
+            Masuk
+          </a>
+        )
+      }
     </div>
   </div>
 </section>
 
 <script>
+  import { bearerHeaders, isLoggedIn } from "@/lib/auth";
+
   (() => {
     const track = document.getElementById("banner-track") as HTMLElement | null;
     const dots = document.querySelectorAll<HTMLElement>(".banner-dot");
+    const wallet = document.getElementById("data-wallet") as HTMLElement | null;
+    const API_URL = wallet?.dataset.apiUrl ?? "";
+
     const total = dots.length;
     if (!track || total < 2) return;
 
@@ -147,11 +171,43 @@ const banners = [
       { passive: true },
     );
 
+    async function fetchSaldo() {
+      const token = localStorage.getItem("token");
+      if (!isLoggedIn() || !token) return;
+
+      try {
+        const res = await fetch(
+          `${API_URL}/dashboard/my-account`,
+          bearerHeaders(token),
+        );
+
+        if (!res.ok) throw new Error("Gagal fetch saldo");
+
+        const data = await res.json();
+        const saldo = Number(data.saldo ?? 0);
+
+        const saldoEl = document.getElementById("saldo-display");
+        if (saldoEl) {
+          saldoEl.textContent = saldo.toLocaleString("id-ID");
+        }
+
+        // sync ke localStorage
+        localStorage.setItem("saldo", String(saldo));
+      } catch (error) {
+        console.error("Error fetching saldo:", error);
+      }
+    }
+
     // Saldo dari localStorage
     const saldoEl = document.getElementById("saldo-display");
+
+    // 1. tampilkan dari cache dulu
     if (saldoEl) {
-      const raw = Number(localStorage.getItem("saldo") ?? 0);
-      saldoEl.textContent = raw.toLocaleString("id-ID");
+      const cached = Number(localStorage.getItem("saldo") ?? 0);
+      saldoEl.textContent = cached.toLocaleString("id-ID");
     }
+
+    // 2. selalu fetch untuk update
+    fetchSaldo();
   })();
 </script>

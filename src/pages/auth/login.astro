@@ -1,0 +1,257 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const baseUrl = import.meta.env.ASTRO_API_URL;
+---
+
+<MainLayout
+  title="Masuk"
+  description="Masuk untuk nikmati kemudahan berdonasi dan akses fitur lainnya di Aksiberbagi."
+>
+  <Header type="notshare" text="Login" link="/" />
+
+  <div
+    data-base-url={baseUrl}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100"
+  >
+    <div class="container space-y-3">
+      {/* ── Form Login ── */}
+      <!-- Heading -->
+      <div
+        class="bg-white rounded-2xl shadow-sm overflow-hidden px-4 py-5 mt-[64px]"
+      >
+        <h1 class="text-xl font-bold text-gray-800 mb-1">
+          Masuk akun Aksiberbagi.com
+        </h1>
+        <p class="text-xs text-gray-400">
+          Masuk untuk nikmati kemudahan berdonasi dan akses fitur lainnya
+        </p>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-sm px-5 py-6">
+        {/* Alert error — hidden by default, ditampilkan via JS */}
+        <div
+          id="login-error"
+          class="hidden items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl px-3 py-2.5 mb-4"
+        >
+          <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path
+              fill-rule="evenodd"
+              d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+              clip-rule="evenodd"></path>
+          </svg>
+          <span id="login-error-text"
+            >Nomor Telepon atau Password Anda Salah</span
+          >
+        </div>
+
+        <form id="login-form" class="space-y-4" novalidate>
+          {/* Telepon */}
+          <div class="space-y-1.5">
+            <label for="phone" class="text-xs font-semibold text-gray-700">
+              Telepon
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="text"
+              placeholder="Masukkan nomor telepon"
+              autocomplete="username"
+              class="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:bg-white transition-colors"
+            />
+          </div>
+
+          {/* Password */}
+          <div class="space-y-1.5">
+            <label for="password" class="text-xs font-semibold text-gray-700">
+              Password
+            </label>
+            <div class="relative">
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Masukkan password"
+                autocomplete="current-password"
+                class="w-full px-4 py-3 bg-gray-100 border border-transparent rounded-xl text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-teal-400 focus:bg-white transition-colors pr-11"
+              />
+              <button
+                type="button"
+                id="toggle-password"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                aria-label="Tampilkan password"
+              >
+                <svg
+                  id="eye-icon"
+                  class="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  ></path>
+                </svg>
+                <svg
+                  id="eye-off-icon"
+                  class="w-5 h-5 hidden"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"
+                  ></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Lupa password */}
+          <div class="flex justify-end">
+            <a
+              href="/auth/lupa-password"
+              class="text-xs font-medium text-teal-600
+            hover:text-teal-700 hover:underline"
+            >
+              Lupa Password?
+            </a>
+          </div>
+
+          {/* Submit */}
+          <button
+            id="btn-login"
+            type="submit"
+            class="w-full bg-teal-500 hover:bg-teal-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold py-3.5 rounded-xl transition-all duration-150"
+          >
+            Masuk
+          </button>
+
+          {/* Daftar */}
+          <p class="text-xs text-center text-gray-500">
+            Belum punya akun?{" "}
+            <a
+              href="/auth/register"
+              class="font-semibold text-teal-600 hover:underline"
+            >
+              Daftar disini
+            </a>
+          </p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { showToast } from "@/lib/toast";
+    import { setToken, isLoggedIn } from "@/lib/auth";
+
+    const baseUrl = (document.querySelector("[data-base-url]") as HTMLElement)
+      ?.dataset.baseUrl;
+
+    // Redirect jika sudah login
+    if (isLoggedIn()) {
+      const params = new URLSearchParams(window.location.search);
+      window.location.replace(params.get("from") ?? "/home");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("login-form") as HTMLFormElement;
+      const btnLogin = document.getElementById(
+        "btn-login",
+      ) as HTMLButtonElement;
+      const errorBox = document.getElementById("login-error") as HTMLElement;
+      const errorText = document.getElementById(
+        "login-error-text",
+      ) as HTMLElement;
+      const toggleBtn = document.getElementById(
+        "toggle-password",
+      ) as HTMLButtonElement;
+      const passwordInput = document.getElementById(
+        "password",
+      ) as HTMLInputElement;
+      const eyeIcon = document.getElementById("eye-icon") as HTMLElement;
+      const eyeOffIcon = document.getElementById("eye-off-icon") as HTMLElement;
+
+      // ── Toggle password visibility ─────────────────────────────────────────
+      toggleBtn.addEventListener("click", () => {
+        const isHidden = passwordInput.type === "password";
+        passwordInput.type = isHidden ? "text" : "password";
+        eyeIcon.classList.toggle("hidden", isHidden);
+        eyeOffIcon.classList.toggle("hidden", !isHidden);
+      });
+
+      // ── Helpers ────────────────────────────────────────────────────────────
+      function showError(msg: string) {
+        errorText.textContent = msg;
+        errorBox.classList.remove("hidden");
+        errorBox.classList.add("flex");
+      }
+
+      function hideError() {
+        errorBox.classList.add("hidden");
+        errorBox.classList.remove("flex");
+      }
+
+      function setLoading(loading: boolean) {
+        btnLogin.disabled = loading;
+        btnLogin.textContent = loading ? "Memuat..." : "Masuk";
+      }
+
+      // ── Submit ─────────────────────────────────────────────────────────────
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        hideError();
+
+        const phone = (
+          document.getElementById("phone") as HTMLInputElement
+        ).value.trim();
+        const password = passwordInput.value;
+
+        if (!phone || !password) {
+          showToast("Masukkan telepon dan password", "error");
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const res = await fetch(`${baseUrl}/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ phone, password }),
+          });
+
+          const json = await res.json();
+          if (!res.ok) throw new Error(json?.message ?? "Login gagal");
+
+          const token = json?.data?.token;
+          if (!token) throw new Error("Token tidak ditemukan");
+
+          setToken(token);
+
+          const params = new URLSearchParams(window.location.search);
+          window.location.href = params.get("from") ?? "/";
+        } catch (err: any) {
+          showError(err.message ?? "Nomor Telepon atau Password Anda Salah");
+        } finally {
+          setLoading(false);
+        }
+      });
+    });
+  </script>
+</MainLayout>

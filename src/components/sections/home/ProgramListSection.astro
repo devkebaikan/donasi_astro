@@ -1,6 +1,7 @@
 ---
 import CampaignList from "@/components/ui/CampaignList.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
+import { Image } from "astro:assets";
 
 const campaign = [
   {
@@ -45,11 +46,105 @@ const campaign = [
     nominal_achieved: 9000000,
     time_target: 5,
   },
+  {
+    link: "/campaign/1",
+    title: "Bantu Renovasi Masjid Al-Ikhlas",
+    image: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: {
+      name: "Yayasan Al-Ikhlas",
+    },
+    category: {
+      name: "Renovasi",
+    },
+    progress_achieved: 75,
+    nominal_achieved: 7500000,
+    time_target: 10,
+  },
+  {
+    link: "/campaign/2",
+    title: "Dukung Pendidikan Anak Yatim Piatu",
+    image: "/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: {
+      name: "Yayasan Peduli Anak",
+    },
+    category: {
+      name: "Pendidikan",
+    },
+    progress_achieved: 60,
+    nominal_achieved: 6000000,
+    time_target: 20,
+  },
+  {
+    link: "/campaign/3",
+    title: "Bantu Pembangunan Sumur Wakaf",
+    image: "/images/thumbnail/Artboard22-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: {
+      name: "Yayasan Air Bersih",
+    },
+    category: {
+      name: "Wakaf",
+    },
+    progress_achieved: 90,
+    nominal_achieved: 9000000,
+    time_target: 5,
+  },
+];
+
+const kategori = [
+  {
+    name: "Renovasi",
+    image: "/images/icons/kategori/1. Masjid & pondok.png",
+  },
+  {
+    name: "Pendidikan",
+    image: "/images/icons/kategori/2. Kesehatan.png",
+  },
+  {
+    name: "Pendidikan",
+    image: "/images/icons/kategori/2. Kesehatan.png",
+  },
+  {
+    name: "Pendidikan",
+    image: "/images/icons/kategori/2. Kesehatan.png",
+  },
+  {
+    name: "Pendidikan",
+    image: "/images/icons/kategori/2. Kesehatan.png",
+  },
+  {
+    name: "Pendidikan",
+    image: "/images/icons/kategori/2. Kesehatan.png",
+  },
+  {
+    name: "Pendidikan",
+    image: "/images/icons/kategori/2. Kesehatan.png",
+  },
 ];
 ---
 
 <!-- Program List -->
-<section class="py-4 bg-white space-y-2 px-2">
+<section class="pt-4 pb-8 bg-white space-y-2 px-2">
+  <SectionTitle title="Pilih Program Favoritmu" />
+
+  <div class="h-32 flex gap-2.5 space-x-4 overflow-x-auto py-2">
+    {
+      kategori.map((kategori) => (
+        <div class="flex flex-col items-center gap-1 w-18">
+          <div class="flex-shrink-0 w-18 h-18 rounded-full border border-gray-300 hover:border-secondary-500 transition-colors duration-200">
+            <Image
+              src={kategori.image}
+              alt={kategori.name}
+              width={80}
+              height={60}
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <p class="text-xs md:text-sm text-neutral-500">{kategori.name}</p>
+        </div>
+      ))
+    }
+  </div>
+
   {
     campaign.map((campaign) => (
       <CampaignList
@@ -64,4 +159,11 @@ const campaign = [
       />
     ))
   }
+
+  <a
+    href="/donasi"
+    class="mx-auto px-4 py-2 text-xs md:text-sm bg-linear-to-b rounded-md from-secondary-400 to-secondary-500 text-white font-medium hover:from-secondary-500 hover:to-secondary-600 transition-colors duration-200 block w-max"
+  >
+    Lihat program lainnya</a
+  >
 </section>
