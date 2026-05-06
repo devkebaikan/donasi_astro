@@ -1,6 +1,6 @@
 ---
 import { Image } from "astro:assets";
-import { formatRupiah } from "@/lib/formatter";
+import { formatRupiah, getRemainingDays } from "@/lib/formatter";
 
 const {
   link,
@@ -17,7 +17,7 @@ const progress = Math.min(Math.max(progress_achieved, 0), 100);
 ---
 
 <a
-  href={`/donasi/${link}/`}
+  href={link}
   class="group flex flex-row items-stretch bg-white rounded border border-gray-100
 overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200
 w-full"
@@ -99,7 +99,7 @@ w-full"
         <p
           class="text-[12px] md:text-[13px] font-semibold text-gray-700 leading-none"
         >
-          {days_left}
+          {getRemainingDays(days_left)}
         </p>
       </div>
     </div>

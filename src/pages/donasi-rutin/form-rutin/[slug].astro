@@ -1,0 +1,767 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { getServerToken } from "@/lib/auth";
+import { formatRupiah } from "@/lib/formatter";
+import { Image } from "astro:assets";
+import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
+import { getCampaignSetUp, getPaymentMethod } from "@/lib/FetchData.ts";
+
+const { slug } = Astro.params;
+const VALID_SLUGS = ["dipilihkan", "subuh", "jumat"] as const;
+type Slug = (typeof VALID_SLUGS)[number];
+
+if (!slug || !VALID_SLUGS.includes(slug as Slug)) {
+  return Astro.redirect("/donasi-rutin/tujuan");
+}
+
+const token = getServerToken(Astro.cookies);
+if (!token) return Astro.redirect(`/auth/login?from=/donasi-rutin/${slug}`);
+
+const API_URL = import.meta.env.ASTRO_API_URL;
+const headers = {
+  Accept: "application/json",
+  Authorization: `Bearer ${token}`,
+};
+
+const [accountRes, dataPaymentMethods, dataPorgamSetup] = await Promise.all([
+  fetch(`${API_URL}/user`, { headers }),
+  getPaymentMethod(slug),
+  getCampaignSetUp("rutin"),
+]);
+
+const account = accountRes.ok ? await accountRes.json() : null;
+
+const programId = (dataPorgamSetup?.data?.[0]?.value ?? "") as string;
+const walletBalance = (account?.data?.dompet_kebaikan?.saldo ?? 0) as number;
+
+// Fetch payment methods — hanya jika ada link
+const paymentMethods = dataPaymentMethods?.data ?? [];
+
+// ── Config ────────────────────────────────────────────────────────────────────
+const BANNER: Record<
+  Slug,
+  { title: string; description: string; image: string }
+> = {
+  dipilihkan: {
+    title: "Program Donasi Rutin Dipilihkan",
+    description: "Donasi rutin ke program yang dipilihkan Beramal Bersama",
+    image: "/images/icons/rutin/RutinDipilihkan.png",
+  },
+  subuh: {
+    title: "Donasi Tiap Subuh",
+    description: "Awali hari anda dengan keberkahan donasi rutin tiap Subuh",
+    image: "/images/icons/rutin/Subuh.png",
+  },
+  jumat: {
+    title: "Donasi Tiap Jum'at",
+    description: "Jangan sampai ketinggalan keberkahan donasi di hari terbaik",
+    image: "/images/icons/rutin/Jumat.png",
+  },
+};
+
+const PAGE_TITLE: Record<Slug, string> = {
+  dipilihkan: "Donasi Rutin",
+  subuh: "Donasi Tiap Subuh",
+  jumat: "Donasi Tiap Jumat",
+};
+
+const banner = BANNER[slug as Slug];
+
+// ── Form static data ──────────────────────────────────────────────────────────
+const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
+const minutes = Array.from({ length: 60 }, (_, i) =>
+  String(i).padStart(2, "0"),
+);
+const dayOptions = Array.from({ length: 100 }, (_, i) => String(i + 1));
+const monthDays = Array.from({ length: 28 }, (_, i) => String(i + 1));
+const weeklyDays = [
+  "Senin",
+  "Selasa",
+  "Rabu",
+  "Kamis",
+  "Jumat",
+  "Sabtu",
+  "Minggu",
+];
+const nominalOptions = [5000, 10000, 25000, 50000, 100000, 250000];
+const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
+
+const isLocked = slug === "subuh" || slug === "jumat";
+const defaultHour = slug === "subuh" ? "04" : slug === "jumat" ? "03" : "08";
+const defaultMinute = slug === "subuh" ? "33" : "00";
+const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
+---
+
+<MainLayout
+  title={PAGE_TITLE[slug as Slug]}
+  description="Form donasi rutin Aksiberbagi.com"
+>
+  <Header
+    type="title"
+    text={PAGE_TITLE[slug as Slug]}
+    link="/donasi-rutin/opsi"
+  />
+
+  <div
+    id="rutin-page"
+    data-api-url={API_URL}
+    data-program-id={programId}
+    data-wallet={walletBalance}
+    data-slug={slug}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pb-32"
+  >
+    <!-- <ShowJsonData data={programId} /> -->
+    <div class="container pb-4 md:pb-6 space-y-3">
+      <!-- Banner -->
+      <div
+        class="bg-gradient-to-t from-white to-primary-50 rounded-b-xl border border-gray-100 shadow-sm p-4 pt-18 flex items-center gap-3"
+      >
+        <div
+          class="w-12 h-12 shrink-0 rounded-full bg-gray-50 border border-gray-100"
+        >
+          <Image
+            src={banner.image}
+            alt={banner.title}
+            width="44"
+            height="44"
+            loading="eager"
+            decoding="async"
+            class="w-full h-full object-contain"
+          />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-gray-900 mb-0.5 leading-snug">
+            {banner.title}
+          </p>
+          <p class="text-xs text-gray-400 leading-relaxed">
+            {banner.description}
+          </p>
+        </div>
+      </div>
+      <!-- Nominal -->
+      <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+        <p class="text-sm font-semibold text-gray-500 mb-3">Nominal donasi</p>
+
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          {
+            nominalOptions.map((n) => (
+              <button
+                type="button"
+                class="nominal-chip text-sm py-2 px-1 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
+                data-value={n}
+              >
+                {formatRupiah(n)}
+              </button>
+            ))
+          }
+        </div>
+
+        <div class="relative">
+          <span
+            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold pointer-events-none"
+          >
+            Rp
+          </span>
+          <input
+            id="nominal-input"
+            type="number"
+            inputmode="numeric"
+            min="1000"
+            placeholder="Masukkan nominal lainnya"
+            class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold text-gray-800 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+          />
+        </div>
+        <p class="text-sm text-gray-400 mt-2">Minimal donasi Rp1.000</p>
+      </div>
+
+      <!-- Metode Pembayaran -->
+      <div class="bg-white rounded-lg border border-gray-100 shadow-sm p-4">
+        <p class="text-sm font-semibold text-gray-500 mb-0.5">
+          Metode pembayaran
+        </p>
+        <p class="text-xs text-gray-400 mb-3 leading-relaxed">
+          Donasi rutin dipotong otomatis dari Saku Berbagi setiap periodenya
+        </p>
+
+        <!-- Toggle -->
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button
+            id="btn-saku"
+            type="button"
+            class="py-2.5 rounded-lg border-2 border-primary-500 bg-primary-50 text-primary-700 text-xs font-semibold transition-all duration-150"
+          >
+            Saku Berbagi
+          </button>
+          <button
+            id="btn-langsung"
+            type="button"
+            class="py-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-400 text-xs font-semibold transition-all duration-150"
+          >
+            Bayar Langsung
+          </button>
+        </div>
+
+        <!-- Info saku berbagi -->
+        <div
+          id="saku-info"
+          class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3"
+        >
+          <span class="text-sm text-gray-500">Saldo Saku Berbagi</span>
+          <span id="wallet-display" class="text-sm font-bold text-primary-600">
+            {formatRupiah(walletBalance)}
+          </span>
+        </div>
+
+        <!-- Pilih metode (commitment) -->
+        <div id="payment-picker" class="hidden">
+          <button
+            id="open-payment-modal"
+            type="button"
+            class="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3 hover:border-primary-400 hover:bg-primary-50 transition-all duration-150"
+          >
+            <div class="flex items-center gap-3">
+              <img
+                id="payment-img"
+                src=""
+                alt=""
+                width="64"
+                height="32"
+                class="h-8 w-auto hidden object-contain"
+              />
+              <span id="payment-name" class="text-sm text-gray-400"
+                >Pilih metode pembayaran</span
+              >
+            </div>
+            <span
+              class="text-sm text-primary-600 font-semibold border border-primary-200 rounded-lg px-3 py-1 shrink-0"
+            >
+              Pilih
+            </span>
+          </button>
+        </div>
+
+        <!-- Note dinamis -->
+        <p
+          id="note-saku"
+          class="text-xs text-start rounded-lg px-4 py-2.5 bg-blue-50 text-blue-600 mt-3"
+        >
+          Donasi akan otomatis diproses menggunakan saldo Saku Berbagi Anda
+        </p>
+        <p
+          id="note-commitment"
+          class="text-xs text-start rounded-lg px-4 py-2.5 bg-blue-50 text-blue-600 mt-3 hidden"
+        >
+          Bayar sekali sekarang dan nikmati donasi rutin yang berjalan otomatis
+        </p>
+        <p
+          id="note-insufficient"
+          class="text-xs text-start rounded-lg px-4 py-2.5 bg-red-50 text-red-500 mt-3 hidden"
+        >
+          Saldo Saku Berbagi tidak mencukupi, silakan top up terlebih dahulu
+        </p>
+      </div>
+
+      <!-- Jadwal -->
+      <div
+        class="bg-white rounded-lg border border-gray-100 shadow-sm p-4 space-y-3"
+      >
+        <p class="text-sm font-semibold text-gray-500">Jadwal donasi</p>
+
+        <!-- Lama donasi — commitment only -->
+        <div id="commitment-row" class="hidden">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+              >Lama donasi</span
+            >
+            <select
+              id="commitment-select"
+              class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            >
+              {dayOptions.map((d) => <option value={d}>{d} hari</option>)}
+            </select>
+          </div>
+        </div>
+
+        <!-- Frekuensi -->
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+            >Donasi setiap</span
+          >
+          <select
+            id="range-type-select"
+            class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:bg-gray-50 disabled:text-gray-400 transition-all"
+            disabled={isLocked}
+          >
+            <option value="daily" selected={defaultRangeType === "daily"}
+              >Harian</option
+            >
+            <option value="weekly" selected={defaultRangeType === "weekly"}
+              >Mingguan</option
+            >
+            <option
+              value="monthly"
+              selected={defaultRangeType === ("monthly" as string)}
+              >Bulanan</option
+            >
+            <option value="hourly">Per Jam</option>
+          </select>
+        </div>
+
+        <!-- Hari (weekly) -->
+        <div
+          id="weekly-row"
+          class={defaultRangeType === "weekly" ? "" : "hidden"}
+        >
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+              >Hari</span
+            >
+            <select
+              id="range-day-select"
+              class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:bg-gray-50 disabled:text-gray-400 transition-all"
+              disabled={slug === "jumat"}
+            >
+              {
+                weeklyDays.map((d) => (
+                  <option
+                    value={d}
+                    selected={d === "Jumat" && slug === "jumat"}
+                  >
+                    {d}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Tanggal (monthly) -->
+        <div id="monthly-row" class="hidden">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+              >Tanggal</span
+            >
+            <select
+              id="range-date-select"
+              class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 transition-all"
+            >
+              {monthDays.map((d) => <option value={d}>{d}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <!-- Setiap satu jam (hourly interval) -->
+        <div id="hourly-row" class="hidden">
+          <div class="flex items-center gap-3">
+            <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+              >Setiap satu jam</span
+            >
+            <select
+              id="hour-interval-select"
+              class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 transition-all"
+            >
+              {hourlyIntervals.map((h) => <option value={h}>{h} jam</option>)}
+            </select>
+          </div>
+        </div>
+
+        <!-- Pukul -->
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+            >Pukul</span
+          >
+          <div class="flex-1 flex items-center gap-2">
+            <select
+              id="hour-select"
+              class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 disabled:bg-gray-50 disabled:text-gray-400 transition-all"
+              disabled={isLocked}
+            >
+              {
+                hours.map((h) => (
+                  <option value={h} selected={h === defaultHour}>
+                    {h}
+                  </option>
+                ))
+              }
+            </select>
+            <span class="text-gray-300 font-bold text-lg">:</span>
+            <select
+              id="minute-select"
+              class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-400 bg-gray-50"
+              disabled
+            >
+              {
+                minutes.map((m) => (
+                  <option value={m} selected={m === defaultMinute}>
+                    {m}
+                  </option>
+                ))
+              }
+            </select>
+          </div>
+        </div>
+
+        <!-- Atas nama orang lain -->
+        <div class="flex items-center gap-3">
+          <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight"
+            >Atas nama orang lain</span
+          >
+          <input
+            id="atas-nama-input"
+            type="text"
+            placeholder="Opsional"
+            class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <!-- Doa -->
+        <div class="flex items-start gap-3">
+          <span
+            class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight pt-2.5"
+            >Doa</span
+          >
+          <textarea
+            id="doa-input"
+            rows="3"
+            placeholder="Tuliskan doa Anda... (opsional)"
+            class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all resize-none"
+          ></textarea>
+        </div>
+
+        <p
+          id="schedule-note"
+          class="text-xs text-center rounded-lg px-4 py-2.5 bg-amber-50 text-amber-700"
+        >
+          Donasi rutin akan aktif selama saldo Saku Berbagi Anda mencukupi
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom bar fixed -->
+  <div
+    class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-4 py-4"
+  >
+    <div class="container flex justify-between gap-4">
+      <div
+        id="text-total"
+        class="w-1/2 border-b border-neutral-400 px-4 font-semibold py-3.5 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        Total : -
+      </div>
+      <button
+        id="btn-submit"
+        type="button"
+        class="w-1/2 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        Konfirmasi
+      </button>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <PaymentMethodModal paymentMethods={paymentMethods} />
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { getToken } from "@/lib/auth";
+  import { formatRupiah } from "@/lib/formatter";
+
+  const page = document.getElementById("rutin-page") as HTMLElement;
+  if (!page) throw new Error("rutin-page not found");
+
+  const API_URL = page.dataset.apiUrl ?? "";
+  const programId = page.dataset.programId ?? "";
+  const walletBal = Number(page.dataset.wallet ?? 0);
+  const token = getToken();
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let nominal = 0;
+  let isCommitment = false;
+  let paymentMethodId = "";
+  let paymentSelected = false;
+  let isProcessing = false;
+
+  const DAY_MAP: Record<string, string> = {
+    Senin: "Monday",
+    Selasa: "Tuesday",
+    Rabu: "Wednesday",
+    Kamis: "Thursday",
+    Jumat: "Friday",
+    Sabtu: "Saturday",
+    Minggu: "Sunday",
+  };
+
+  // ── Element refs ───────────────────────────────────────────────────────────
+  const nominalInput = document.getElementById(
+    "nominal-input",
+  ) as HTMLInputElement;
+  const btnSaku = document.getElementById("btn-saku") as HTMLButtonElement;
+  const btnLangsung = document.getElementById(
+    "btn-langsung",
+  ) as HTMLButtonElement;
+  const sakuInfo = document.getElementById("saku-info") as HTMLElement;
+  const paymentPicker = document.getElementById(
+    "payment-picker",
+  ) as HTMLElement;
+  const noteSaku = document.getElementById("note-saku") as HTMLElement;
+  const noteCommitment = document.getElementById(
+    "note-commitment",
+  ) as HTMLElement;
+  const noteInsufficient = document.getElementById(
+    "note-insufficient",
+  ) as HTMLElement;
+  const commitmentRow = document.getElementById(
+    "commitment-row",
+  ) as HTMLElement;
+  const commitmentSelect = document.getElementById(
+    "commitment-select",
+  ) as HTMLSelectElement;
+  const rangeTypeSelect = document.getElementById(
+    "range-type-select",
+  ) as HTMLSelectElement;
+  const weeklyRow = document.getElementById("weekly-row") as HTMLElement;
+  const monthlyRow = document.getElementById("monthly-row") as HTMLElement;
+  const hourlyRow = document.getElementById("hourly-row") as HTMLElement;
+  const atasNamaInput = document.getElementById(
+    "atas-nama-input",
+  ) as HTMLInputElement;
+  const doaInput = document.getElementById("doa-input") as HTMLTextAreaElement;
+  const hourSelect = document.getElementById(
+    "hour-select",
+  ) as HTMLSelectElement;
+  const minuteSelect = document.getElementById(
+    "minute-select",
+  ) as HTMLSelectElement;
+  const scheduleNote = document.getElementById("schedule-note") as HTMLElement;
+  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
+  const textTotal = document.getElementById("text-total") as HTMLElement;
+  const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
+  const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
+  const openModalBtn = document.getElementById(
+    "open-payment-modal",
+  ) as HTMLButtonElement;
+
+  function syncNotes() {
+    const isInsufficient = !isCommitment && nominal > walletBal && nominal > 0;
+    noteSaku.classList.toggle("hidden", isCommitment || isInsufficient);
+    noteCommitment.classList.toggle("hidden", !isCommitment);
+    noteInsufficient.classList.toggle("hidden", !isInsufficient);
+  }
+
+  function syncSubmitLabel() {
+    if (isProcessing) {
+      btnSubmit.textContent = "Memproses...";
+      return;
+    }
+    btnSubmit.textContent = "Konfirmasi";
+    if (nominal <= 0) {
+      textTotal.textContent = "Total : -";
+      return;
+    }
+    if (isCommitment) {
+      const total = nominal * Number(commitmentSelect.value);
+      textTotal.textContent = `Total : ${formatRupiah(total)}`;
+    } else {
+      textTotal.textContent = `Total : ${formatRupiah(nominal)}`;
+    }
+  }
+
+  function syncScheduleNote() {
+    scheduleNote.textContent = isCommitment
+      ? "Sistem akan memproses donasi rutin Anda secara otomatis sesuai jadwal"
+      : "Donasi rutin akan aktif selama saldo Saku Berbagi Anda mencukupi";
+  }
+
+  function setChipActive(activeBtn: HTMLButtonElement | null) {
+    document
+      .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+      .forEach((b) => {
+        const isActive = b === activeBtn;
+        b.classList.toggle("border-primary-500", isActive);
+        b.classList.toggle("bg-primary-50", isActive);
+        b.classList.toggle("text-primary-700", isActive);
+        b.classList.toggle("border-gray-200", !isActive);
+        b.classList.toggle("text-gray-500", !isActive);
+      });
+  }
+
+  // ── Nominal chips ──────────────────────────────────────────────────────────
+  document
+    .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        nominal = Number(btn.dataset.value);
+        nominalInput.value = String(nominal);
+        setChipActive(btn);
+        syncNotes();
+        syncSubmitLabel();
+      });
+    });
+
+  nominalInput.addEventListener("input", () => {
+    nominal = Number(nominalInput.value) || 0;
+    setChipActive(null);
+    syncNotes();
+    syncSubmitLabel();
+  });
+
+  // ── Payment toggle ─────────────────────────────────────────────────────────
+  function setPaymentMode(commitment: boolean) {
+    isCommitment = commitment;
+
+    btnSaku.classList.toggle("border-primary-500", !commitment);
+    btnSaku.classList.toggle("bg-primary-50", !commitment);
+    btnSaku.classList.toggle("text-primary-700", !commitment);
+    btnSaku.classList.toggle("border-gray-200", commitment);
+    btnSaku.classList.toggle("bg-white", commitment);
+    btnSaku.classList.toggle("text-gray-400", commitment);
+
+    btnLangsung.classList.toggle("border-primary-500", commitment);
+    btnLangsung.classList.toggle("bg-primary-50", commitment);
+    btnLangsung.classList.toggle("text-primary-700", commitment);
+    btnLangsung.classList.toggle("border-gray-200", !commitment);
+    btnLangsung.classList.toggle("bg-white", !commitment);
+    btnLangsung.classList.toggle("text-gray-400", !commitment);
+
+    sakuInfo.classList.toggle("hidden", commitment);
+    paymentPicker.classList.toggle("hidden", !commitment);
+    commitmentRow.classList.toggle("hidden", !commitment);
+
+    if (commitment) {
+      paymentSelected = false;
+      paymentMethodId = "";
+      paymentImg.src = "";
+      paymentImg.classList.add("hidden");
+      paymentNameEl.textContent = "Pilih metode pembayaran";
+    }
+
+    syncNotes();
+    syncSubmitLabel();
+    syncScheduleNote();
+  }
+
+  btnSaku.addEventListener("click", () => setPaymentMode(false));
+  btnLangsung.addEventListener("click", () => setPaymentMode(true));
+
+  // ── Frekuensi ──────────────────────────────────────────────────────────────
+  rangeTypeSelect?.addEventListener("change", () => {
+    const v = rangeTypeSelect.value;
+    weeklyRow.classList.toggle("hidden", v !== "weekly");
+    monthlyRow.classList.toggle("hidden", v !== "monthly");
+    hourlyRow.classList.toggle("hidden", v !== "hourly");
+  });
+
+  commitmentSelect?.addEventListener("change", syncSubmitLabel);
+
+  // ── Payment modal ──────────────────────────────────────────────────────────
+  openModalBtn?.addEventListener("click", () => {
+    (window as any).openPaymentModal?.();
+  });
+
+  window.addEventListener("payment:selected", (e: Event) => {
+    const { id, name, image } = (e as CustomEvent).detail;
+    paymentMethodId = String(id);
+    paymentSelected = true;
+    paymentImg.src = image ?? "";
+    paymentImg.classList.toggle("hidden", !image);
+    paymentNameEl.textContent = name ?? "Pilih metode pembayaran";
+  });
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+  btnSubmit.addEventListener("click", async () => {
+    if (isProcessing) return;
+
+    if (nominal < 1000) {
+      showToast("Minimal donasi Rp1.000", "error");
+      return;
+    }
+    if (!isCommitment && nominal > walletBal) {
+      showToast("Saldo Saku Berbagi tidak mencukupi", "error");
+      return;
+    }
+    if (isCommitment && !paymentSelected) {
+      showToast("Pilih metode pembayaran terlebih dahulu", "error");
+      return;
+    }
+
+    isProcessing = true;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Memproses...";
+
+    const time = `${hourSelect.value}:${minuteSelect.value}`;
+    const range_type = rangeTypeSelect.value;
+
+    const rangeDaySelect = document.getElementById(
+      "range-day-select",
+    ) as HTMLSelectElement;
+    const rangeDateSelect = document.getElementById(
+      "range-date-select",
+    ) as HTMLSelectElement;
+    const hourIntervalSelect = document.getElementById(
+      "hour-interval-select",
+    ) as HTMLSelectElement;
+
+    const range =
+      range_type === "weekly"
+        ? (DAY_MAP[rangeDaySelect?.value] ?? "Friday")
+        : range_type === "monthly"
+          ? (rangeDateSelect?.value ?? "1")
+          : range_type === "hourly"
+            ? (hourIntervalSelect?.value ?? "1")
+            : "1";
+
+    const atasNama = atasNamaInput?.value.trim();
+    const doa = doaInput?.value.trim();
+
+    const payload: Record<string, unknown> = {
+      program_id: programId,
+      range_type,
+      range,
+      time,
+      nominal,
+      status: "Pending",
+      ...(atasNama ? { atas_nama: atasNama } : {}),
+      ...(doa ? { doa } : {}),
+    };
+
+    if (!isCommitment) {
+      payload.dompet_kebaikan_store = walletBal;
+      payload.payment_method_id = 3000;
+      payload.type = "default";
+    } else {
+      payload.payment_method_id = Number(paymentMethodId);
+      payload.commitment = Number(commitmentSelect.value);
+      payload.type = "commitment";
+    }
+
+    try {
+      const res = await fetch(`${API_URL}/rutin/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data?.message ?? "Gagal membuat donasi rutin");
+
+      window.location.href = `/invoice/${data?.data?.invoice}`;
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Terjadi kesalahan, coba lagi";
+      showToast(msg, "error");
+      isProcessing = false;
+      btnSubmit.disabled = false;
+      syncSubmitLabel();
+    }
+  });
+</script>

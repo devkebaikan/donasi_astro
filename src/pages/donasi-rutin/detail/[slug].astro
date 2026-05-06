@@ -1,0 +1,354 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import BottomNav from "@/components/layouts/BottomNav.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+import { getRutinDetail } from "@/lib/FetchData";
+import { formatRupiah, formatDate } from "@/lib/formatter";
+import { getServerToken } from "@/lib/auth";
+
+// ── Params ───────────────────────────────────────────────────────────────────
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/donasi-rutin");
+
+const token = getServerToken(Astro.cookies);
+if (!token) return Astro.redirect(`/auth/login?from=/donasi-rutin/detail/${slug}`);
+
+// ── Fetch detail ─────────────────────────────────────────────────────────────
+const dataDetailRutin = await getRutinDetail(slug, token);
+const detail = dataDetailRutin?.data ?? null;
+
+
+// ── Derived values ────────────────────────────────────────────────────────────
+const status     = detail?.status      ?? "";
+const invoicing  = detail?.invoicing   ?? null;
+const program    = detail?.program?.title ?? "";
+const nominal    = detail?.nominal     ?? 0;
+const time       = detail?.time        ?? "-";
+const summary    = detail?.summary     ?? {};
+const commitment = detail?.commitment  ?? null;
+const createdAt  = detail?.created_at  ?? null;
+const rangeType  = detail?.range_type  ?? "";
+const rangeRaw   = detail?.range       ?? "";
+const isPending  = invoicing !== null && invoicing?.status === "Pending";
+
+// Banner type
+type BannerType = "sukses" | "pending" | "gagal" | "berhenti";
+const bannerType: BannerType =
+  status === "active"
+    ? "sukses"
+    : invoicing === null
+    ? "berhenti"
+    : invoicing.status === "Pending"
+    ? "pending"
+    : "gagal";
+
+const bannerConfig: Record<BannerType, {
+  title: string;
+  img: string;
+  statusText: string;
+  statusColor: string;
+  headerBg: string;
+}> = {
+  sukses: {
+    title:       "Pembayaran Donasi Rutin Sukses",
+    img:         "/images/ilustrasi/sukses.webp",
+    statusText:  "Berhasil Dilakukan",
+    statusColor: "text-primary-500",
+    headerBg:    "bg-primary-500",
+  },
+  pending: {
+    title:       "Menunggu Pembayaran",
+    img:         "/images/ilustrasi/pending.webp",
+    statusText:  "Sedang Diproses",
+    statusColor: "text-yellow-500",
+    headerBg:    "bg-yellow-400",
+  },
+  gagal: {
+    title:       "Pembayaran Donasi Rutin Gagal",
+    img:         "/images/ilustrasi/gagal.webp",
+    statusText:  "Gagal Dilakukan",
+    statusColor: "text-red-500",
+    headerBg:    "bg-red-500",
+  },
+  berhenti: {
+    title:       "Donasi Rutin Dihentikan",
+    img:         "/images/ilustrasi/gagal.webp",
+    statusText:  "Sudah Dihentikan",
+    statusColor: "text-red-500",
+    headerBg:    "bg-red-500",
+  },
+};
+
+const banner = bannerConfig[bannerType];
+
+// Frequency & range
+const frequencyMap: Record<string, { frequency: string; type: string }> = {
+  daily:   { frequency: "Harian",   type: ""         },
+  weekly:  { frequency: "Mingguan", type: "Hari"     },
+  monthly: { frequency: "Bulanan",  type: "Tanggal"  },
+};
+
+const daysTranslation: Record<string, string> = {
+  Monday: "Senin", Tuesday: "Selasa", Wednesday: "Rabu",
+  Thursday: "Kamis", Friday: "Jumat", Saturday: "Sabtu", Sunday: "Minggu",
+};
+
+const rangeDisplay  = rangeType === "weekly" ? (daysTranslation[rangeRaw] ?? rangeRaw) : rangeRaw;
+const { frequency, type: rangeLabel } = frequencyMap[rangeType] ?? { frequency: "-", type: "" };
+
+// Info rows
+const infoRows = [
+  { label: "Dijadwalkan mulai tanggal", value: createdAt ? formatDate(createdAt) : "-" },
+  { label: "Frekuensi",                 value: frequency },
+  { label: "Tiap Pukul",                value: time },
+  { label: "Metode Pembayaran",         value: commitment === null ? "Saku Berbagi" : "Bayar Langsung" },
+  ...(rangeType !== "daily" && rangeLabel ? [{ label: rangeLabel, value: rangeDisplay }] : []),
+  { label: "Nominal per Periode",       value: formatRupiah(nominal) },
+  { label: "Sudah Berapa Hari",         value: `${summary?.frekuensi_donasi ?? 0} Hari` },
+  ...(commitment !== null ? [{ label: "Durasi Total", value: `${commitment} Hari` }] : []),
+];
+---
+
+<MainLayout title="Detail Donasi Rutin" description="Informasi lengkap donasi rutin kamu.">
+  <Header type="title" text="Donasi Rutin" link="/donasi-rutin" />
+
+
+  <div
+  id="detail-rutin-page"
+  data-api-url={import.meta.env.ASTRO_API_URL}
+  data-rutin-id={slug}
+  class="container min-h-screen pb-24 bg-gray-50 pt-18"
+  >
+
+    { detail && (
+      <div class="space-y-3 px-4 py-4">
+
+        <!-- ── Status Banner ───────────────────────────────────────────────── -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+
+          <!-- Header strip warna -->
+          <div class={`px-4 py-3 ${banner.headerBg}`}>
+            <p class="text-white text-sm font-semibold text-center leading-snug">
+              {banner.title}
+            </p>
+          </div>
+
+          <!-- Ilustrasi + pesan -->
+          <div class="px-5 py-6 flex flex-col items-center text-center">
+            <img
+              src={banner.img}
+              alt={banner.title}
+              class="w-44 h-44 object-contain mb-4"
+            />
+            <p class="text-sm text-gray-600 leading-relaxed">
+              {bannerType === "berhenti"
+                ? "Penjadwalan donasi rutin untuk program"
+                : "Pembayaran dan penjadwalan donasi rutin untuk program"
+              }
+              &nbsp;<span class="font-bold text-gray-800">{program}</span>
+              <span class={`font-semibold ${banner.statusColor}`}>
+                &nbsp;{banner.statusText}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <!-- ── Detail Info ─────────────────────────────────────────────────── -->
+        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
+            <span class="w-1 h-5 bg-primary-500 rounded-full"></span>
+            <span class="text-sm font-semibold text-gray-700">Detail Donasi Rutin</span>
+          </div>
+
+          <div class="px-4 py-4 space-y-3">
+
+            <!-- Info rows -->
+            {infoRows.map(({ label, value }) => (
+              <div class="flex items-start justify-between gap-4">
+                <p class="text-xs text-gray-500 font-semibold w-1/2 shrink-0">{label}:</p>
+                <p class="text-xs text-gray-700 text-right w-1/2">{value}</p>
+              </div>
+            ))}
+
+            <!-- Status row dengan badge -->
+            <div class="flex items-center justify-between gap-4">
+              <p class="text-xs text-gray-500 font-semibold w-1/2 shrink-0">Status:</p>
+              <span class={`text-xs font-bold px-2.5 py-1 rounded-full ${
+                status === "active"
+                  ? "bg-primary-50 text-primary-600"
+                  : "bg-red-50 text-red-500"
+              }`}>
+                {status === "active" ? "Aktif" : "Nonaktif"}
+              </span>
+            </div>
+
+            <!-- Divider + Total -->
+            <div class="flex items-center justify-between border-t border-dashed border-gray-300 pt-4 mt-2">
+              <p class="text-xs font-semibold text-gray-600 w-1/2">
+                {isPending ? "Total Yang Perlu Dibayarkan:" : "Total Yang Didonasikan:"}
+              </p>
+              <p class="text-sm font-bold text-gray-800 text-right">
+                {isPending
+                  ? formatRupiah(invoicing?.total ?? 0)
+                  : formatRupiah(summary?.total_donasi ?? 0)
+                }
+              </p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ── Action Buttons ──────────────────────────────────────────────── -->
+
+        <!-- Case 1: Invoice pending → Bayar Sekarang -->
+        {isPending && (
+          
+         <a   href={`/donasi-rutin/invoice/${invoicing.invoice}`}
+            class="group relative w-full flex items-center justify-center gap-2 bg-linear-to-r from-orange-400 to-orange-600 text-white text-sm font-bold py-4 rounded-2xl shadow-md shadow-orange-100 hover:shadow-lg active:scale-[0.98] transition-all overflow-hidden"
+          >
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <svg class="w-5 h-5 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="relative z-10">Bayar Sekarang</span>
+          </a>
+        )}
+
+        <!-- Case 2: Ada invoice (bukan pending) ATAU status tidak aktif → Pilih lain -->
+        {!isPending && (invoicing !== null || status !== "active") && (
+          
+        <a    href="/donasi-rutin/o[si"
+            class="group relative w-full flex items-center justify-center gap-2 bg-linear-to-r from-primary-400 to-primary-600 text-white text-sm font-bold py-4 rounded-2xl shadow-md shadow-primary-100 hover:shadow-lg active:scale-[0.98] transition-all overflow-hidden"
+          >
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <svg class="w-5 h-5 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="relative z-10">Pilih Donasi Rutin Lainnya</span>
+          </a>
+        )}
+
+        <!-- Case 3: Aktif, tanpa invoice → Hentikan -->
+        {!isPending && invoicing === null && status === "active" && (
+          <button
+            id="btn-stop-rutin"
+            type="button"
+            class="group relative w-full flex items-center justify-center gap-2 bg-linear-to-r from-red-500 to-red-600 text-white text-sm font-bold py-4 rounded-2xl shadow-md shadow-red-100 hover:shadow-lg active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed overflow-hidden"
+          >
+            <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
+            <svg class="w-5 h-5 relative z-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+            </svg>
+            <span class="relative z-10">Hentikan Donasi Rutin</span>
+          </button>
+        )}
+
+      </div>
+    )}
+  </div>
+
+  <!-- ── Stop Confirmation Modal ───────────────────────────────────────────── -->
+  <div id="stop-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+    <div id="stop-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+    <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-[400px] overflow-hidden">
+      <div class="flex flex-col items-center px-6 pt-7 pb-2 text-center">
+        <div class="w-14 h-14 bg-red-50 rounded-full flex items-center justify-center mb-4">
+          <svg class="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-gray-800">Hentikan Donasi Rutin</h3>
+        <p class="text-sm text-gray-400 mt-1.5 leading-relaxed">
+          Apakah kamu yakin ingin menghentikan donasi rutin ini?
+        </p>
+      </div>
+      <div class="flex gap-2 px-6 py-5">
+        <button
+          id="btn-stop-cancel"
+          type="button"
+          class="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors"
+        >
+          Batal
+        </button>
+        <button
+          id="btn-stop-confirm"
+          type="button"
+          class="flex-1 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-3 rounded-xl transition-all active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          Ya, Hentikan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <BottomNav active="rutin" />
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { getToken } from "@/lib/auth";
+
+  const page    = document.getElementById("detail-rutin-page") as HTMLElement;
+  const API_URL = page?.dataset.apiUrl  ?? "";
+  const rutinId = page?.dataset.rutinId ?? "";
+  const token   = getToken();
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const btnStop    = document.getElementById("btn-stop-rutin")   as HTMLButtonElement | null;
+    const modal      = document.getElementById("stop-modal")       as HTMLElement;
+    const backdrop   = document.getElementById("stop-backdrop")    as HTMLElement;
+    const btnCancel  = document.getElementById("btn-stop-cancel")  as HTMLButtonElement;
+    const btnConfirm = document.getElementById("btn-stop-confirm") as HTMLButtonElement;
+
+    // Tidak ada tombol stop → tidak perlu setup (status bukan active)
+    if (!btnStop) return;
+
+    // ── Buka modal ────────────────────────────────────────────────────────────
+    btnStop.addEventListener("click", () => {
+      modal.classList.remove("hidden");
+    });
+
+    // ── Tutup modal ───────────────────────────────────────────────────────────
+    function closeModal() {
+      modal.classList.add("hidden");
+    }
+
+    btnCancel.addEventListener("click", closeModal);
+    backdrop.addEventListener("click", closeModal);
+
+    // ── Konfirmasi hentikan ───────────────────────────────────────────────────
+    btnConfirm.addEventListener("click", async () => {
+      btnConfirm.disabled    = true;
+      btnConfirm.textContent = "Memproses...";
+      btnStop.disabled       = true;
+
+      try {
+
+        const headers: Record<string, string> = { "Content-Type": "application/json", Accept: "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const res = await fetch(`${API_URL}/dashboard/my-rutin/${rutinId}/stop`, {
+          method: "POST",
+          headers,
+        });
+
+        const json = await res.json();
+        if (!res.ok) throw new Error(json?.message ?? "Gagal menghentikan donasi rutin");
+
+        showToast("Donasi rutin berhasil dihentikan", "success");
+        window.location.href = "/donasi-rutin";
+      } catch (err: any) {
+        showToast(err.message ?? "Terjadi kesalahan, coba lagi", "error");
+        closeModal();
+        btnConfirm.disabled    = false;
+        btnConfirm.textContent = "Ya, Hentikan";
+        btnStop.disabled       = false;
+      }
+    });
+  });
+</script>

@@ -1,7 +1,5 @@
 ---
-import { getServerToken } from "@/lib/auth";
-
-const isAuthenticated = getServerToken(Astro.cookies) !== null;
+import { Image } from "astro:assets";
 
 const banners = [
   {
@@ -28,7 +26,7 @@ const banners = [
       {
         banners.map((banner, i) => (
           <a href={banner.href} class="w-full shrink-0 block">
-            <img
+            <Image
               src={banner.src}
               alt={banner.alt}
               width="480"
@@ -89,125 +87,144 @@ const banners = [
           ></path>
         </svg>
       </div>
+
+      <!-- Saldo info: ditampilkan/disembunyikan oleh script -->
       <div class="flex-1 min-w-0">
         <p class="text-[11px] text-neutral-400 leading-none mb-0.5">
           Saldo Kebaikan
         </p>
-        <p class="text-sm font-bold text-neutral-700">
+        <p id="saldo-wrapper" class="text-sm font-bold text-neutral-700 hidden">
           Rp <span id="saldo-display">0</span>
         </p>
+        <p id="saldo-guest" class="text-sm font-medium text-neutral-400">
+          *******
+        </p>
       </div>
-      {
-        isAuthenticated ? (
-          <a
-            href="/top-up"
-            class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150"
-          >
-            Top Up
-          </a>
-        ) : (
-          <a
-            href="/auth/login"
-            class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150"
-          >
-            Masuk
-          </a>
-        )
-      }
+
+      <!-- Tombol: skeleton dulu, diganti script setelah tahu status login -->
+      <div id="wallet-action" class="shrink-0">
+        <div class="w-16 h-8 bg-neutral-100 rounded-lg animate-pulse"></div>
+      </div>
     </div>
   </div>
 </section>
 
 <script>
-  import { bearerHeaders, isLoggedIn } from "@/lib/auth";
+  import { getToken, isLoggedIn, bearerHeaders } from "@/lib/auth";
 
   (() => {
     const track = document.getElementById("banner-track") as HTMLElement | null;
     const dots = document.querySelectorAll<HTMLElement>(".banner-dot");
     const wallet = document.getElementById("data-wallet") as HTMLElement | null;
+    const walletAction = document.getElementById(
+      "wallet-action",
+    ) as HTMLElement | null;
+    const saldoWrapper = document.getElementById(
+      "saldo-wrapper",
+    ) as HTMLElement | null;
+    const saldoDisplay = document.getElementById(
+      "saldo-display",
+    ) as HTMLElement | null;
+    const saldoGuest = document.getElementById(
+      "saldo-guest",
+    ) as HTMLElement | null;
+
     const API_URL = wallet?.dataset.apiUrl ?? "";
 
+    // ── Banner slider ─────────────────────────────────────────────────────────
     const total = dots.length;
-    if (!track || total < 2) return;
+    if (track && total >= 2) {
+      let current = 0;
+      let timer: ReturnType<typeof setInterval>;
 
-    let current = 0;
-    let timer: ReturnType<typeof setInterval>;
+      function slideTo(idx: number) {
+        current = ((idx % total) + total) % total;
+        track!.style.transform = `translateX(-${current * 100}%)`;
+        dots.forEach((d, i) => {
+          d.style.width = i === current ? "1rem" : "0.375rem";
+          d.style.opacity = i === current ? "1" : "0.45";
+        });
+      }
 
-    function slideTo(idx: number) {
-      current = ((idx % total) + total) % total;
-      track!.style.transform = `translateX(-${current * 100}%)`;
-      dots.forEach((d, i) => {
-        d.style.width = i === current ? "1rem" : "0.375rem";
-        d.style.opacity = i === current ? "1" : "0.45";
-      });
+      function startTimer() {
+        timer = setInterval(() => slideTo(current + 1), 3800);
+      }
+
+      slideTo(0);
+      startTimer();
+
+      let startX = 0;
+      track.addEventListener(
+        "touchstart",
+        (e) => {
+          startX = e.touches[0].clientX;
+        },
+        { passive: true },
+      );
+      track.addEventListener(
+        "touchend",
+        (e) => {
+          const diff = startX - e.changedTouches[0].clientX;
+          if (Math.abs(diff) > 40) {
+            clearInterval(timer);
+            slideTo(diff > 0 ? current + 1 : current - 1);
+            startTimer();
+          }
+        },
+        { passive: true },
+      );
     }
 
-    function startTimer() {
-      timer = setInterval(() => slideTo(current + 1), 3800);
+    // ── Wallet card ───────────────────────────────────────────────────────────
+    const loggedIn = isLoggedIn();
+    const token = getToken();
+
+    // Render tombol yang tepat
+    if (walletAction) {
+      walletAction.innerHTML = loggedIn
+        ? `<a href="/top-up" class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Top Up</a>`
+        : `<a href="/auth/login" class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Masuk</a>`;
     }
 
-    slideTo(0);
-    startTimer();
+    if (!loggedIn || !token) {
+      // Tampilkan teks guest, sembunyikan saldo
+      saldoGuest?.classList.remove("hidden");
+      saldoWrapper?.classList.add("hidden");
+      return;
+    }
 
-    // Touch / swipe
-    let startX = 0;
-    track.addEventListener(
-      "touchstart",
-      (e) => {
-        startX = e.touches[0].clientX;
-      },
-      { passive: true },
-    );
-    track.addEventListener(
-      "touchend",
-      (e) => {
-        const diff = startX - e.changedTouches[0].clientX;
-        if (Math.abs(diff) > 40) {
-          clearInterval(timer);
-          slideTo(diff > 0 ? current + 1 : current - 1);
-          startTimer();
-        }
-      },
-      { passive: true },
-    );
+    // User login: tampilkan saldo
+    saldoGuest?.classList.add("hidden");
+    saldoWrapper?.classList.remove("hidden");
 
+    // Tampilkan cache dulu agar tidak blank
+    const cached = localStorage.getItem("saldo");
+    if (saldoDisplay && cached) {
+      saldoDisplay.textContent = Number(cached).toLocaleString("id-ID");
+    }
+
+    // Fetch saldo terbaru
     async function fetchSaldo() {
-      const token = localStorage.getItem("token");
-      if (!isLoggedIn() || !token) return;
-
       try {
-        const res = await fetch(
-          `${API_URL}/dashboard/my-account`,
-          bearerHeaders(token),
-        );
+        const res = await fetch(`${API_URL}/dashboard/my-account`, {
+          headers: bearerHeaders(token!),
+        });
 
         if (!res.ok) throw new Error("Gagal fetch saldo");
 
         const data = await res.json();
         const saldo = Number(data.saldo ?? 0);
 
-        const saldoEl = document.getElementById("saldo-display");
-        if (saldoEl) {
-          saldoEl.textContent = saldo.toLocaleString("id-ID");
+        if (saldoDisplay) {
+          saldoDisplay.textContent = saldo.toLocaleString("id-ID");
         }
 
-        // sync ke localStorage
         localStorage.setItem("saldo", String(saldo));
-      } catch (error) {
-        console.error("Error fetching saldo:", error);
+      } catch {
+        // Tetap tampilkan cache jika ada
       }
     }
 
-    // Saldo dari localStorage
-    const saldoEl = document.getElementById("saldo-display");
-
-    // 1. tampilkan dari cache dulu
-    if (saldoEl) {
-      const cached = Number(localStorage.getItem("saldo") ?? 0);
-      saldoEl.textContent = cached.toLocaleString("id-ID");
-    }
-
-    // 2. selalu fetch untuk update
     fetchSaldo();
   })();
 </script>

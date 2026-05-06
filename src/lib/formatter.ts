@@ -130,3 +130,30 @@ export function fmt(n: number): string {
   if (n >= 1_000) return `${(n / 1_000).toFixed(0)} rb`;
   return n.toLocaleString("id-ID");
 }
+
+/* =======================
+ * SISA HARI
+ * ======================= */
+export function getRemainingDays(targetDateStr?: string | null): number | "∞" {
+  // kalau explicit ∞
+  if (targetDateStr === "∞") return "∞";
+
+  // kalau tidak ada nilai
+  if (!targetDateStr) return "∞";
+
+  const targetDate = new Date(targetDateStr);
+
+  // kalau invalid date
+  if (isNaN(targetDate.getTime())) return "∞";
+
+  const today = new Date();
+
+  // reset jam
+  today.setHours(0, 0, 0, 0);
+  targetDate.setHours(0, 0, 0, 0);
+
+  const diffTime = targetDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+}

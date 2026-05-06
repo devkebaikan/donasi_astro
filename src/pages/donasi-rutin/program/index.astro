@@ -1,0 +1,52 @@
+---
+import Header from "@/components/layouts/Header.astro";
+import CampaignList from "@/components/ui/CampaignList.astro";
+
+import MainLayout from "@/layouts/MainLayout.astro";
+import { getCampaignShow } from "@/lib/FetchData";
+
+const dataCampaign = await getCampaignShow("rutin");
+
+const campaign = dataCampaign?.data ?? [];
+---
+
+<MainLayout
+  title="Pilih Program Donasi Rutin"
+  description="Cari program kebaikan yang akan ditambahkan ke dalam donasi rutin Anda di Aksiberbagi.com."
+>
+  <Header
+    type="title"
+    text="Pilih program donasi rutin"
+    link="/donasi-rutin/opsi"
+  />
+  <div class="container bg-white min-h-screen">
+    <!-- Hero Stats -->
+    <div
+      class="bg-gradient-to-bl from-primary-400 to-primary-500 rounded-b-xl p-4 pt-16 mb-5"
+    >
+      <p class="text-xs text-primary-100 font-medium mb-0.5">
+        Program tersedia
+      </p>
+      <p class="text-2xl font-semibold text-white mb-0.5">
+        {campaign.length} Program
+      </p>
+      <p class="text-xs text-primary-100">
+        Pilih program terbaik untuk donasi rutinmu
+      </p>
+    </div>
+    {
+      campaign.map((campaign: any) => (
+        <CampaignList
+          link={`/donasi-rutin/program/${campaign.link}`}
+          title={campaign.title}
+          image={campaign.image}
+          mitra={campaign.mitra.name}
+          category={campaign.category.name}
+          progress_achieved={campaign.progress_achieved}
+          collected_amount={campaign.nominal_achieved}
+          days_left={campaign.time_target}
+        />
+      ))
+    }
+  </div>
+</MainLayout>

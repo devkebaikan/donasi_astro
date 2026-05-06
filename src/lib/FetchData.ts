@@ -17,6 +17,24 @@ export async function getCampaignRamadhan() {
   }
 }
 
+// get campaign show
+export async function getCampaignShow(type: string) {
+  try {
+    const res = await fetch(`${baseUrl}/program-show/${type}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) throw new Error("Failed to fetch show campaign");
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching show campaign:", error);
+    return null;
+  }
+}
+
 // get campaign by link
 export async function getCampaignByLink(link: string) {
   const res = await fetch(`${baseUrl}/program/link/${link}`, {
@@ -346,6 +364,51 @@ export async function getUserProfile(token: string) {
     return await res.json();
   } catch (error) {
     console.error("Error fetching user profile:", error);
+    return null;
+  }
+}
+
+// get detail rutin by link
+export async function getRutinDetail(
+  slug: number | string,
+  token: string | null,
+) {
+  try {
+    if (!token) throw new Error("Unauthorized");
+
+    const res = await fetch(`${baseUrl}/rutin/detail/${slug}`, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!res.ok)
+      throw new Error(`Failed to fetch rutin detail for slug: ${slug}`);
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching rutin detail:", error);
+    return null;
+  }
+}
+
+// get program setup by type
+export async function getCampaignSetUp(type: string) {
+  try {
+    const res = await fetch(`${baseUrl}/program-setup/${type}`, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch campaign setup");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching campaign setup:", error);
     return null;
   }
 }

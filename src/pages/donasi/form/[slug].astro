@@ -5,8 +5,7 @@ import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 
 import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
-import { getNominalOptions, getPaymentMethod } from "@/lib/FetchData.ts";
-import { formatRupiah } from "@/lib/formatter";
+import { getPaymentMethod } from "@/lib/FetchData.ts";
 
 const { slug } = Astro.params;
 
@@ -54,9 +53,10 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
         <form id="donation-form" class="p-4 sm:p-6 space-y-5 sm:space-y-6">
           <!-- Nominal Section -->
           <div class="space-y-3 sm:space-y-4">
-            <h5 class="text-base font-semibold text-gray-800">
-              Nominal Donasi
-            </h5>
+            <p class="text-sm font-semibold text-gray-500 mb-3">
+              Nominal donasi
+            </p>
+
             <!-- Quick Amount Buttons -->
             <!-- <span class="text-gray-400 italic mb-2">Pilih nominal donasi</span> -->
 
@@ -70,8 +70,8 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
                 id="nominalRupiah"
                 type="text"
                 name="total"
-                class="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-3.5 border-2 border-gray-200 rounded-lg
-                     focus:border-(--primary-500) focus:ring-2 focus:ring-(--primary-100)
+                class="w-full pl-10 sm:pl-12 pr-4 py-2 border-2 border-gray-200 rounded-lg
+                     focus:border-primary-500 focus:ring-2 focus:ring-primary-100
                      outline-none transition-all text-base sm:text-lg font-medium"
                 placeholder="Masukkan Nominal"
               />
@@ -80,13 +80,13 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
 
           <!-- Payment Method Section -->
           <div class="space-y-2 sm:space-y-3">
-            <h5 class="text-sm font-semibold text-gray-800">
+            <p class="text-sm font-semibold text-gray-500 mb-3">
               Metode Pembayaran
-            </h5>
+            </p>
 
             <div
               class="flex items-center justify-between p-2.5 bg-gray-50
-                   border-2 border-gray-200 rounded-lg hover:border-(--primary-300)
+                   border-2 border-gray-200 rounded-lg hover:border-primary-300
                    transition-colors"
             >
               <img
@@ -98,7 +98,7 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
               <div class="flex-1 px-3 sm:px-4">
                 <span
                   id="payment-name"
-                  class="text-sm text-gray-700 font-medium"
+                  class="text-sm text-neutral-500 font-medium"
                 >
                   Pilih Metode Pembayaran
                 </span>
@@ -119,20 +119,22 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
 
           <!-- Personal Info Section -->
           <div class="space-y-4 pt-1 sm:pt-2">
-            <h5 class="text-base font-semibold text-gray-800">Data Donatur</h5>
+            <h5 class="text-sm font-semibold text-gray-500 mb-3">
+              Data Donatur
+            </h5>
 
             <!-- Name -->
             <div class="space-y-2">
-              <label class="block text-xs sm:text-sm font-medium text-gray-700">
+              <label class="block text-xs font-medium text-neutral-500">
                 Nama Lengkap
               </label>
               <input
                 id="fullName"
                 type="text"
                 name="name"
-                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200
-                     rounded-lg focus:border-(--primary-500)
-                     focus:ring-2 focus:ring-(--primary-100) outline-none"
+                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-200
+                     rounded-lg focus:border-primary-500
+                     focus:ring-2 focus:ring-primary-100 outline-none"
                 placeholder="Masukkan nama lengkap"
                 required
               />
@@ -141,11 +143,11 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
                 <input
                   type="checkbox"
                   id="hideNameCheck"
-                  class="w-4 h-4 sm:w-5 sm:h-5 accent-(--primary-500) cursor-pointer"
+                  class="w-4 h-4 sm:w-5 sm:h-5 accent-primary-500 cursor-pointer"
                 />
                 <label
                   for="hideNameCheck"
-                  class="text-xs sm:text-sm text-gray-600 cursor-pointer"
+                  class="text-xs text-gray-600 cursor-pointer"
                 >
                   Sembunyikan nama <span class="italic"
                     >(Sebagai Hamba Allah)</span
@@ -156,16 +158,16 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
 
             <!-- Phone -->
             <div class="space-y-2">
-              <label class="block text-xs sm:text-sm font-medium text-gray-700">
+              <label class="block text-xs font-medium text-neutral-500">
                 Nomor WhatsApp
               </label>
               <input
                 id="noWa"
                 type="tel"
                 name="phone"
-                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200
-                     rounded-lg focus:border-(--primary-500)
-                     focus:ring-2 focus:ring-(--primary-100) outline-none"
+                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-200
+                     rounded-lg focus:border-primary-500
+                     focus:ring-2 focus:ring-primary-100 outline-none"
                 placeholder="Contoh: 08123456789"
                 required
               />
@@ -173,7 +175,7 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
 
             <!-- Message -->
             <div class="space-y-2">
-              <label class="block text-xs sm:text-sm font-medium text-gray-700">
+              <label class="block text-xs font-medium text-neutral-500">
                 Pesan dan Doa <span class="text-gray-400 font-normal"
                   >(Opsional)</span
                 >
@@ -182,9 +184,9 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
                 id="message"
                 name="doa"
                 rows="3"
-                class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border-2 border-gray-200
-                     rounded-lg focus:border-(--primary-500)
-                     focus:ring-2 focus:ring-(--primary-100) outline-none resize-none"
+                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-200
+                     rounded-lg focus:border-primary-500
+                     focus:ring-2 focus:ring-primary-100 outline-none resize-none"
                 placeholder="Tuliskan doa atau pesan..."></textarea>
             </div>
           </div>
@@ -194,7 +196,7 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
             <button
               type="submit"
               id="btn-konfirmasi"
-              class="w-full py-3 sm:py-4 px-6 rounded-lg
+              class="w-full py-3 px-6 rounded-lg
                    text-base sm:text-lg font-semibold text-white
                    bg-linear-to-r from-(--secondary-500) to-(--secondary-500)
                    hover:from-(--secondary-600) hover:to-(--secondary-600)
@@ -229,9 +231,7 @@ const paymentMethods = dataPaymentMethods?.data ?? [];
 
       <!-- Trust Badge -->
       <div class="mt-4 sm:mt-6 text-center">
-        <p class="text-xs sm:text-sm text-gray-500">
-          Transaksi aman dan terpercaya 🔒
-        </p>
+        <p class="text-xs text-gray-500">Transaksi aman dan terpercaya 🔒</p>
       </div>
     </section>
   </div>

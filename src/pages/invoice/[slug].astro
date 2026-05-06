@@ -25,7 +25,7 @@ const payment = invoice?.data?.payment_method ?? {};
 const donationAmount = invoice?.data?.nominal ?? 0;
 const isPaid = invoice?.data?.status === "Paid";
 const payment_url = invoice?.data?.payment_url;
-const idProgram = invoice?.data.items[0].program.id ?? 0;
+// const idProgram = invoice?.data.items[0].program.id ?? 0;
 
 const qrPayload =
   payment?.name === "Qris"
@@ -48,7 +48,6 @@ const qrPayload =
     data-paid={isPaid}
     data-payment-url={payment_url} 
     data-qr-code={qrPayload}
-    data-id-Program={idProgram}
     class="min-h-screen bg-gray-50"
   >
     <div class="container bg-white">
@@ -259,37 +258,11 @@ const qrPayload =
               </svg>
               Chat Admin
             </a>
-
-            <!-- <a
-              id="donasi-program-lain"
-              href="/donasi"
-              class="block w-full text-center bg-white hover:bg-gray-50 text-primary-600 font-semibold py-3 px-6 rounded-md border-2 border-primary-500 hover:border-primary-600 transition-all duration-200"
-            >
-              Donasi ke Program Lain
-            </a> -->
           </div>
         </div>
       </div>
     </div>
   </section>
-<!--   
-<script define:vars={{ donationAmount, payment_url, isPaid, slug }}>
-import { sendInitialCheckoutEvent } from "@/lib/pixels";
-
-  document.addEventListener("astro:page-load", () => {
-    sendInitialCheckoutEvent(slug, donationAmount)
-
-  if (isPaid) {
-    setTimeout(() => {
-      window.location.href = `https://aksiberbagi.com/tracking/${slug}`;
-    }, 500);
-  } else if (payment_url) {
-    setTimeout(() => {
-      window.location.href = payment_url;
-    }, 3000);
-  }
-});
-</script> -->
 
 <script>
 import { showToast } from "@/lib/toast";
@@ -307,7 +280,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const isPaid = el.dataset.paid === "true";
   const paymentUrl = el.dataset.paymentUrl;
   const qrCode = el.dataset.qrCode
-  const idProgram = el.dataset.idProgram;
+  // const idProgram = el.dataset.idProgram;
   
   // console.log(idProgram)
  
