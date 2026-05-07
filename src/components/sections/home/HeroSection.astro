@@ -213,7 +213,7 @@ const banners = [
         if (!res.ok) throw new Error("Gagal fetch saldo");
 
         const data = await res.json();
-        const saldo = Number(data.saldo ?? 0);
+        const saldo = Number(data?.data?.dompet_kebaikan.saldo ?? 0);
 
         if (saldoDisplay) {
           saldoDisplay.textContent = saldo.toLocaleString("id-ID");

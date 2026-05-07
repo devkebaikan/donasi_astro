@@ -1,5 +1,3 @@
-const baseUrl = import.meta.env.ASTRO_API_URL;
-
 // initiate checkout
 export async function postInitiateCheckout(data: any) {
   try {

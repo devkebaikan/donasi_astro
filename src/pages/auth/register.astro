@@ -127,9 +127,9 @@ import MainLayout from "@/layouts/MainLayout.astro";
 
   <script>
     import { showToast } from "@/lib/toast";
+    import { useApi } from "@/lib/api";
 
-    const API_URL = import.meta.env.ASTRO_API_URL;
-    const SITE_KEY = import.meta.env.ASTRO_PUBLIC_SITE_KEY_CAPTCHA;
+    const SITE_KEY = import.meta.env.PUBLIC_SITE_KEY_CAPTCHA;
 
     let captchaVerified = false;
     let captchaWidgetId: number | null = null;
@@ -215,21 +215,12 @@ import MainLayout from "@/layouts/MainLayout.astro";
         setLoading(true);
 
         try {
-          const response = await fetch(`${API_URL}/register`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name,
-              phone,
-              email,
-              "g-recaptcha-response": captchaToken,
-            }),
+          await useApi().post("/register", {
+            name,
+            phone,
+            email,
+            "g-recaptcha-response": captchaToken,
           });
-
-          if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData?.message ?? "Registrasi gagal, coba lagi");
-          }
 
           const expires = new Date(Date.now() + 86400 * 1000).toUTCString();
           document.cookie = `authphone=${encodeURIComponent(phone)}; expires=${expires}; path=/`;

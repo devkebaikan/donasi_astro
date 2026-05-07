@@ -1,0 +1,244 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { formatRupiah } from "@/lib/formatter";
+import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
+
+const API_URL = import.meta.env.ASTRO_API_URL;
+
+const pmRes = await fetch(
+  `${API_URL}/payment/payment-method?program_link=infaq`,
+  {
+    headers: { Accept: "application/json" },
+  },
+);
+const pmData = pmRes.ok ? await pmRes.json() : null;
+const paymentMethods: any[] = (pmData?.data ?? []).filter(
+  (m: any) => ["wallet", "VA", "bank"].includes(m.type) || m.name === "GoPay",
+);
+
+const nominalOptions = [10000, 50000, 100000, 200000, 500000, 1000000];
+---
+
+<MainLayout
+  title="Top Up Saku Berbagi"
+  description="Top up saldo Saku Berbagi Anda."
+>
+  <Header type="notshare" text="Top Up Saku Berbagi" link="/" />
+
+  <div
+    id="topup-page"
+    data-api-url={API_URL}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-16 pb-32"
+  >
+    <div class="container py-4 space-y-3">
+      <!-- Nominal Input -->
+      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+        <p class="text-sm font-semibold text-gray-500 mb-3">Nominal top up</p>
+
+        <div class="relative mb-3">
+          <span
+            class="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold pointer-events-none"
+          >
+            Rp
+          </span>
+          <input
+            id="nominal-input"
+            type="text"
+            inputmode="numeric"
+            placeholder="Masukkan nominal"
+            class="w-full pl-10 pr-4 py-3 rounded-md border border-gray-200 text-sm font-semibold text-gray-800 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <div class="grid grid-cols-3 gap-2">
+          {
+            nominalOptions.map((n) => (
+              <button
+                type="button"
+                class="nominal-chip text-xs py-2 px-1 rounded-md border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
+                data-value={n}
+              >
+                {formatRupiah(n)}
+              </button>
+            ))
+          }
+        </div>
+
+        <p class="text-[11px] text-gray-400 mt-3 ml-2">
+          Minimal top up Rp10.000
+        </p>
+      </div>
+
+      <!-- Payment Method -->
+      <div class="bg-white rounded-md border border-gray-100 shadow-sm p-4">
+        <p class="text-sm font-semibold text-gray-500 mb-3">
+          Metode pembayaran
+        </p>
+        <button
+          id="open-payment-modal"
+          type="button"
+          class="w-full flex items-center justify-between border border-gray-200 rounded-md px-4 py-3 hover:border-primary-400 hover:bg-primary-50 transition-all duration-150"
+        >
+          <div class="flex items-center gap-3">
+            <img
+              id="payment-img"
+              src=""
+              alt=""
+              width="64"
+              height="32"
+              class="h-8 w-auto object-contain hidden"
+            />
+            <span id="payment-name" class="text-sm text-gray-400">
+              Pilih metode pembayaran
+            </span>
+          </div>
+          <span
+            class="text-xs text-primary-600 font-semibold border border-primary-200 rounded-lg px-3 py-1 shrink-0"
+          >
+            Pilih
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed bottom bar -->
+  <div
+    class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-4 py-4"
+  >
+    <div class="max-w-[480px] mx-auto">
+      <button
+        id="btn-submit"
+        type="button"
+        class="w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-xl transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        Top Up Sekarang
+      </button>
+    </div>
+  </div>
+
+  <PaymentMethodModal paymentMethods={paymentMethods} />
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { getToken } from "@/lib/auth";
+
+  const page = document.getElementById("topup-page") as HTMLElement;
+  const API_URL = page?.dataset.apiUrl ?? "";
+  const token = getToken();
+
+  let amount = 0;
+  let paymentMethodId = "";
+  let paymentSelected = false;
+  let isProcessing = false;
+
+  const nominalInput = document.getElementById(
+    "nominal-input",
+  ) as HTMLInputElement;
+  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
+  const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
+  const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
+  const openModalBtn = document.getElementById(
+    "open-payment-modal",
+  ) as HTMLButtonElement;
+  // ── Format angka tanpa library ────────────────────────────────────────────
+  function formatDisplay(n: number) {
+    return n.toLocaleString("id-ID");
+  }
+
+  function setChipActive(activeBtn: HTMLButtonElement | null) {
+    document
+      .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+      .forEach((b) => {
+        const on = b === activeBtn;
+        b.classList.toggle("border-primary-500", on);
+        b.classList.toggle("bg-primary-50", on);
+        b.classList.toggle("text-primary-700", on);
+        b.classList.toggle("border-gray-200", !on);
+        b.classList.toggle("text-gray-500", !on);
+      });
+  }
+
+  // ── Nominal chips ─────────────────────────────────────────────────────────
+  document
+    .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        amount = Number(btn.dataset.value);
+        nominalInput.value = formatDisplay(amount);
+        setChipActive(btn);
+      });
+    });
+
+  nominalInput.addEventListener("input", () => {
+    const raw = nominalInput.value.replace(/[^0-9]/g, "");
+    amount = raw ? parseInt(raw, 10) : 0;
+    // reformat saat user mengetik
+    if (raw) nominalInput.value = formatDisplay(amount);
+    setChipActive(null);
+  });
+
+  // ── Modal ─────────────────────────────────────────────────────────────────
+  openModalBtn?.addEventListener("click", () => {
+    (window as any).openPaymentModal?.();
+  });
+
+  window.addEventListener("payment:selected", (e: Event) => {
+    const { id, name, image } = (e as CustomEvent).detail;
+    paymentMethodId = String(id);
+    paymentSelected = true;
+    paymentImg.src = image ?? "";
+    paymentImg.classList.toggle("hidden", !image);
+    paymentNameEl.textContent = name ?? "Pilih metode pembayaran";
+  });
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  btnSubmit.addEventListener("click", async () => {
+    if (isProcessing) return;
+
+    if (amount < 1000) {
+      showToast("Minimal top up Rp1.000", "error");
+      return;
+    }
+    if (!paymentSelected) {
+      showToast("Pilih metode pembayaran terlebih dahulu", "error");
+      return;
+    }
+
+    isProcessing = true;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Memproses...";
+
+    try {
+      const res = await fetch(`${API_URL}/transactions/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          total: [amount],
+          payment_method_id: paymentMethodId,
+          type: "dompet_kebaikan",
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message ?? "Top up gagal");
+
+      window.location.href = `/invoice/${data?.data?.invoice}`;
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Terjadi kesalahan, coba lagi";
+      showToast(msg, "error");
+      isProcessing = false;
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Top Up Sekarang";
+    }
+  });
+</script>

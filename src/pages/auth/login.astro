@@ -3,8 +3,6 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-
-const baseUrl = import.meta.env.ASTRO_API_URL;
 ---
 
 <MainLayout
@@ -13,10 +11,7 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
 >
   <Header type="notshare" text="Login" link="/" />
 
-  <div
-    data-base-url={baseUrl}
-    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100"
-  >
+  <div class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100">
     <div class="container space-y-3">
       {/* ── Form Login ── */}
       <!-- Heading -->
@@ -159,11 +154,8 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
   <script>
     import { showToast } from "@/lib/toast";
     import { setToken, isLoggedIn } from "@/lib/auth";
+    import { useApi } from "@/lib/api";
 
-    const baseUrl = (document.querySelector("[data-base-url]") as HTMLElement)
-      ?.dataset.baseUrl;
-
-    // Redirect jika sudah login
     if (isLoggedIn()) {
       const params = new URLSearchParams(window.location.search);
       window.location.replace(params.get("from") ?? "/home");
@@ -171,23 +163,14 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
 
     document.addEventListener("DOMContentLoaded", () => {
       const form = document.getElementById("login-form") as HTMLFormElement;
-      const btnLogin = document.getElementById(
-        "btn-login",
-      ) as HTMLButtonElement;
+      const btnLogin = document.getElementById("btn-login") as HTMLButtonElement;
       const errorBox = document.getElementById("login-error") as HTMLElement;
-      const errorText = document.getElementById(
-        "login-error-text",
-      ) as HTMLElement;
-      const toggleBtn = document.getElementById(
-        "toggle-password",
-      ) as HTMLButtonElement;
-      const passwordInput = document.getElementById(
-        "password",
-      ) as HTMLInputElement;
+      const errorText = document.getElementById("login-error-text") as HTMLElement;
+      const toggleBtn = document.getElementById("toggle-password") as HTMLButtonElement;
+      const passwordInput = document.getElementById("password") as HTMLInputElement;
       const eyeIcon = document.getElementById("eye-icon") as HTMLElement;
       const eyeOffIcon = document.getElementById("eye-off-icon") as HTMLElement;
 
-      // ── Toggle password visibility ─────────────────────────────────────────
       toggleBtn.addEventListener("click", () => {
         const isHidden = passwordInput.type === "password";
         passwordInput.type = isHidden ? "text" : "password";
@@ -195,7 +178,6 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
         eyeOffIcon.classList.toggle("hidden", !isHidden);
       });
 
-      // ── Helpers ────────────────────────────────────────────────────────────
       function showError(msg: string) {
         errorText.textContent = msg;
         errorBox.classList.remove("hidden");
@@ -212,14 +194,11 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
         btnLogin.textContent = loading ? "Memuat..." : "Masuk";
       }
 
-      // ── Submit ─────────────────────────────────────────────────────────────
       form.addEventListener("submit", async (e) => {
         e.preventDefault();
         hideError();
 
-        const phone = (
-          document.getElementById("phone") as HTMLInputElement
-        ).value.trim();
+        const phone = (document.getElementById("phone") as HTMLInputElement).value.trim();
         const password = passwordInput.value;
 
         if (!phone || !password) {
@@ -228,22 +207,12 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
         }
 
         setLoading(true);
-
         try {
-          const res = await fetch(`${baseUrl}/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ phone, password }),
-          });
-
-          const json = await res.json();
-          if (!res.ok) throw new Error(json?.message ?? "Login gagal");
-
-          const token = json?.data?.token;
+          const { data } = await useApi().post("/login", { phone, password });
+          const token = data?.data?.token;
           if (!token) throw new Error("Token tidak ditemukan");
 
           setToken(token);
-
           const params = new URLSearchParams(window.location.search);
           window.location.href = params.get("from") ?? "/home";
         } catch (err: any) {

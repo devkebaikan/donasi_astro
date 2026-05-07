@@ -1,6 +1,7 @@
 ---
 import { Image } from 'astro:assets';
-import logo from '/public/images/icons/akber-new-putih.webp';
+import logo_white from '/public/images/icons/akber-new-putih.webp';
+import logo_green from '/public/images/icons/akber-green.webp';
 
 // Header.astro
 interface Props {
@@ -28,10 +29,10 @@ const navItems = [
         <!-- Logo -->
         <a
           class="flex-shrink-0 w-24 md:w-28 transition-transform duration-300 hover:scale-[1.02]"
-          href="/"
+          href="/home"
         >
           <Image
-            src={logo}
+            src={logo_white}
             alt="brand_logo"
             class="w-full h-auto object-contain"
             height={60}
@@ -128,12 +129,12 @@ const navItems = [
        <!-- Logo -->
         <a
           class="flex-shrink-0 w-28 md:w-36 transition-transform duration-300 hover:scale-105"
-          href="/"
+          href="/home"
         >
           <Image
             alt="brand_logo"
             class="w-full h-auto object-contain"
-            src={logo}
+            src={logo_white}
             height={40}
             height={80}
           />

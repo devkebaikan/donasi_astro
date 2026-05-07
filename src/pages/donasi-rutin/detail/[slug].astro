@@ -206,7 +206,7 @@ const infoRows = [
         <!-- Case 1: Invoice pending → Bayar Sekarang -->
         {isPending && (
           
-         <a   href={`/donasi-rutin/invoice/${invoicing.invoice}`}
+         <a   href={`/invoice/${invoicing.invoice}`}
             class="group relative w-full flex items-center justify-center gap-2 bg-linear-to-r from-orange-400 to-orange-600 text-white text-sm font-bold py-4 rounded-2xl shadow-md shadow-orange-100 hover:shadow-lg active:scale-[0.98] transition-all overflow-hidden"
           >
             <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>
@@ -220,7 +220,7 @@ const infoRows = [
         <!-- Case 2: Ada invoice (bukan pending) ATAU status tidak aktif → Pilih lain -->
         {!isPending && (invoicing !== null || status !== "active") && (
           
-        <a    href="/donasi-rutin/o[si"
+        <a    href="/donasi-rutin/opsi"
             class="group relative w-full flex items-center justify-center gap-2 bg-linear-to-r from-primary-400 to-primary-600 text-white text-sm font-bold py-4 rounded-2xl shadow-md shadow-primary-100 hover:shadow-lg active:scale-[0.98] transition-all overflow-hidden"
           >
             <div class="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity"></div>

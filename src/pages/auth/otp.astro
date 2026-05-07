@@ -3,8 +3,6 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-
-const baseUrl = import.meta.env.ASTRO_API_URL;
 ---
 
 <MainLayout
@@ -13,10 +11,7 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
 >
   <Header type="notshare" text="Verifikasi OTP" link="/auth/register" />
 
-  <div
-    data-base-url={baseUrl}
-    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100"
-  >
+  <div class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100">
     <div class="container space-y-3">
       <!-- Heading -->
       <div
@@ -34,7 +29,7 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
       <!-- Error Banner -->
       <div
         id="otp-error"
-        class="hidden flex items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl px-3 py-2.5"
+        class="hidden items-center gap-2 bg-red-50 border border-red-200 text-red-600 text-xs rounded-xl px-3 py-2.5"
       >
         <svg class="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
           <path
@@ -109,10 +104,7 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
 
 <script>
   import { showToast } from "@/lib/toast";
-
-  // Baca baseUrl dari data attribute (di luar DOMContentLoaded)
-  const baseUrl = (document.querySelector("[data-base-url]") as HTMLElement)
-    ?.dataset.baseUrl;
+  import { useApi } from "@/lib/api";
 
   document.addEventListener("DOMContentLoaded", () => {
     // ── Elemen ─────────────────────────────────────────────────────────────
@@ -266,15 +258,7 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
       setLoading(true, btnVerify, "Verifikasi");
 
       try {
-        const res = await fetch(`${baseUrl}/otp`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ otp: otpString, phone: decodedPhone }),
-        });
-
-        const json = await res.json();
-        if (!res.ok) throw new Error(json?.message ?? "Kode OTP tidak valid");
-
+        await useApi().post("/otp", { otp: otpString, phone: decodedPhone });
         showToast("Verifikasi berhasil!", "success");
         window.location.href = "/set-password";
       } catch (err: any) {
@@ -291,16 +275,7 @@ const baseUrl = import.meta.env.ASTRO_API_URL;
       setLoading(true, btnResend, "Kirim Ulang Kode");
 
       try {
-        const res = await fetch(`${baseUrl}/register`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ phone: decodedPhone }),
-        });
-
-        const json = await res.json();
-        if (!res.ok)
-          throw new Error(json?.message ?? "Gagal mengirim ulang OTP");
-
+        await useApi().post("/register", { phone: decodedPhone });
         showToast("Kode OTP berhasil dikirim ulang", "success");
         clearOtp();
         startCountdown();

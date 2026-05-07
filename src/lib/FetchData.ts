@@ -1,307 +1,110 @@
-const baseUrl = import.meta.env.ASTRO_API_URL;
+import type { AxiosResponse } from "axios";
+import { publicApi, serverApi } from "./api";
+
+// ── Generic wrapper: returns null on error instead of throwing ────────────────
+// Non-generic dengan AxiosResponse eksplisit — hindari T={} inference issue
+async function safe(
+  fn: () => Promise<AxiosResponse<any>>,
+  label: string,
+): Promise<any> {
+  try {
+    const { data } = await fn();
+    return data;
+  } catch (error) {
+    console.error(`[API] ${label}:`, error);
+    return null;
+  }
+}
 
 export async function getCampaignRamadhan() {
-  try {
-    const res = await fetch(`${baseUrl}/program-show/ramadhan`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch ramadhan campaign");
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching ramadhan campaign:", error);
-    return null;
-  }
+  return safe(() => publicApi.get("/program-show/ramadhan"), "getCampaignRamadhan");
 }
 
-// get campaign show
 export async function getCampaignShow(type: string) {
-  try {
-    const res = await fetch(`${baseUrl}/program-show/${type}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch show campaign");
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching show campaign:", error);
-    return null;
-  }
+  return safe(() => publicApi.get(`/program-show/${type}`), "getCampaignShow");
 }
 
-// get campaign by link
+// Throws on error (caller handles)
 export async function getCampaignByLink(link: string) {
-  const res = await fetch(`${baseUrl}/program/link/${link}`, {
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch campaign data by ID");
-  }
-
-  const data = await res.json();
+  const { data } = await publicApi.get(`/program/link/${link}`);
   return data;
 }
 
-//  get Report by Link
 export async function getReportByLink(link: string) {
-  try {
-    const res = await fetch(`${baseUrl}/report?program_link=${link}&limit=1`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch report data for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching report with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/report", { params: { program_link: link, limit: 1 } }),
+    "getReportByLink",
+  );
 }
 
-// get Donor by link
 export async function getDonorsByLink(link: string) {
-  try {
-    const res = await fetch(
-      `${baseUrl}/program/link/${link}/donors?limit=10&mode=pagination&page=1`,
-
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      },
-    );
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch donor data for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching donor with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () =>
+      publicApi.get(`/program/link/${link}/donors`, {
+        params: { limit: 10, mode: "pagination", page: 1 },
+      }),
+    "getDonorsByLink",
+  );
 }
 
-// get fundraiser by link
 export async function getFundraisersByLink(link: string) {
-  try {
-    const res = await fetch(
-      `${baseUrl}/program/link/${link}/fundraisers?limit=6&mode=pagination&page=1`,
-      {
-        headers: {
-          Accept: "application/json",
-          // Efficient API caching
-        },
-      },
-    );
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch fundraiser data for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching fundraiser with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () =>
+      publicApi.get(`/program/link/${link}/fundraisers`, {
+        params: { limit: 6, mode: "pagination", page: 1 },
+      }),
+    "getFundraisersByLink",
+  );
 }
 
-// get nominal option by link
 export async function getNominalOptions(link: string) {
-  try {
-    const res = await fetch(
-      `${baseUrl}/payment/nominal-option?program_link=${link}`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      },
-    );
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch program data for ID: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching program with Link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/payment/nominal-option", { params: { program_link: link } }),
+    "getNominalOptions",
+  );
 }
 
-// get payment method by link
 export async function getPaymentMethod(link: string) {
-  try {
-    const response = await fetch(
-      `${baseUrl}/payment/payment-method?program_link=${link}`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      },
-    );
-
-    return await response.json();
-  } catch (error) {
-    console.error("Error fetching payment methods:", error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/payment/payment-method", { params: { program_link: link } }),
+    "getPaymentMethod",
+  );
 }
 
-// get invoice donation
 export async function getInvoice(inv: string | null) {
-  try {
-    const res = await fetch(`${baseUrl}/transactions/invoice/${inv}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch invoice data for inv: ${inv}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching invoice with inv ${inv}:`, error);
-    return null;
-  }
+  return safe(() => publicApi.get(`/transactions/invoice/${inv}`), "getInvoice");
 }
 
-// get report by link
 export async function getAllReportByLink(link: string | null) {
-  try {
-    const res = await fetch(`${baseUrl}/report?program_link=${link}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch report for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching report with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/report", { params: { program_link: link } }),
+    "getAllReportByLink",
+  );
 }
 
-// get project by link
 export async function getProjectByLink(link: string | null) {
-  try {
-    const res = await fetch(`${baseUrl}/project?program_link=${link}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch project summary for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching project summary with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/project", { params: { program_link: link } }),
+    "getProjectByLink",
+  );
 }
 
-// get project summary by link
 export async function getProjectSummaryByLink(link: string | null) {
-  try {
-    const res = await fetch(`${baseUrl}/project/summary?program_link=${link}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch project summary for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching project summary with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/project/summary", { params: { program_link: link } }),
+    "getProjectSummaryByLink",
+  );
 }
 
-// get project mitra salur by link
 export async function getMitraSalurByLink(link: string | null) {
-  try {
-    const res = await fetch(
-      `${baseUrl}/program/mitra-salur?program_link=${link}`,
-      {
-        headers: {
-          Accept: "application/json",
-        },
-      },
-    );
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch mitra project for link: ${link}`);
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error(`Error fetching mitra project with link ${link}:`, error);
-    return null;
-  }
+  return safe(
+    () => publicApi.get("/program/mitra-salur", { params: { program_link: link } }),
+    "getMitraSalurByLink",
+  );
 }
 
-// get all donors
-export async function getAllDonors() {
-  try {
-    const res = await fetch(`/program/link/${baseUrl}/donors`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch all donors");
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching all donors:", error);
-    return null;
-  }
-}
-
-// get all campaign category
 export async function getCampaignCategories() {
-  try {
-    const res = await fetch(`${baseUrl}/program-category`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch campaign categories");
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching campaign categories:", error);
-    return null;
-  }
+  return safe(() => publicApi.get("/program-category"), "getCampaignCategories");
 }
 
 export interface CampaignParams {
@@ -312,103 +115,38 @@ export interface CampaignParams {
   search?: string | null;
 }
 
-// get all campaign
 export async function getAllCampaigns(params: CampaignParams = {}) {
-  try {
-    const query = new URLSearchParams();
-    for (const [k, v] of Object.entries(params)) {
-      if (v !== null && v !== undefined && v !== "") {
-        query.set(k, String(v));
-      }
-    }
-
-    const res = await fetch(`${baseUrl}/program?${query}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch programs");
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching programs:", error);
-    return null;
-  }
+  // Strip null/undefined/empty to keep query string clean
+  const filtered = Object.fromEntries(
+    Object.entries(params).filter(([, v]) => v != null && v !== ""),
+  );
+  return safe(
+    () => publicApi.get("/program", { params: filtered }),
+    "getAllCampaigns",
+  );
 }
 
-// validate token (throws if invalid — gunakan di middleware)
+// Throws if token is invalid — used as a guard
 export async function getIsTokenValid(token: string): Promise<boolean> {
-  const res = await fetch(`${baseUrl}/validate-token`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  if (!res.ok) throw new Error("Invalid token");
+  await serverApi(token).post("/validate-token");
   return true;
 }
 
-// get authenticated user profile
 export async function getUserProfile(token: string) {
-  try {
-    const res = await fetch(`${baseUrl}/user`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) throw new Error("Unauthorized");
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching user profile:", error);
-    return null;
-  }
+  return safe(() => serverApi(token).get("/user"), "getUserProfile");
 }
 
-// get detail rutin by link
 export async function getRutinDetail(
   slug: number | string,
   token: string | null,
 ) {
-  try {
-    if (!token) throw new Error("Unauthorized");
-
-    const res = await fetch(`${baseUrl}/rutin/detail/${slug}`, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (!res.ok)
-      throw new Error(`Failed to fetch rutin detail for slug: ${slug}`);
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching rutin detail:", error);
-    return null;
-  }
+  if (!token) return null;
+  return safe(
+    () => serverApi(token).get(`/rutin/detail/${slug}`),
+    "getRutinDetail",
+  );
 }
 
-// get program setup by type
 export async function getCampaignSetUp(type: string) {
-  try {
-    const res = await fetch(`${baseUrl}/program-setup/${type}`, {
-      headers: {
-        Accept: "application/json",
-      },
-    });
-
-    if (!res.ok) {
-      throw new Error("Failed to fetch campaign setup");
-    }
-
-    return await res.json();
-  } catch (error) {
-    console.error("Error fetching campaign setup:", error);
-    return null;
-  }
+  return safe(() => publicApi.get(`/program-setup/${type}`), "getCampaignSetUp");
 }
