@@ -3,7 +3,7 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-import { formatRupiah } from "@/lib/formatter";
+import { formatCompactNumber } from "@/lib/formatter";
 import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
 
 const API_URL = import.meta.env.ASTRO_API_URL;
@@ -35,7 +35,7 @@ const nominalOptions = [10000, 50000, 100000, 200000, 500000, 1000000];
   >
     <div class="container py-4 space-y-3">
       <!-- Nominal Input -->
-      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4">
+      <div class="bg-white rounded border border-gray-100 shadow-sm p-4">
         <p class="text-sm font-semibold text-gray-500 mb-3">Nominal top up</p>
 
         <div class="relative mb-3">
@@ -61,7 +61,7 @@ const nominalOptions = [10000, 50000, 100000, 200000, 500000, 1000000];
                 class="nominal-chip text-xs py-2 px-1 rounded-md border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
                 data-value={n}
               >
-                {formatRupiah(n)}
+                {formatCompactNumber(n)}
               </button>
             ))
           }
@@ -113,7 +113,7 @@ const nominalOptions = [10000, 50000, 100000, 200000, 500000, 1000000];
       <button
         id="btn-submit"
         type="button"
-        class="w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-xl transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+        class="w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
       >
         Top Up Sekarang
       </button>

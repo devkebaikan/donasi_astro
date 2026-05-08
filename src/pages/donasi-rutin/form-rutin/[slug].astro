@@ -26,7 +26,7 @@ const headers = {
 };
 
 const [accountRes, dataPaymentMethods, dataPorgamSetup] = await Promise.all([
-  fetch(`${API_URL}/user`, { headers }),
+  fetch(`${API_URL}/dashboard/my-account`, { headers }),
   getPaymentMethod(slug),
   getCampaignSetUp("rutin"),
 ]);
@@ -36,7 +36,10 @@ const programId = (dataPorgamSetup?.data?.[0]?.value ?? "") as string;
 const walletBalance = (account?.data?.dompet_kebaikan?.saldo ?? 0) as number;
 const paymentMethods = dataPaymentMethods?.data ?? [];
 
-const BANNER: Record<Slug, { title: string; description: string; image: string }> = {
+const BANNER: Record<
+  Slug,
+  { title: string; description: string; image: string }
+> = {
   dipilihkan: {
     title: "Program Donasi Rutin Dipilihkan",
     description: "Donasi rutin ke program yang dipilihkan Beramal Bersama",
@@ -88,7 +91,7 @@ const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
     <div class="container pb-4 md:pb-6 space-y-3">
       <!-- Banner -->
       <div
-        class="bg-gradient-to-t from-white to-primary-50 rounded-b-xl border border-gray-100 shadow-sm p-4 pt-18 flex items-center gap-3"
+        class="bg-gradient-to-t from-white to-primary-50 rounded-b border border-gray-100 shadow-sm p-4 pt-18 flex items-center gap-3"
       >
         <div
           class="w-12 h-12 shrink-0 rounded-full bg-gray-50 border border-gray-100"

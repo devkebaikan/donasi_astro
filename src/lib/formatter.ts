@@ -18,6 +18,37 @@ export function formatRupiah(
 }
 
 /* =======================
+ * FORMAT ANGKA RINGKAS
+ * ======================= */
+export function formatCompactNumber(
+  value: number | string,
+  options?: {
+    withSymbol?: boolean;
+    minimumFractionDigits?: number;
+  },
+) {
+  const number = Number(value) || 0;
+  const fractionDigits = options?.minimumFractionDigits ?? 0;
+
+  let formatted = "";
+
+  if (number >= 1_000_000_000) {
+    formatted = `${(number / 1_000_000_000).toFixed(fractionDigits)}B`;
+  } else if (number >= 1_000_000) {
+    formatted = `${(number / 1_000_000).toFixed(fractionDigits)}M`;
+  } else if (number >= 1_000) {
+    formatted = `${(number / 1_000).toFixed(fractionDigits)}K`;
+  } else {
+    formatted = number.toString();
+  }
+
+  // Hapus .0
+  formatted = formatted.replace(/\.0+(?=[KMB])/i, "");
+
+  return options?.withSymbol === false ? formatted : `Rp ${formatted}`;
+}
+
+/* =======================
  * FORMAT TANGGAL (dd MMM yyyy)
  * ======================= */
 export function formatDate(

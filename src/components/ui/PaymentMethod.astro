@@ -1,157 +1,326 @@
 ---
 const { paymentMethods = [] } = Astro.props;
+
+const banks = (paymentMethods as any[]).filter(
+  (m: any) => m.type === "bank" && m.is_active === "1",
+);
+const vas = (paymentMethods as any[]).filter(
+  (m: any) => m.type === "VA" && m.is_active === "1",
+);
+const ewallets = (paymentMethods as any[]).filter(
+  (m: any) => m.type === "e_wallet" && m.is_active === "1",
+);
+const wallets = (paymentMethods as any[]).filter(
+  (m: any) => m.type === "wallet" && m.is_active === "1",
+);
 ---
 
+<!-- Backdrop -->
 <div
   id="payment-modal"
-  class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 p-4"
+  class="fixed inset-0 z-50 hidden items-center justify-center"
+  aria-modal="true"
+  role="dialog"
 >
   <div
-    class="bg-white rounded-xl max-w-110 w-full max-h-[85vh] overflow-hidden"
+    id="modal-backdrop"
+    class="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
   >
+  </div>
+
+  <!-- Bottom Sheet -->
+  <div
+    class="absolute max-w-110 w-full left-1/2 -translate-x-1/2 -translate-y-1/2 top-1/2 bg-white rounded-xl max-h-[80vh] shadow-2xl"
+  >
+    <!-- Pull handle -->
+    <div
+      class="absolute top-2.5 left-1/2 -translate-x-1/2 w-10 h-1 bg-gray-200 rounded-full"
+    >
+    </div>
+
     <!-- Header -->
-    <div class="p-4 border-b border-gray-200 flex justify-between items-center">
+    <div
+      class="flex items-center justify-between px-5 pt-7 pb-4 border-b border-gray-100 shrink-0"
+    >
       <h3 class="text-sm font-bold text-gray-900">Pilih Metode Pembayaran</h3>
       <button
         data-close-modal
-        class="text-gray-500 hover:text-gray-700 text-lg"
+        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition-colors"
         aria-label="Tutup"
       >
-        ✕
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
       </button>
     </div>
 
-    <!-- Content -->
-    <div class="overflow-y-auto max-h-[calc(85vh-64px)] p-4">
-      <!-- BANK TRANSFER -->
-      <h2 class="py-2 text-sm text-gray-500">
-        Transfer bank
-        <span class="block text-xs">
-          (verifikasi manual 1x24 jam, minimal nominal Rp 10.000)
-        </span>
-      </h2>
-
-      <div class="space-y-2">
-        {
-          paymentMethods
-            .filter((method: any) => method.type === "bank")
-            .filter((method: any) => method.is_active === "1")
-            .map((method: any) => (
-              <button
-                type="button"
-                class="payment-method-item w-full flex items-center gap-3 
-                     p-3  border-2 border-gray-200 rounded-md
-                     hover:border-primary-500
-                     hover:bg-primary-100
-                     transition-all"
-                data-id={method.id}
-                data-name={method.name}
-                data-image={method.image_url}
-              >
-                <div
-                  class="overflow-hidden w-[80px] 
-                       flex items-center justify-center"
+    <!-- Scrollable content -->
+    <div class="overflow-y-auto flex-1 px-5 pb-8 pt-4 space-y-5">
+      <!-- Saku Berbagi (wallet) -->
+      {
+        wallets.length > 0 && (
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+              Saku Berbagi
+            </p>
+            <div class="space-y-2">
+              {wallets.map((method: any) => (
+                <button
+                  type="button"
+                  class="payment-method-item w-full flex items-center gap-3 p-3.5 border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-all active:scale-[0.98]"
+                  data-id={method.id}
+                  data-name={method.name}
+                  data-image={method.image_url}
+                  data-type={method.type}
                 >
-                  <img
-                    src={method.image_url}
-                    alt={method.name}
-                    class="h-5  w-auto object-contain"
-                  />
-                </div>
-                <span class="flex-1 text-left text-sm font-medium text-gray-800">
-                  {method.name}
-                </span>
-              </button>
-            ))
-        }
-      </div>
+                  <div class="w-14 flex items-center justify-center shrink-0">
+                    {method.image_url ? (
+                      <img
+                        src={method.image_url}
+                        alt={method.name}
+                        class="h-6 w-auto object-contain"
+                      />
+                    ) : (
+                      <div class="w-8 h-8 rounded-xl bg-primary-100 flex items-center justify-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          class="text-primary-600"
+                        >
+                          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4" />
+                          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5" />
+                          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <span class="flex-1 text-left text-sm font-medium text-gray-800">
+                    {method.name}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-gray-300 shrink-0"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
 
-      <!-- EWALLET -->
-      <h2 class="mt-4 py-2 text-sm text-gray-500">
-        Pembayaran instan
-        <span class="block text-xs">
-          (verifikasi otomatis, minimal nominal Rp 10.000)
-        </span>
-      </h2>
-
-      <div class="space-y-2">
-        {
-          paymentMethods
-            .filter((method: any) => method.type === "e_wallet")
-            .filter((method: any) => method.is_active === "1")
-            .map((method: any) => (
-              <button
-                type="button"
-                class="payment-method-item w-full flex items-center gap-3
-                     p-3 border-2 border-gray-200 rounded-md
-                     hover:border-primary-500
-                     hover:bg-primary-100
-                     transition-all"
-                data-id={method.id}
-                data-name={method.name}
-                data-image={method.image_url}
-              >
-                <div
-                  class="overflow-hidden w-[80px]
-                       flex items-center justify-center"
+      <!-- Virtual Account -->
+      {
+        vas.length > 0 && (
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Virtual Account
+            </p>
+            <p class="text-[11px] text-gray-400 mb-2.5">
+              Konfirmasi otomatis · min. Rp10.000
+            </p>
+            <div class="space-y-2">
+              {vas.map((method: any) => (
+                <button
+                  type="button"
+                  class="payment-method-item w-full flex items-center gap-3 p-3.5 border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-all active:scale-[0.98]"
+                  data-id={method.id}
+                  data-name={method.name}
+                  data-image={method.image_url}
+                  data-type={method.type}
                 >
-                  <img
-                    src={method.image_url}
-                    alt={method.name}
-                    class="h-5 w-auto object-contain"
-                  />
-                </div>
-                <span class="flex-1 text-left text-sm font-medium text-gray-800">
-                  {method.name}
-                </span>
-              </button>
-            ))
-        }
-      </div>
+                  <div class="w-14 flex items-center justify-center shrink-0">
+                    <img
+                      src={method.image_url}
+                      alt={method.name}
+                      class="h-6 w-auto object-contain"
+                    />
+                  </div>
+                  <span class="flex-1 text-left text-sm font-medium text-gray-800">
+                    {method.name}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-gray-300 shrink-0"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      <!-- Transfer Bank -->
+      {
+        banks.length > 0 && (
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Transfer Bank
+            </p>
+            <p class="text-[11px] text-gray-400 mb-2.5">
+              Verifikasi manual 1×24 jam · min. Rp10.000
+            </p>
+            <div class="space-y-2">
+              {banks.map((method: any) => (
+                <button
+                  type="button"
+                  class="payment-method-item w-full flex items-center gap-3 p-3.5 border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-all active:scale-[0.98]"
+                  data-id={method.id}
+                  data-name={method.name}
+                  data-image={method.image_url}
+                  data-type={method.type}
+                >
+                  <div class="w-14 flex items-center justify-center shrink-0">
+                    <img
+                      src={method.image_url}
+                      alt={method.name}
+                      class="h-6 w-auto object-contain"
+                    />
+                  </div>
+                  <span class="flex-1 text-left text-sm font-medium text-gray-800">
+                    {method.name}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-gray-300 shrink-0"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
+
+      <!-- E-Wallet / Pembayaran Instan -->
+      {
+        ewallets.length > 0 && (
+          <div>
+            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
+              Pembayaran Instan
+            </p>
+            <p class="text-[11px] text-gray-400 mb-2.5">
+              Konfirmasi otomatis · min. Rp10.000
+            </p>
+            <div class="space-y-2">
+              {ewallets.map((method: any) => (
+                <button
+                  type="button"
+                  class="payment-method-item w-full flex items-center gap-3 p-3.5 border border-gray-200 rounded-lg hover:border-primary-400 hover:bg-primary-50 transition-all active:scale-[0.98]"
+                  data-id={method.id}
+                  data-name={method.name}
+                  data-image={method.image_url}
+                  data-type={method.type}
+                >
+                  <div class="w-14 flex items-center justify-center shrink-0">
+                    <img
+                      src={method.image_url}
+                      alt={method.name}
+                      class="h-6 w-auto object-contain"
+                    />
+                  </div>
+                  <span class="flex-1 text-left text-sm font-medium text-gray-800">
+                    {method.name}
+                  </span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    class="text-gray-300 shrink-0"
+                  >
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              ))}
+            </div>
+          </div>
+        )
+      }
     </div>
   </div>
+</div>
 
-  <script>
-    const modal = document.getElementById("payment-modal");
+<script>
+  const modal = document.getElementById("payment-modal");
+  if (!modal) throw new Error("payment-modal not found");
 
-    if (!modal) throw new Error("Payment modal element not found");
+  const backdrop = document.getElementById("modal-backdrop");
 
-    document.querySelectorAll("[data-close-modal]").forEach((btn) => {
-      btn.addEventListener("click", () => close());
-    });
+  function closeModal() {
+    modal!.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
 
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) close();
-    });
+  function openModal() {
+    modal!.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  }
 
-    function close() {
-      if (!modal) return;
-      modal.classList.add("hidden");
-      modal.classList.remove("flex");
-    }
+  backdrop?.addEventListener("click", closeModal);
 
-    function open() {
-      if (!modal) return;
-      modal.classList.remove("hidden");
-      modal.classList.add("flex");
-    }
+  modal.querySelectorAll("[data-close-modal]").forEach((btn) => {
+    btn.addEventListener("click", closeModal);
+  });
 
-    (window as any).openPaymentModal = open;
+  (window as any).openPaymentModal = openModal;
 
-    document.querySelectorAll(".payment-method-item").forEach((item) => {
+  modal
+    .querySelectorAll<HTMLElement>(".payment-method-item")
+    .forEach((item) => {
       item.addEventListener("click", () => {
-        const htmlElement = item as HTMLElement;
         window.dispatchEvent(
           new CustomEvent("payment:selected", {
             detail: {
-              id: Number(htmlElement.dataset.id),
-              name: htmlElement.dataset.name,
-              image: htmlElement.dataset.image,
+              id: Number(item.dataset.id),
+              name: item.dataset.name,
+              image: item.dataset.image,
+              type: item.dataset.type,
             },
           }),
         );
-        close();
+        closeModal();
       });
     });
-  </script>
-</div>
+</script>

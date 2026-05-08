@@ -24,7 +24,7 @@ const headers = {
 };
 
 const [accountRes, campaign, dataPaymentMethods] = await Promise.all([
-  fetch(`${API_URL}/user`, { headers }),
+  fetch(`${API_URL}/dashboard/my-account`, { headers }),
   getCampaignByLink(slug).catch(() => null),
   getPaymentMethod(slug),
 ]);
@@ -41,7 +41,10 @@ const banner = {
 };
 ---
 
-<MainLayout title={banner.title} description="Form donasi rutin Aksiberbagi.com">
+<MainLayout
+  title={banner.title}
+  description="Form donasi rutin Aksiberbagi.com"
+>
   <Header type="title" text={banner.title} link="/donasi-rutin/program" />
 
   <div
@@ -54,9 +57,7 @@ const banner = {
   >
     <div class="container pb-4 md:pb-6 space-y-3">
       <!-- Banner -->
-      <div
-        class="bg-linear-to-t from-white to-primary-50 rounded-b-xl border border-gray-100 shadow-sm"
-      >
+      <div class="bg-linear-to-t from-white to-primary-50 rounded-b shadow-sm">
         {
           banner.image && (
             <Image
@@ -79,14 +80,14 @@ const banner = {
           <div class="flex items-stretch mb-4 overflow-hidden">
             <div class="flex-1 text-center py-3 px-2">
               <p class="text-xs text-gray-400 mb-1">Donasi Terkumpul</p>
-              <p class="text-primary-600 text-sm font-semibold">
+              <p class="text-primary-600 text-sm md:text-base font-semibold">
                 {formatRupiah(campaign?.data?.nominal_achieved ?? 0)}
               </p>
             </div>
             <div class="w-px bg-gray-200"></div>
             <div class="flex-1 text-center py-3 px-2">
               <p class="text-xs text-gray-400 mb-1">Orang Bergabung</p>
-              <p class="text-primary-600 text-sm font-semibold">
+              <p class="text-primary-600 text-sm md:text-base font-semibold">
                 {campaign?.data?.total_donors ?? 0}
               </p>
             </div>
@@ -94,7 +95,10 @@ const banner = {
         </div>
       </div>
 
-      <FormRutin paymentMethods={paymentMethods} walletBalance={walletBalance} />
+      <FormRutin
+        paymentMethods={paymentMethods}
+        walletBalance={walletBalance}
+      />
     </div>
   </div>
 </MainLayout>

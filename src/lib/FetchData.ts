@@ -17,7 +17,10 @@ async function safe(
 }
 
 export async function getCampaignRamadhan() {
-  return safe(() => publicApi.get("/program-show/ramadhan"), "getCampaignRamadhan");
+  return safe(
+    () => publicApi.get("/program-show/ramadhan"),
+    "getCampaignRamadhan",
+  );
 }
 
 export async function getCampaignShow(type: string) {
@@ -32,7 +35,8 @@ export async function getCampaignByLink(link: string) {
 
 export async function getReportByLink(link: string) {
   return safe(
-    () => publicApi.get("/report", { params: { program_link: link, limit: 1 } }),
+    () =>
+      publicApi.get("/report", { params: { program_link: link, limit: 1 } }),
     "getReportByLink",
   );
 }
@@ -59,20 +63,29 @@ export async function getFundraisersByLink(link: string) {
 
 export async function getNominalOptions(link: string) {
   return safe(
-    () => publicApi.get("/payment/nominal-option", { params: { program_link: link } }),
+    () =>
+      publicApi.get("/payment/nominal-option", {
+        params: { program_link: link },
+      }),
     "getNominalOptions",
   );
 }
 
 export async function getPaymentMethod(link: string) {
   return safe(
-    () => publicApi.get("/payment/payment-method", { params: { program_link: link } }),
+    () =>
+      publicApi.get("/payment/payment-method", {
+        params: { program_link: link },
+      }),
     "getPaymentMethod",
   );
 }
 
 export async function getInvoice(inv: string | null) {
-  return safe(() => publicApi.get(`/transactions/invoice/${inv}`), "getInvoice");
+  return safe(
+    () => publicApi.get(`/transactions/invoice/${inv}`),
+    "getInvoice",
+  );
 }
 
 export async function getAllReportByLink(link: string | null) {
@@ -98,13 +111,17 @@ export async function getProjectSummaryByLink(link: string | null) {
 
 export async function getMitraSalurByLink(link: string | null) {
   return safe(
-    () => publicApi.get("/program/mitra-salur", { params: { program_link: link } }),
+    () =>
+      publicApi.get("/program/mitra-salur", { params: { program_link: link } }),
     "getMitraSalurByLink",
   );
 }
 
 export async function getCampaignCategories() {
-  return safe(() => publicApi.get("/program-category"), "getCampaignCategories");
+  return safe(
+    () => publicApi.get("/program-category"),
+    "getCampaignCategories",
+  );
 }
 
 export interface CampaignParams {
@@ -133,7 +150,10 @@ export async function getIsTokenValid(token: string): Promise<boolean> {
 }
 
 export async function getUserProfile(token: string) {
-  return safe(() => serverApi(token).get("/user"), "getUserProfile");
+  return safe(
+    () => serverApi(token).get("/dashboard/my-account"),
+    "getUserProfile",
+  );
 }
 
 export async function getRutinDetail(
@@ -148,5 +168,8 @@ export async function getRutinDetail(
 }
 
 export async function getCampaignSetUp(type: string) {
-  return safe(() => publicApi.get(`/program-setup/${type}`), "getCampaignSetUp");
+  return safe(
+    () => publicApi.get(`/program-setup/${type}`),
+    "getCampaignSetUp",
+  );
 }

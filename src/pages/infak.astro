@@ -1,0 +1,856 @@
+---
+export const prerender = false;
+
+import Footer from "@/components/layouts/Footer.astro";
+import Header from "@/components/layouts/Header.astro";
+import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
+
+import MainLayout from "@/layouts/MainLayout.astro";
+import { getServerToken } from "@/lib/auth";
+import { formatRupiah, formatCompactNumber } from "@/lib/formatter";
+
+const API_URL = import.meta.env.ASTRO_API_URL;
+const token = getServerToken(Astro.cookies);
+
+const fetchOpts = (auth = false) => ({
+  headers: {
+    Accept: "application/json",
+    ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
+  },
+});
+
+const [bannerRes, qrRes, pmRes, donorRes, accountRes] = await Promise.all([
+  fetch(`${API_URL}/image/home-banner`, fetchOpts()),
+  fetch(`${API_URL}/qr-code/infaq`, fetchOpts()),
+  fetch(`${API_URL}/payment/payment-method?program_link=infaq`, fetchOpts()),
+  fetch(`${API_URL}/program/link/infaq/donors?limit=10&page=1`, fetchOpts()),
+  token
+    ? fetch(`${API_URL}/dashboard/my-account`, fetchOpts(true))
+    : Promise.resolve(null),
+]);
+
+const banner = bannerRes.ok ? (await bannerRes.json())?.data : null;
+const qr = qrRes.ok ? (await qrRes.json())?.data : null;
+const pmData = pmRes.ok ? ((await pmRes.json())?.data ?? []) : [];
+const donors = donorRes.ok ? ((await donorRes.json())?.data ?? []) : [];
+const account = accountRes?.ok ? (await accountRes.json())?.data : null;
+
+const isAuth = !!account;
+const userName = account?.name ?? "";
+const userPhone = account?.phone ?? "";
+const walletBal = account?.dompet_kebaikan?.saldo ?? 0;
+
+const paymentMethods: any[] = (pmData as any[]).filter((m: any) => {
+  if (m.type === "wallet") return isAuth;
+  return ["VA", "bank", "e_wallet"].includes(m.type);
+});
+
+const nominalOptions = [10000, 25000, 50000, 100000];
+---
+
+<MainLayout
+  title="Infak"
+  description="Tunaikan infak Anda secara online di Aksiberbagi.com."
+>
+  <Header type="onlyicon" />
+
+  <div
+    id="infaq-page"
+    data-api-url={API_URL}
+    data-wallet={walletBal}
+    data-is-auth={isAuth}
+    data-user-name={userName}
+    data-user-phone={userPhone}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-16"
+  >
+    <div class="container">
+      <!-- Hero Banner -->
+      {
+        banner && (
+          <div class="relative w-full aspect-[16/9] overflow-hidden bg-gray-100">
+            <img
+              src={banner.image_url}
+              alt={banner.name}
+              loading="eager"
+              decoding="async"
+              class="w-full h-full object-cover"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div class="absolute bottom-4 left-4 right-4">
+              <p class="text-white text-base font-bold drop-shadow-sm">
+                Infaq Online
+              </p>
+              <p class="text-white/75 text-xs mt-0.5">Aksiberbagi.com</p>
+            </div>
+          </div>
+        )
+      }
+
+      <!-- Tab Navigation -->
+      <div
+        class="bg-white sticky top-16 z-20 border-b border-gray-100 flex shadow-sm"
+      >
+        {
+          [
+            { id: "online", label: "Infaq Online" },
+            { id: "qr", label: "QR Code" },
+            { id: "donatur", label: "Donatur" },
+          ].map(({ id, label }) => (
+            <button
+              type="button"
+              data-tab={id}
+              class={`tab-btn flex-1 py-3.5 text-xs font-semibold transition-all duration-200 border-b-2 ${
+                id === "online"
+                  ? "border-primary-500 text-primary-600"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
+              }`}
+            >
+              {label}
+            </button>
+          ))
+        }
+      </div>
+
+      <!-- ── Tab: Infaq Online ────────────────────────────────────────────── -->
+      <div id="tab-online" class="py-3 space-y-3">
+        <!-- Nominal -->
+        <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+            <p class="text-sm font-bold text-gray-800">Nominal Infaq</p>
+          </div>
+
+          <div class="relative mb-3">
+            <span
+              class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold pointer-events-none select-none"
+            >
+              Rp
+            </span>
+            <input
+              id="nominal-input"
+              type="text"
+              inputmode="numeric"
+              placeholder="0"
+              class="w-full pl-10 pr-4 py-3.5 rounded-lg border border-gray-200 text-base font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+
+          <div class="grid grid-cols-4 gap-2">
+            {
+              nominalOptions.map((n) => (
+                <button
+                  type="button"
+                  class="nominal-chip text-xs py-2.5 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
+                  data-value={n}
+                >
+                  {formatCompactNumber(n)}
+                </button>
+              ))
+            }
+          </div>
+
+          <p class="text-[11px] text-gray-400 mt-3 flex items-center gap-1.5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="shrink-0"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            Minimal infaq Rp1.000
+          </p>
+        </div>
+
+        <!-- Metode Pembayaran -->
+        <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+            <p class="text-sm font-bold text-gray-800">Metode Pembayaran</p>
+          </div>
+
+          <button
+            id="open-payment-modal"
+            type="button"
+            class="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3.5 hover:border-primary-400 hover:bg-primary-50/50 transition-all duration-150 group"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <img
+                id="payment-img"
+                src=""
+                alt=""
+                width="64"
+                height="32"
+                class="h-7 w-auto object-contain hidden shrink-0"
+              />
+              <span id="payment-name" class="text-sm text-gray-400 truncate">
+                Pilih metode pembayaran
+              </span>
+            </div>
+            <span
+              class="text-xs text-primary-600 font-semibold border border-primary-200 bg-primary-50 group-hover:bg-primary-100 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
+            >
+              Pilih
+            </span>
+          </button>
+
+          <!-- Wallet balance info -->
+          <div
+            id="wallet-info"
+            class="hidden mt-3 flex items-center justify-between bg-primary-50 rounded-xl px-4 py-3 border border-primary-100"
+          >
+            <div class="flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="text-primary-500 shrink-0"
+              >
+                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+              </svg>
+              <span class="text-xs text-primary-700 font-medium"
+                >Saldo Saku Berbagi</span
+              >
+            </div>
+            <span class="text-sm font-bold text-primary-700"
+              >{formatRupiah(walletBal)}</span
+            >
+          </div>
+        </div>
+
+        <!-- Data Donatur -->
+        <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+          <div class="flex items-center gap-2.5 mb-4">
+            <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+            <p class="text-sm font-bold text-gray-800">Data Donatur</p>
+          </div>
+
+          {
+            isAuth ? (
+              /* Logged-in user card */
+              <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+                  <span class="text-sm font-bold text-primary-700">
+                    {userName.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-gray-900 truncate">
+                    {userName}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-0.5">{userPhone}</p>
+                </div>
+                <a
+                  href="/profil"
+                  class="text-[11px] text-primary-600 font-semibold border border-primary-200 bg-primary-50 rounded-lg px-2.5 py-1.5 shrink-0 hover:bg-primary-100 transition-colors"
+                >
+                  Edit
+                </a>
+              </div>
+            ) : (
+              /* Guest form */
+              <div class="space-y-3.5">
+                <div class="flex items-center justify-center gap-1.5 py-1">
+                  <p class="text-xs text-gray-400">
+                    Sudah punya akun?{" "}
+                    <a
+                      href="/auth/login"
+                      class="text-primary-600 font-semibold hover:underline"
+                    >
+                      Login
+                    </a>
+                  </p>
+                </div>
+
+                <div>
+                  <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+                    Nama Lengkap
+                  </label>
+                  <input
+                    id="input-name"
+                    type="text"
+                    placeholder="Masukkan nama lengkap"
+                    class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                  />
+                  <label class="flex items-center gap-2 mt-2 cursor-pointer w-fit">
+                    <input
+                      id="hide-name"
+                      type="checkbox"
+                      class="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-400"
+                    />
+                    <span class="text-xs text-gray-400">
+                      Sembunyikan nama{" "}
+                      <em class="not-italic text-gray-300">
+                        (sebagai Hamba Allah)
+                      </em>
+                    </span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+                    Nomor WhatsApp
+                  </label>
+                  <div class="relative">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
+                      +62
+                    </span>
+                    <input
+                      id="input-phone"
+                      type="tel"
+                      inputmode="numeric"
+                      placeholder="8xx-xxxx-xxxx"
+                      class="w-full border border-gray-200 rounded-xl py-3 pl-12 pr-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                    />
+                  </div>
+                </div>
+              </div>
+            )
+          }
+
+          <!-- Doa & Pesan -->
+          <div class="mt-4">
+            <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+              Doa & Pesan
+              <span class="text-gray-300 font-normal ml-1">(opsional)</span>
+            </label>
+            <textarea
+              id="input-doa"
+              rows={3}
+              placeholder="Tuliskan doa atau pesan Anda..."
+              class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            ></textarea>
+          </div>
+
+          <!-- Donasi untuk Orang Lain -->
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex-1 pr-4">
+              <div class="flex items-center gap-2.5">
+                <div class="w-1 h-5 bg-amber-400 rounded-full shrink-0"></div>
+                <p class="text-sm font-bold text-gray-800">
+                  Donasi untuk Orang Lain
+                </p>
+              </div>
+              <p class="text-xs text-gray-400 mt-1.5 ml-[14px]">
+                Niatkan donasi ini atas nama seseorang
+              </p>
+            </div>
+
+            <!-- Toggle Switch -->
+            <label
+              class="relative inline-flex items-center cursor-pointer shrink-0"
+            >
+              <input
+                id="toggle-orang-lain"
+                type="checkbox"
+                class="sr-only peer"
+              />
+              <div
+                class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary-300 peer-checked:bg-primary-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm"
+              >
+              </div>
+            </label>
+          </div>
+
+          <!-- Expanded form -->
+          <div id="form-orang-lain" class="hidden mt-4 space-y-3">
+            <div class="w-full h-px bg-gray-100"></div>
+
+            <div>
+              <label
+                class="text-xs text-gray-500 font-medium mb-1.5 block"
+                for="input-atas-nama"
+              >
+                Nama Penerima / Atas Nama
+              </label>
+              <input
+                id="input-atas-nama"
+                type="text"
+                placeholder="cth. Almarhum Bapak Ahmad, Ibu Siti..."
+                class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+              />
+            </div>
+
+            <div
+              class="flex items-start gap-2.5 bg-amber-50 rounded-xl px-3.5 py-3 border border-amber-100"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                class="text-amber-500 shrink-0 mt-0.5"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="8" x2="12" y2="12"></line>
+                <line x1="12" y1="16" x2="12.01" y2="16"></line>
+              </svg>
+              <p class="text-xs text-amber-700 leading-relaxed">
+                Nama ini akan dicantumkan sebagai penerima manfaat dari infaq
+                yang Anda tunaikan.
+              </p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <div id="bottom-bar" class="container flex items-center gap-3 mt-4">
+            <button
+              id="btn-submit"
+              type="button"
+              class="bg-primary-500 hover:bg-primary-600 w-full active:scale-[0.98] text-white font-semibold py-3.5 px-6 rounded-md transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+            >
+              Lanjutkan Pembayaran
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Tab: QR Code ────────────────────────────────────────────────── -->
+      <div id="tab-qr" class="hidden py-3 flex flex-col items-center">
+        {
+          qr ? (
+            <div class="bg-white rounded border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-5 w-full">
+              <div class="flex items-center gap-2.5 self-start">
+                <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0" />
+                <p class="text-sm font-bold text-gray-800">
+                  Scan untuk Berinfaq
+                </p>
+              </div>
+
+              <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                <img
+                  src={qr.image_url}
+                  alt={qr.name ?? "QR Code Infaq"}
+                  width="220"
+                  height="220"
+                  loading="lazy"
+                  class="w-56 h-56 object-contain"
+                />
+              </div>
+
+              <div class="text-center space-y-1.5">
+                <p class="text-sm font-semibold text-gray-700">
+                  {qr.name ?? "QR Infaq"}
+                </p>
+                <p class="text-xs text-gray-400 leading-relaxed max-w-[240px]">
+                  Buka aplikasi m-banking atau dompet digital, lalu scan QR di
+                  atas
+                </p>
+              </div>
+
+              <button
+                id="btn-download-qr"
+                type="button"
+                data-qr-url={qr.image_url}
+                class="w-full flex items-center justify-center gap-2 border border-primary-200 text-primary-600 bg-primary-50 hover:bg-primary-100 font-semibold py-3 rounded-xl text-sm transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+                Unduh QR Code
+              </button>
+            </div>
+          ) : (
+            <div class="bg-white rounded border border-gray-100 shadow-sm p-12 flex flex-col items-center gap-3 w-full">
+              <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  class="text-gray-300"
+                >
+                  <rect x="3" y="3" width="7" height="7" />
+                  <rect x="14" y="3" width="7" height="7" />
+                  <rect x="14" y="14" width="7" height="7" />
+                  <rect x="3" y="14" width="7" height="7" />
+                </svg>
+              </div>
+              <p class="text-sm text-gray-400 text-center">
+                QR Code belum tersedia
+              </p>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- ── Tab: Donatur ──────────────────────────────────────────────────── -->
+      <div id="tab-donatur" class="hidden py-3 space-y-2">
+        {
+          (donors as any[]).length > 0 ? (
+            (donors as any[]).map((d: any) => (
+              <div class="flex flex-col bg-white rounded border border-gray-100 shadow-sm px-4 py-3.5">
+                <div class=" flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+                    <span class="text-sm font-bold text-primary-700">
+                      {(d.name ?? "H").charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-900 truncate">
+                      {d.name ?? "Hamba Allah"}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                      via {d.bank_name}
+                    </p>
+                  </div>
+                  <div class="shrink-0 text-right">
+                    <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-1 font-medium border border-emerald-100">
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                      {formatRupiah(d.nominal_donasi ?? 0)}
+                    </span>
+                  </div>
+                </div>
+
+                <div class="mx-3 my-4">
+                  <div class="border border-neutral-100 rounded-t-lg text-sm px-3 py-2.5">
+                    {d.doa}
+                  </div>
+                  <div class="border border-neutral-100 rounded-b-lg text-sm flex items-center justify-between gap-3 px-3 py-2.5">
+                    <p>{d.liked} Aminkan do'a ini</p>
+                    <div class="border rounded-lg border-primary-300 px-3 py-2.5">
+                      Amin
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div class="bg-white rounded border border-gray-100 shadow-sm py-16 flex flex-col items-center gap-3">
+              <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="28"
+                  height="28"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  class="text-gray-300"
+                >
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                  <circle cx="9" cy="7" r="4" />
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+              </div>
+              <p class="text-sm text-gray-400">Belum ada donatur</p>
+            </div>
+          )
+        }
+      </div>
+      <Footer />
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <PaymentMethodModal paymentMethods={paymentMethods} />
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { getToken } from "@/lib/auth";
+
+  const page = document.getElementById("infaq-page") as HTMLElement;
+  const API_URL = page?.dataset.apiUrl ?? "";
+  const walletBal = Number(page?.dataset.wallet ?? 0);
+  const isAuth = page?.dataset.isAuth === "true";
+  const userName = page?.dataset.userName ?? "";
+  const userPhone = page?.dataset.userPhone ?? "";
+  const token = getToken();
+
+  // ── State ─────────────────────────────────────────────────────────────────
+  let amount = 0;
+  let paymentMethodId: string | number = "";
+  let paymentType = "";
+  let paymentSelected = false;
+  let isProcessing = false;
+  let hideName = false;
+  let forOtherPerson = false;
+
+  // ── Element refs ──────────────────────────────────────────────────────────
+  const nominalInput = document.getElementById(
+    "nominal-input",
+  ) as HTMLInputElement;
+  const inputName = document.getElementById(
+    "input-name",
+  ) as HTMLInputElement | null;
+  const inputPhone = document.getElementById(
+    "input-phone",
+  ) as HTMLInputElement | null;
+  const hideNameCheck = document.getElementById(
+    "hide-name",
+  ) as HTMLInputElement | null;
+  const inputDoa = document.getElementById("input-doa") as HTMLTextAreaElement;
+  const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
+  const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
+  const walletInfo = document.getElementById("wallet-info") as HTMLElement;
+  const openModalBtn = document.getElementById(
+    "open-payment-modal",
+  ) as HTMLButtonElement;
+  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
+  const bottomBar = document.getElementById("bottom-bar") as HTMLElement;
+
+  // Donasi untuk orang lain
+  const toggleOrangLain = document.getElementById(
+    "toggle-orang-lain",
+  ) as HTMLInputElement;
+  const formOrangLain = document.getElementById(
+    "form-orang-lain",
+  ) as HTMLElement;
+  const inputAtasNama = document.getElementById(
+    "input-atas-nama",
+  ) as HTMLInputElement;
+
+  // QR download
+  const btnDownloadQr = document.getElementById(
+    "btn-download-qr",
+  ) as HTMLButtonElement | null;
+
+  // ── localStorage pre-fill ─────────────────────────────────────────────────
+  const savedNominal = localStorage.getItem("nominalInfaq");
+  if (savedNominal) {
+    const n = parseInt(savedNominal, 10);
+    if (!isNaN(n)) {
+      amount = n;
+      nominalInput.value = n.toLocaleString("id-ID");
+    }
+    localStorage.removeItem("nominalInfaq");
+  }
+
+  // ── Tab switching ─────────────────────────────────────────────────────────
+  const tabContents: Record<string, HTMLElement | null> = {
+    online: document.getElementById("tab-online"),
+    qr: document.getElementById("tab-qr"),
+    donatur: document.getElementById("tab-donatur"),
+  };
+
+  document.querySelectorAll<HTMLButtonElement>(".tab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab ?? "online";
+
+      document.querySelectorAll<HTMLButtonElement>(".tab-btn").forEach((b) => {
+        const active = b.dataset.tab === target;
+        b.classList.toggle("border-primary-500", active);
+        b.classList.toggle("text-primary-600", active);
+        b.classList.toggle("border-transparent", !active);
+        b.classList.toggle("text-gray-400", !active);
+      });
+
+      Object.entries(tabContents).forEach(([key, el]) => {
+        el?.classList.toggle("hidden", key !== target);
+      });
+
+      bottomBar.classList.toggle("hidden", target !== "online");
+    });
+  });
+
+  // ── Nominal ───────────────────────────────────────────────────────────────
+  function setChipActive(activeBtn: HTMLButtonElement | null) {
+    document
+      .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+      .forEach((b) => {
+        const on = b === activeBtn;
+        b.classList.toggle("border-primary-500", on);
+        b.classList.toggle("bg-primary-50", on);
+        b.classList.toggle("text-primary-700", on);
+        b.classList.toggle("border-gray-200", !on);
+        b.classList.toggle("text-gray-500", !on);
+      });
+  }
+
+  document
+    .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        amount = Number(btn.dataset.value);
+        nominalInput.value = amount.toLocaleString("id-ID");
+        setChipActive(btn);
+      });
+    });
+
+  nominalInput.addEventListener("input", () => {
+    const raw = nominalInput.value.replace(/[^0-9]/g, "");
+    amount = raw ? parseInt(raw, 10) : 0;
+    nominalInput.value = amount > 0 ? amount.toLocaleString("id-ID") : "";
+    setChipActive(null);
+  });
+
+  // ── Hide name toggle ──────────────────────────────────────────────────────
+  hideNameCheck?.addEventListener("change", () => {
+    hideName = hideNameCheck.checked;
+    if (inputName) {
+      inputName.disabled = hideName;
+      inputName.classList.toggle("opacity-40", hideName);
+    }
+  });
+
+  // ── Donasi untuk orang lain ───────────────────────────────────────────────
+  toggleOrangLain?.addEventListener("change", () => {
+    forOtherPerson = toggleOrangLain.checked;
+    formOrangLain?.classList.toggle("hidden", !forOtherPerson);
+    if (!forOtherPerson && inputAtasNama) inputAtasNama.value = "";
+  });
+
+  // ── Payment modal ─────────────────────────────────────────────────────────
+  openModalBtn?.addEventListener("click", () => {
+    (window as any).openPaymentModal?.();
+  });
+
+  window.addEventListener("payment:selected", (e: Event) => {
+    const { id, name, image, type } = (e as CustomEvent).detail;
+    paymentMethodId = id;
+    paymentType = type ?? "";
+    paymentSelected = true;
+
+    walletInfo.classList.toggle("hidden", paymentType !== "wallet");
+    paymentImg.src = image ?? "";
+    paymentImg.classList.toggle("hidden", !image);
+    paymentNameEl.textContent = name ?? "Pilih metode pembayaran";
+    paymentNameEl.classList.toggle("text-gray-400", false);
+    paymentNameEl.classList.toggle("text-gray-800", true);
+  });
+
+  // ── QR Download ───────────────────────────────────────────────────────────
+  btnDownloadQr?.addEventListener("click", async () => {
+    const url = btnDownloadQr.dataset.qrUrl;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "qr-infaq.png";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      showToast("Gagal mengunduh QR Code", "error");
+    }
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function cleanPayload(obj: Record<string, unknown>) {
+    return Object.fromEntries(
+      Object.entries(obj).filter(
+        ([, v]) =>
+          v !== "" &&
+          v !== null &&
+          v !== undefined &&
+          !(Array.isArray(v) && (v as unknown[]).length === 0),
+      ),
+    );
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  btnSubmit.addEventListener("click", async () => {
+    if (isProcessing) return;
+
+    const name = isAuth
+      ? userName
+      : hideName
+        ? "Hamba Allah"
+        : (inputName?.value.trim() ?? "");
+
+    const rawPhone = inputPhone?.value.trim() ?? "";
+    const phone = isAuth
+      ? userPhone
+      : rawPhone.startsWith("0")
+        ? rawPhone
+        : rawPhone
+          ? `0${rawPhone}`
+          : "";
+
+    const doa = inputDoa?.value.trim() ?? "";
+    const atasNama = forOtherPerson ? (inputAtasNama?.value.trim() ?? "") : "";
+
+    if (!isAuth && (!name || !phone)) {
+      showToast("Nama dan nomor WhatsApp wajib diisi", "error");
+      return;
+    }
+    if (amount < 1000) {
+      showToast("Minimal infaq Rp1.000", "error");
+      return;
+    }
+    if (!paymentSelected) {
+      showToast("Pilih metode pembayaran terlebih dahulu", "error");
+      return;
+    }
+    if (paymentType === "wallet" && amount > walletBal) {
+      showToast("Saldo Saku Berbagi tidak mencukupi", "error");
+      return;
+    }
+    if (forOtherPerson && !atasNama) {
+      showToast("Masukkan nama penerima donasi", "error");
+      return;
+    }
+
+    isProcessing = true;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Memproses...";
+
+    const raw: Record<string, unknown> = {
+      type: "donation",
+      program_type: "infaq",
+      items: [399],
+      total: [amount],
+      payment_method_id: paymentMethodId,
+      name,
+      phone,
+      status: "Pending",
+      ...(doa ? { doa } : {}),
+      ...(atasNama ? { atas_nama: atasNama } : {}),
+    };
+
+    try {
+      const res = await fetch(`${API_URL}/transactions/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(cleanPayload(raw)),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message ?? "Transaksi gagal");
+
+      window.location.href = `/invoice/${data?.data?.invoice}`;
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Terjadi kesalahan, coba lagi";
+      showToast(msg, "error");
+      isProcessing = false;
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = "Lanjutkan";
+    }
+  });
+</script>

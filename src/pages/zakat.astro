@@ -1,0 +1,583 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const API_URL = import.meta.env.ASTRO_API_URL;
+
+const [nishabRes, programRes] = await Promise.all([
+  fetch(`${API_URL}/zakat/nishab`, { headers: { Accept: "application/json" } }),
+  fetch(`${API_URL}/program-setup?type=zakat`, {
+    headers: { Accept: "application/json" },
+  }),
+]);
+
+const nishabData = nishabRes.ok ? await nishabRes.json() : null;
+const programData = programRes.ok ? await programRes.json() : null;
+
+const nishabEmas = Number(nishabData?.data?.[1]?.value) || 0;
+const nishabYearly = nishabEmas * 85;
+const updatedAt = nishabData?.data?.[1]?.updated_at ?? null;
+
+const programRaw = programData?.data?.[0];
+const parsedProg = programRaw?.value ? JSON.parse(programRaw.value) : null;
+const zakatId = parsedProg?.id ?? 0;
+const zakatLink = parsedProg?.link ?? "";
+
+const menuItems = [
+  {
+    key: "hasil",
+    label: "Penghasilan",
+    icon: "/images/icons/zakat/ZakatPenghasilan.png",
+    zakatType: 6,
+  },
+  {
+    key: "tabung",
+    label: "Tabungan",
+    icon: "/images/icons/zakat/ZakatTabungan.png",
+    zakatType: 1,
+  },
+  {
+    key: "dagang",
+    label: "Perdagangan",
+    icon: "/images/icons/zakat/ZakatDagang.png",
+    zakatType: 2,
+  },
+  {
+    key: "emas",
+    label: "Emas",
+    icon: "/images/icons/zakat/ZakatEmas.png",
+    zakatType: 3,
+  },
+] as const;
+
+function formatDate(iso: string | null) {
+  if (!iso) return "-";
+  return new Date(iso).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+function formatRupiah(n: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+  }).format(n);
+}
+---
+
+<MainLayout
+  title="Hitung Zakat"
+  description="Kalkulator zakat penghasilan, tabungan, perdagangan, dan emas."
+>
+  <Header type="onlyicon" />
+
+  <div
+    id="zakat-page"
+    data-api-url={API_URL}
+    data-nishab-emas={nishabEmas}
+    data-nishab-yearly={nishabYearly}
+    data-zakat-id={zakatId}
+    data-zakat-link={zakatLink}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-16 pb-36"
+  >
+    <div class="container space-y-3">
+      <!-- Menu Jenis Zakat -->
+      <div class="bg-white rounded border border-gray-100 shadow-sm p-4">
+        <p class="text-xs font-semibold text-gray-500 mb-3">
+          Pilih jenis zakat
+        </p>
+        <div class="grid grid-cols-4 gap-2">
+          {
+            menuItems.map(({ key, label, icon, zakatType }) => (
+              <button
+                type="button"
+                class="zakat-tab flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 border-transparent hover:bg-gray-50 transition-all duration-150"
+                data-key={key}
+                data-zakat-type={zakatType}
+              >
+                <div class="w-11 h-11 rounded-xl bg-gray-50 border border-gray-100 p-1.5 flex items-center justify-center">
+                  <img
+                    src={icon}
+                    alt={label}
+                    width="36"
+                    height="36"
+                    loading="lazy"
+                    class="w-full h-full object-contain"
+                  />
+                </div>
+                <span class="text-[10px] font-semibold text-gray-500 text-center leading-tight">
+                  {label}
+                </span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <!-- Form Sections -->
+      <div
+        class="bg-white rounded border border-gray-100 shadow-sm p-4 space-y-4"
+      >
+        <p id="form-title" class="text-xs font-semibold text-gray-500">
+          Zakat Penghasilan
+        </p>
+
+        <!-- Penghasilan -->
+        <div id="form-hasil" class="space-y-3">
+          <div class="flex gap-3">
+            {
+              ["yearly", "monthly"].map((v, i) => (
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="frequency"
+                    value={v}
+                    checked={i === 0}
+                    class="accent-primary-500"
+                  />
+                  <span class="text-xs font-medium text-gray-600">
+                    {i === 0 ? "Tahunan" : "Bulanan"}
+                  </span>
+                </label>
+              ))
+            }
+          </div>
+          <div>
+            <label class="text-[11px] text-gray-400 mb-1.5 block"
+              >Penghasilan</label
+            >
+            <input
+              data-field="income"
+              type="text"
+              inputmode="numeric"
+              placeholder="Rp 0"
+              class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+          <div>
+            <label class="text-[11px] text-gray-400 mb-1.5 block"
+              >Pendapatan lain (bonus, THR) <span class="font-normal"
+                >(opsional)</span
+              ></label
+            >
+            <input
+              data-field="other"
+              type="text"
+              inputmode="numeric"
+              placeholder="Rp 0"
+              class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+          <div>
+            <label class="text-[11px] text-gray-400 mb-1.5 block"
+              >Pengeluaran kebutuhan pokok <span class="font-normal"
+                >(opsional)</span
+              ></label
+            >
+            <input
+              data-field="expense"
+              type="text"
+              inputmode="numeric"
+              placeholder="Rp 0"
+              class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- Tabungan -->
+        <div id="form-tabung" class="hidden space-y-3">
+          <div>
+            <label class="text-[11px] text-gray-400 mb-1.5 block"
+              >Saldo tabungan</label
+            >
+            <input
+              data-field="income"
+              type="text"
+              inputmode="numeric"
+              placeholder="Rp 0"
+              class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+          <div>
+            <label class="text-[11px] text-gray-400 mb-1.5 block"
+              >Bunga bank konvensional <span class="font-normal"
+                >(opsional)</span
+              ></label
+            >
+            <input
+              data-field="expense"
+              type="text"
+              inputmode="numeric"
+              placeholder="Rp 0"
+              class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+        </div>
+
+        <!-- Perdagangan -->
+        <div id="form-dagang" class="hidden space-y-3">
+          {
+            [
+              { field: "other", label: "Modal yang diputar selama 1 tahun" },
+              { field: "income", label: "Keuntungan selama 1 tahun" },
+              { field: "piutang", label: "Piutang dagang", opt: true },
+              { field: "utang", label: "Utang jatuh tempo", opt: true },
+              { field: "expense", label: "Kerugian selama 1 tahun", opt: true },
+            ].map(({ field, label, opt }) => (
+              <div>
+                <label class="text-[11px] text-gray-400 mb-1.5 block">
+                  {label} {opt && <span class="font-normal">(opsional)</span>}
+                </label>
+                <input
+                  data-field={field}
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="Rp 0"
+                  class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                />
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Emas -->
+        <div id="form-emas" class="hidden space-y-3">
+          <div>
+            <label class="text-[11px] text-gray-400 mb-1.5 block"
+              >Jumlah emas (gram)</label
+            >
+            <input
+              data-field="emas"
+              type="text"
+              inputmode="numeric"
+              placeholder="0"
+              class="zakat-input w-full border border-gray-200 rounded-xl py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+          <p class="text-xs text-gray-400">
+            Harga emas saat ini: <span class="font-semibold text-gray-600"
+              >{formatRupiah(nishabEmas)}/gram</span
+            >
+          </p>
+        </div>
+      </div>
+
+      <!-- Hasil & Keterangan -->
+      <div
+        class="bg-white rounded border border-gray-100 shadow-sm p-4 space-y-3"
+      >
+        <p class="text-xs font-semibold text-gray-500">Hasil perhitungan</p>
+
+        <!-- Wajib zakat status -->
+        <div
+          id="status-wajib"
+          class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-gray-50 border border-gray-200"
+        >
+          <div
+            id="status-icon"
+            class="w-2 h-2 rounded-full bg-gray-300 shrink-0"
+          >
+          </div>
+          <p id="status-text" class="text-xs text-gray-500 font-medium">
+            Masukkan data untuk melihat status zakat
+          </p>
+        </div>
+
+        <!-- Info nishab -->
+        <div class="space-y-2 pt-1">
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-gray-400">Harga emas per gram</p>
+            <p class="text-xs font-semibold text-gray-700">
+              {formatRupiah(nishabEmas)}
+            </p>
+          </div>
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-gray-400">Nishab 85 gram</p>
+            <p class="text-xs font-semibold text-gray-700" id="nishab-display">
+              {formatRupiah(nishabYearly)}
+            </p>
+          </div>
+          <div
+            class="flex items-center justify-between border-t border-dashed border-gray-100 pt-2"
+          >
+            <p class="text-xs text-gray-400">Diperbarui</p>
+            <p class="text-xs text-gray-500">{formatDate(updatedAt)}</p>
+          </div>
+        </div>
+
+        {/* note hanya untuk non-dagang */}
+        <p
+          id="note-bruto"
+          class="text-[10px] text-amber-600 bg-amber-50 rounded-xl px-3 py-2"
+        >
+          Dianjurkan dihitung dari penghasilan bruto sebelum potongan
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Bottom Bar -->
+  <div
+    class="container fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-4 py-3"
+  >
+    <div class="flex items-center gap-3">
+      <div class="flex-1 min-w-0">
+        <p id="bottom-label" class="text-[10px] text-gray-400 mb-0.5">
+          Total Zakat
+        </p>
+        <p id="bottom-amount" class="text-base font-bold text-gray-900">Rp 0</p>
+      </div>
+      <button
+        id="btn-pay"
+        type="button"
+        class="bg-secondary-500 hover:bg-secondary-600 active:scale-[0.98] text-white font-semibold py-3 px-6 rounded transition-all duration-150 text-sm shrink-0"
+      >
+        Bayar Zakat
+      </button>
+    </div>
+  </div>
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+
+  const page = document.getElementById("zakat-page") as HTMLElement;
+  const nishabEmas = Number(page.dataset.nishabEmas ?? 0);
+  const nishabYearly = Number(page.dataset.nishabYearly ?? 0);
+  const zakatId = page.dataset.zakatId ?? "";
+  const zakatLink = page.dataset.zakatLink ?? "";
+
+  // ── State ──────────────────────────────────────────────────────────────────
+  let activeKey = "hasil";
+  let zakatType = 6;
+  let isYearly = true;
+  let fields: Record<string, number> = {
+    income: 0,
+    other: 0,
+    piutang: 0,
+    utang: 0,
+    expense: 0,
+    emas: 0,
+  };
+
+  // ── Element refs ───────────────────────────────────────────────────────────
+  const statusIcon = document.getElementById("status-icon") as HTMLElement;
+  const statusText = document.getElementById("status-text") as HTMLElement;
+  const nishabDisplay = document.getElementById(
+    "nishab-display",
+  ) as HTMLElement;
+  const noteBruto = document.getElementById("note-bruto") as HTMLElement;
+  const formTitle = document.getElementById("form-title") as HTMLElement;
+  const bottomLabel = document.getElementById("bottom-label") as HTMLElement;
+  const bottomAmount = document.getElementById("bottom-amount") as HTMLElement;
+  const btnPay = document.getElementById("btn-pay") as HTMLButtonElement;
+
+  const FORM_TITLES: Record<string, string> = {
+    hasil: "Zakat Penghasilan",
+    tabung: "Zakat Tabungan",
+    dagang: "Zakat Perdagangan",
+    emas: "Zakat Emas",
+  };
+
+  // ── Format helpers ─────────────────────────────────────────────────────────
+  function rupiah(n: number) {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(n);
+  }
+
+  function parseNum(s: string | number) {
+    return parseFloat(String(s).replace(/[^0-9]/g, "")) || 0;
+  }
+
+  // ── Calculation ────────────────────────────────────────────────────────────
+  function getNishabPeriod() {
+    return activeKey === "hasil" && !isYearly
+      ? nishabYearly / 12
+      : nishabYearly;
+  }
+
+  function calculate(): { zakat: number; isWajib: boolean } {
+    const nishabPeriod = getNishabPeriod();
+    let total = 0;
+
+    if (activeKey === "hasil") {
+      total = fields.income + fields.other - fields.expense;
+    } else if (activeKey === "tabung") {
+      total = fields.income - fields.expense;
+    } else if (activeKey === "dagang") {
+      total =
+        fields.other +
+        fields.income +
+        fields.piutang -
+        fields.utang -
+        fields.expense;
+    } else if (activeKey === "emas") {
+      total = fields.emas * nishabEmas;
+    }
+
+    total = Math.max(0, total);
+    const isWajib = total >= nishabPeriod;
+    const zakat = isWajib ? total * 0.025 : 0;
+    return { zakat, isWajib };
+  }
+
+  function syncUI() {
+    const { zakat, isWajib } = calculate();
+    const nishabPeriod = getNishabPeriod();
+    const hasInput = Object.values(fields).some((v) => v > 0);
+
+    // status badge
+    if (!hasInput) {
+      statusIcon.className = "w-2 h-2 rounded-full bg-gray-300 shrink-0";
+      statusText.textContent = "Masukkan data untuk melihat status zakat";
+      statusText.className = "text-xs text-gray-500 font-medium";
+    } else if (isWajib) {
+      statusIcon.className = "w-2 h-2 rounded-full bg-primary-500 shrink-0";
+      statusText.textContent = "Wajib membayar zakat";
+      statusText.className = "text-xs text-primary-700 font-semibold";
+    } else {
+      statusIcon.className = "w-2 h-2 rounded-full bg-amber-400 shrink-0";
+      statusText.textContent = "Belum wajib zakat — bisa beralih ke infaq";
+      statusText.className = "text-xs text-amber-700 font-medium";
+    }
+
+    // nishab display
+    nishabDisplay.textContent = rupiah(nishabPeriod);
+
+    // bottom bar
+    bottomAmount.textContent = rupiah(zakat);
+    if (isWajib) {
+      bottomLabel.textContent = "Total Zakat";
+      btnPay.textContent = "Bayar Zakat";
+    } else {
+      bottomLabel.textContent = "Infaq";
+      btnPay.textContent = "Bayar Infaq";
+    }
+  }
+
+  // ── Input handling ─────────────────────────────────────────────────────────
+  function bindInputs(formEl: HTMLElement) {
+    formEl.querySelectorAll<HTMLInputElement>(".zakat-input").forEach((inp) => {
+      inp.addEventListener("input", () => {
+        const raw = inp.value.replace(/[^0-9]/g, "");
+        const num = raw ? parseInt(raw, 10) : 0;
+        const field = inp.dataset.field ?? "";
+        if (field in fields) {
+          fields[field] = num;
+          if (raw) inp.value = num.toLocaleString("id-ID");
+        }
+        syncUI();
+      });
+    });
+  }
+
+  // bind all forms on load
+  ["hasil", "tabung", "dagang", "emas"].forEach((key) => {
+    const el = document.getElementById(`form-${key}`);
+    if (el) bindInputs(el);
+  });
+
+  // ── Frequency radio (Penghasilan only) ────────────────────────────────────
+  document
+    .querySelectorAll<HTMLInputElement>("input[name='frequency']")
+    .forEach((radio) => {
+      radio.addEventListener("change", () => {
+        isYearly = radio.value === "yearly";
+        syncUI();
+      });
+    });
+
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  document.querySelectorAll<HTMLButtonElement>(".zakat-tab").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const key = btn.dataset.key ?? "hasil";
+      activeKey = key;
+      zakatType = Number(btn.dataset.zakatType ?? 6);
+
+      // reset fields
+      fields = {
+        income: 0,
+        other: 0,
+        piutang: 0,
+        utang: 0,
+        expense: 0,
+        emas: 0,
+      };
+
+      // clear inputs in all forms
+      document
+        .querySelectorAll<HTMLInputElement>(".zakat-input")
+        .forEach((inp) => {
+          inp.value = "";
+        });
+
+      // show/hide forms
+      ["hasil", "tabung", "dagang", "emas"].forEach((k) => {
+        document
+          .getElementById(`form-${k}`)
+          ?.classList.toggle("hidden", k !== key);
+      });
+
+      // update tab styles
+      document
+        .querySelectorAll<HTMLButtonElement>(".zakat-tab")
+        .forEach((b) => {
+          const active = b.dataset.key === key;
+          b.classList.toggle("border-primary-400", active);
+          b.classList.toggle("bg-primary-50", active);
+          b.classList.toggle("border-transparent", !active);
+        });
+
+      // update title & notes
+      formTitle.textContent = FORM_TITLES[key] ?? "";
+      noteBruto.classList.toggle("hidden", key === "dagang");
+
+      syncUI();
+    });
+
+    // set initial active style for "hasil"
+    if (btn.dataset.key === "hasil") {
+      btn.classList.add("border-primary-400", "bg-primary-50");
+      btn.classList.remove("border-transparent");
+    }
+  });
+
+  // ── Pay button ─────────────────────────────────────────────────────────────
+  btnPay.addEventListener("click", () => {
+    const { zakat, isWajib } = calculate();
+
+    if (isWajib) {
+      if (!zakatLink) {
+        showToast("Program zakat tidak tersedia", "error");
+        return;
+      }
+
+      localStorage.setItem(
+        "zakatFormData",
+        JSON.stringify({
+          type: "zakat",
+          program_type: "zakat",
+          items: [zakatId],
+          zakat_type: [zakatType],
+          total: [Math.round(zakat)],
+        }),
+      );
+
+      window.location.href = `/donasi/detail/${zakatLink}/payment`;
+    } else {
+      localStorage.setItem("nominalInfaq", String(Math.round(zakat)));
+      window.location.href = "/infak";
+    }
+  });
+
+  // init
+  syncUI();
+</script>
