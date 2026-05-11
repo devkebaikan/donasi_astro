@@ -169,7 +169,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   <p class="text-sm font-semibold text-gray-500">Jadwal donasi</p>
 
   <!-- Lama donasi — commitment only -->
-  <div id="commitment-row" class="hidden">
+  <div id="commitment-row" class="">
     <div class="flex items-center gap-3">
       <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight">
         Lama donasi
@@ -365,7 +365,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   const token = getToken();
 
   let nominal = 0;
-  let isCommitment = false;
+  let isCommitment = true;
   let paymentMethodId = "";
   let paymentSelected = false;
   let isProcessing = false;

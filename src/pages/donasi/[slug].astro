@@ -371,6 +371,7 @@ const tabs = [
   </div>
 
   <script>
+    import { formatRupiah } from "@/lib/formatter";
     import { showToast } from "@/lib/toast";
 
     // Tab system — ARIA-compliant (WCAG 2.1 §4.1.2)
@@ -504,11 +505,6 @@ const tabs = [
     const input = document.getElementById("donation-amount");
     const presetBtns = document.querySelectorAll(".preset-btn");
     const submitBtn = document.getElementById("submit-donation");
-
-    // FORMAT RUPIAH
-    function formatRupiah(value: number) {
-      return new Intl.NumberFormat("id-ID").format(value);
-    }
 
     function parseNumber(value: string) {
       return Number(value.replace(/\D/g, "")) || 0;

@@ -3,535 +3,703 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-
 import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
-import { getPaymentMethod } from "@/lib/FetchData.ts";
+import { getPaymentMethod, getUserProfile } from "@/lib/FetchData.ts";
+import { getServerToken } from "@/lib/auth";
+import { formatRupiah } from "@/lib/formatter";
 
 const { slug } = Astro.params;
-
-if (!slug) {
-  return Astro.redirect("/");
-}
+if (!slug) return Astro.redirect("/");
 
 const programId = Astro.url.searchParams.get("id");
+if (!programId) return Astro.redirect(`/donasi/${slug}/`);
 
-if (!programId) {
-  return Astro.redirect(`/donasi/${slug}/`);
-}
-
-const programLink = slug;
+const token = getServerToken(Astro.cookies);
 const baseUrl = import.meta.env.ASTRO_API_URL;
+const utm = Astro.cookies.get("utm_params")?.value ?? null;
 
-const utm = Astro.cookies.get("utm_params")?.value;
-const utmParams = utm ?? null;
+const [accountRes, dataPaymentMethods] = await Promise.all([
+  token ? getUserProfile(token) : Promise.resolve(null),
+  getPaymentMethod(slug),
+]);
 
-const dataPaymentMethods = await getPaymentMethod(slug);
+const account = accountRes?.data ?? null;
+const isAuth = !!account;
+const userName = (account?.name ?? "") as string;
+const userPhone = (account?.phone ?? "") as string;
+const walletBal = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
-const paymentMethods = dataPaymentMethods?.data ?? [];
+const rawPm: any[] = dataPaymentMethods?.data ?? [];
+const paymentMethods = rawPm.filter((m: any) => {
+  if (m.type === "wallet") return isAuth;
+  return ["VA", "bank", "e_wallet"].includes(m.type);
+});
 ---
 
 <MainLayout
-  title="Form Donasi | Aksiberbagi.com"
+  title="Konfirmasi Donasi"
   description="Formulir pembayaran donasi untuk program pilihan Anda."
 >
-  <Header
-    type="notshare"
-    text="Konfirmasi Donasi"
-    link={`/donasi/${programLink}/`}
-  />
+  <Header type="notshare" text="Konfirmasi Donasi" link={`/donasi/${slug}/`} />
 
   <div
-    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100"
     id="donation-page"
     data-program-id={programId}
-    data-program-link={programLink}
+    data-program-link={slug}
     data-base-url={baseUrl}
-    data-utm={utmParams}
+    data-utm={utm}
+    data-is-auth={isAuth}
+    data-user-name={userName}
+    data-user-phone={userPhone}
+    data-wallet={walletBal}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-16 pb-28"
   >
-    <section class="container pb-4 md:pb-6">
-      <div class="bg-white rounded-b-2xl shadow-lg overflow-hidden pt-18">
-        <form id="donation-form" class="p-4 sm:p-6 space-y-5 sm:space-y-6">
-          <!-- Nominal Section -->
-          <div class="space-y-3 sm:space-y-4">
-            <p class="text-sm font-semibold text-gray-500 mb-3">
-              Nominal donasi
-            </p>
+    <div class="container py-3 space-y-3">
+      <!-- Zakat context banner (shown client-side via JS) -->
+      <div
+        id="zakat-banner"
+        class="hidden bg-secondary-50 border border-secondary-200 rounded-xl px-4 py-3 flex items-center gap-3"
+      >
+        <div
+          class="w-8 h-8 rounded-xl bg-secondary-100 flex items-center justify-center shrink-0"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="text-secondary-600"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p
+            class="text-xs font-bold text-secondary-700"
+            id="zakat-banner-title"
+          >
+            Pembayaran Zakat
+          </p>
+          <p
+            class="text-[11px] text-secondary-600 mt-0.5"
+            id="zakat-banner-desc"
+          >
+            Nominal dihitung otomatis dari kalkulator zakat
+          </p>
+        </div>
+      </div>
 
-            <!-- Quick Amount Buttons -->
-            <!-- <span class="text-gray-400 italic mb-2">Pilih nominal donasi</span> -->
+      <!-- Nominal -->
+      <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+          <p class="text-sm font-bold text-gray-800">Nominal Donasi</p>
+        </div>
 
-            <div class="relative">
-              <span
-                class="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-500 font-medium text-sm sm:text-base"
-              >
-                Rp
-              </span>
-              <input
-                id="nominalRupiah"
-                type="text"
-                name="total"
-                class="w-full pl-10 sm:pl-12 pr-4 py-2 border-2 border-gray-200 rounded-lg
-                     focus:border-primary-500 focus:ring-2 focus:ring-primary-100
-                     outline-none transition-all text-base sm:text-lg font-medium"
-                placeholder="Masukkan Nominal"
-              />
-            </div>
+        <div class="relative mb-3">
+          <span
+            class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold pointer-events-none select-none"
+          >
+            Rp
+          </span>
+          <input
+            id="nominal-input"
+            type="text"
+            inputmode="numeric"
+            placeholder="0"
+            class="w-full pl-10 pr-4 py-3.5 rounded-xl border border-gray-200 text-base font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <p class="text-[11px] text-gray-400 mt-3 flex items-center gap-1.5">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            class="shrink-0"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          Minimal donasi Rp10.000
+        </p>
+
+        <!-- Metode Pembayaran -->
+        <div class="flex items-center gap-2.5 mt-4 mb-2">
+          <p class="text-xs text-gray-500">Metode Pembayaran</p>
+        </div>
+
+        <button
+          id="open-payment-modal"
+          type="button"
+          class="w-full flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3.5 hover:border-primary-400 hover:bg-primary-50/50 transition-all duration-150 group"
+        >
+          <div class="flex items-center gap-3 min-w-0">
+            <img
+              id="payment-img"
+              src=""
+              alt=""
+              width="64"
+              height="32"
+              class="h-7 w-auto object-contain hidden shrink-0"
+            />
+            <span id="payment-name" class="text-sm text-gray-400 truncate">
+              Pilih metode pembayaran
+            </span>
           </div>
+          <span
+            class="text-xs text-primary-600 font-semibold border border-primary-200 bg-primary-50 group-hover:bg-primary-100 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
+          >
+            Pilih
+          </span>
+        </button>
 
-          <!-- Payment Method Section -->
-          <div class="space-y-2 sm:space-y-3">
-            <p class="text-sm font-semibold text-gray-500 mb-3">
-              Metode Pembayaran
-            </p>
-
-            <div
-              class="flex items-center justify-between p-2.5 bg-gray-50
-                   border-2 border-gray-200 rounded-lg hover:border-primary-300
-                   transition-colors"
+        <div
+          id="wallet-info"
+          class="hidden mt-3 flex items-center justify-between bg-primary-50 rounded-xl px-4 py-3 border border-primary-100"
+        >
+          <div class="flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="text-primary-500 shrink-0"
             >
-              <img
-                id="payment-image"
-                class="h-6 w-auto object-contain hidden"
-                alt="Payment Method"
-              />
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+            </svg>
+            <span class="text-xs text-primary-700 font-medium"
+              >Saldo Saku Berbagi</span
+            >
+          </div>
+          <span class="text-sm font-bold text-primary-700"
+            >{formatRupiah(walletBal)}</span
+          >
+        </div>
+      </div>
 
-              <div class="flex-1 px-3 sm:px-4">
-                <span
-                  id="payment-name"
-                  class="text-sm text-neutral-500 font-medium"
-                >
-                  Pilih Metode Pembayaran
+      <!-- Data Donatur -->
+      <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+        <div class="flex items-center gap-2.5 mb-4">
+          <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+          <p class="text-sm font-bold text-gray-800">Data Donatur</p>
+        </div>
+
+        {
+          isAuth ? (
+            <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+              <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+                <span class="text-sm font-bold text-primary-700">
+                  {userName.charAt(0).toUpperCase()}
                 </span>
               </div>
-
-              <button
-                type="button"
-                id="btn-select-payment"
-                class="px-4 py-2 rounded-lg font-medium
-                     text-sm transition-all
-                     bg-gray-200 text-gray-400 cursor-not-allowed"
-                disabled
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900 truncate">
+                  {userName}
+                </p>
+                <p class="text-xs text-gray-400 mt-0.5">{userPhone}</p>
+              </div>
+              <a
+                href="/profil"
+                class="text-[11px] text-primary-600 font-semibold border border-primary-200 bg-primary-50 rounded-lg px-2.5 py-1.5 shrink-0 hover:bg-primary-100 transition-colors"
               >
-                Pilih
-              </button>
+                Edit
+              </a>
             </div>
-          </div>
-
-          <!-- Personal Info Section -->
-          <div class="space-y-4 pt-1 sm:pt-2">
-            <h5 class="text-sm font-semibold text-gray-500 mb-3">
-              Data Donatur
-            </h5>
-
-            <!-- Name -->
-            <div class="space-y-2">
-              <label class="block text-xs font-medium text-neutral-500">
-                Nama Lengkap
-              </label>
-              <input
-                id="fullName"
-                type="text"
-                name="name"
-                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-200
-                     rounded-lg focus:border-primary-500
-                     focus:ring-2 focus:ring-primary-100 outline-none"
-                placeholder="Masukkan nama lengkap"
-                required
-              />
-
-              <div class="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="hideNameCheck"
-                  class="w-4 h-4 sm:w-5 sm:h-5 accent-primary-500 cursor-pointer"
-                />
-                <label
-                  for="hideNameCheck"
-                  class="text-xs text-gray-600 cursor-pointer"
-                >
-                  Sembunyikan nama <span class="italic"
-                    >(Sebagai Hamba Allah)</span
+          ) : (
+            <div class="space-y-3.5">
+              <div class="flex items-center justify-center py-1">
+                <p class="text-xs text-gray-400">
+                  Sudah punya akun?{" "}
+                  <a
+                    href={`/auth/login?from=/donasi/form/${slug}/?id=${programId}`}
+                    class="text-primary-600 font-semibold hover:underline"
                   >
+                    Login
+                  </a>
+                </p>
+              </div>
+
+              <div>
+                <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+                  Nama Lengkap
+                </label>
+                <input
+                  id="input-name"
+                  type="text"
+                  placeholder="Masukkan nama lengkap"
+                  class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                />
+                <label class="flex items-center gap-2 mt-2 cursor-pointer w-fit">
+                  <input
+                    id="hide-name"
+                    type="checkbox"
+                    class="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-400"
+                  />
+                  <span class="text-xs text-gray-400">
+                    Sembunyikan nama{" "}
+                    <em class="not-italic text-gray-300">
+                      (sebagai Hamba Allah)
+                    </em>
+                  </span>
                 </label>
               </div>
-            </div>
 
-            <!-- Phone -->
-            <div class="space-y-2">
-              <label class="block text-xs font-medium text-neutral-500">
-                Nomor WhatsApp
-              </label>
-              <input
-                id="noWa"
-                type="tel"
-                name="phone"
-                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-200
-                     rounded-lg focus:border-primary-500
-                     focus:ring-2 focus:ring-primary-100 outline-none"
-                placeholder="Contoh: 08123456789"
-                required
-              />
+              <div>
+                <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+                  Nomor WhatsApp
+                </label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
+                    +62
+                  </span>
+                  <input
+                    id="input-phone"
+                    type="tel"
+                    inputmode="numeric"
+                    placeholder="8xx-xxxx-xxxx"
+                    class="w-full border border-gray-200 rounded-xl py-3 pl-12 pr-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
             </div>
+          )
+        }
 
-            <!-- Message -->
-            <div class="space-y-2">
-              <label class="block text-xs font-medium text-neutral-500">
-                Pesan dan Doa <span class="text-gray-400 font-normal"
-                  >(Opsional)</span
-                >
-              </label>
-              <textarea
-                id="message"
-                name="doa"
-                rows="3"
-                class="w-full px-3 sm:px-4 py-2 border-2 border-gray-200
-                     rounded-lg focus:border-primary-500
-                     focus:ring-2 focus:ring-primary-100 outline-none resize-none"
-                placeholder="Tuliskan doa atau pesan..."></textarea>
+        <!-- Doa & Pesan -->
+        <div class="mt-4">
+          <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+            Doa & Pesan
+            <span class="text-gray-300 font-normal ml-1">(opsional)</span>
+          </label>
+          <textarea
+            id="input-doa"
+            rows={3}
+            placeholder="Tuliskan doa atau pesan Anda..."
+            class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Donasi untuk Orang Lain (disembunyikan saat zakat oleh JS) -->
+      <div
+        id="card-orang-lain"
+        class="bg-white rounded border border-gray-100 shadow-sm p-5"
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex-1 pr-4">
+            <div class="flex items-center gap-2.5">
+              <div class="w-1 h-5 bg-amber-400 rounded-full shrink-0"></div>
+              <p class="text-sm font-bold text-gray-800">
+                Donasi untuk Orang Lain
+              </p>
             </div>
+            <p class="text-xs text-gray-400 mt-1.5 ml-[14px]">
+              Niatkan donasi ini atas nama seseorang
+            </p>
           </div>
-
-          <!-- Submit -->
-          <div class="pt-1 sm:pt-2">
-            <button
-              type="submit"
-              id="btn-konfirmasi"
-              class="w-full py-3 px-6 rounded-lg
-                   text-base sm:text-lg font-semibold text-white
-                   bg-linear-to-r from-(--secondary-500) to-(--secondary-500)
-                   hover:from-(--secondary-600) hover:to-(--secondary-600)
-                   transition-all duration-300 shadow-lg hover:shadow-xl
-                   disabled:opacity-50 disabled:cursor-not-allowed"
+          <label
+            class="relative inline-flex items-center cursor-pointer shrink-0"
+          >
+            <input
+              id="toggle-orang-lain"
+              type="checkbox"
+              class="sr-only peer"
+            />
+            <div
+              class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary-300 peer-checked:bg-primary-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm"
             >
-              <span id="btn-text">Konfirmasi Donasi</span>
-              <span
-                id="btn-loading"
-                class="hidden flex items-center justify-center gap-2"
-              >
-                <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                    fill="none"></circle>
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                </svg>
-                Memproses...
-              </span>
-            </button>
-          </div>
-        </form>
-      </div>
+            </div>
+          </label>
+        </div>
 
-      <!-- Trust Badge -->
-      <div class="mt-4 sm:mt-6 text-center">
-        <p class="text-xs text-gray-500">Transaksi aman dan terpercaya 🔒</p>
+        <div id="form-orang-lain" class="hidden mt-4 space-y-3">
+          <div class="w-full h-px bg-gray-100"></div>
+          <div>
+            <label
+              class="text-xs text-gray-500 font-medium mb-1.5 block"
+              for="input-atas-nama"
+            >
+              Nama Penerima / Atas Nama
+            </label>
+            <input
+              id="input-atas-nama"
+              type="text"
+              placeholder="cth. Almarhum Bapak Ahmad, Ibu Siti..."
+              class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+          </div>
+          <div
+            class="flex items-start gap-2.5 bg-amber-50 rounded-xl px-3.5 py-3 border border-amber-100"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="text-amber-500 shrink-0 mt-0.5"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <p class="text-xs text-amber-700 leading-relaxed">
+              Nama ini akan dicantumkan sebagai penerima manfaat donasi ini.
+            </p>
+          </div>
+        </div>
       </div>
-    </section>
+    </div>
   </div>
 
-  <!-- Payment Modal -->
+  <!-- Fixed Bottom Bar -->
+  <div
+    class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-4 pt-3 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+  >
+    <div class="container flex items-center gap-3">
+      <button
+        id="btn-submit"
+        type="button"
+        class="bg-primary-500 w-full hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+      >
+        Konfirmasi
+      </button>
+    </div>
+  </div>
+
   <PaymentMethodModal paymentMethods={paymentMethods} />
+</MainLayout>
 
-  <script>
-    // import { trackBeginCheckout } from "@/lib/tracking";
+<script>
+  import { showToast } from "@/lib/toast";
+  import { getToken } from "@/lib/auth";
 
-    import { showToast } from "@/lib/toast";
+  const page = document.getElementById("donation-page") as HTMLElement;
+  const programId = page?.dataset.programId ?? "";
+  const isAuth = page?.dataset.isAuth === "true";
+  const userName = page?.dataset.userName ?? "";
+  const userPhone = page?.dataset.userPhone ?? "";
+  const walletBal = Number(page?.dataset.wallet ?? 0);
+  const baseUrl = page?.dataset.baseUrl ?? "";
+  const utmParams = page?.dataset.utm ?? null;
+  const token = getToken();
 
-    document.addEventListener("DOMContentLoaded", () => {
-      const nominalInput = document.getElementById("nominalRupiah");
+  // ── State ─────────────────────────────────────────────────────────────────
+  let amount = 0;
+  let paymentMethodId: string | number = "";
+  let paymentType = "";
+  let paymentSelected = false;
+  let isProcessing = false;
+  let hideName = false;
+  let forOtherPerson = false;
 
-      let initialAmount = 0;
+  // Zakat context
+  let zakatData: Record<string, unknown> | null = null;
+  let isZakat = false;
 
-      const dataNominal = localStorage.getItem("nominal_donation");
+  // ── Element refs ──────────────────────────────────────────────────────────
+  const nominalInput = document.getElementById(
+    "nominal-input",
+  ) as HTMLInputElement;
+  const inputName = document.getElementById(
+    "input-name",
+  ) as HTMLInputElement | null;
+  const inputPhone = document.getElementById(
+    "input-phone",
+  ) as HTMLInputElement | null;
+  const hideNameCheck = document.getElementById(
+    "hide-name",
+  ) as HTMLInputElement | null;
+  const inputDoa = document.getElementById("input-doa") as HTMLTextAreaElement;
+  const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
+  const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
+  const walletInfo = document.getElementById("wallet-info") as HTMLElement;
+  const openModalBtn = document.getElementById(
+    "open-payment-modal",
+  ) as HTMLButtonElement;
+  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
+  const totalDisplay = document.getElementById("total-display") as HTMLElement;
+  const bottomLabel = document.getElementById("bottom-label") as HTMLElement;
+  const zakatBanner = document.getElementById("zakat-banner") as HTMLElement;
+  const zakatBannerTitle = document.getElementById(
+    "zakat-banner-title",
+  ) as HTMLElement;
+  const zakatBannerDesc = document.getElementById(
+    "zakat-banner-desc",
+  ) as HTMLElement;
+  const cardOrangLain = document.getElementById(
+    "card-orang-lain",
+  ) as HTMLElement;
+  const toggleOrangLain = document.getElementById(
+    "toggle-orang-lain",
+  ) as HTMLInputElement;
+  const formOrangLain = document.getElementById(
+    "form-orang-lain",
+  ) as HTMLElement;
+  const inputAtasNama = document.getElementById(
+    "input-atas-nama",
+  ) as HTMLInputElement;
 
-      if (dataNominal) {
-        try {
-          const parsed = JSON.parse(dataNominal);
-          initialAmount = parsed.amount || 0;
-        } catch (e) {
-          localStorage.removeItem("nominal_donation");
-        }
+  // ── Read localStorage context ─────────────────────────────────────────────
+  // Priority 1: zakatFormData (from zakat calculator page)
+  const zakatRaw = localStorage.getItem("zakatFormData");
+  if (zakatRaw) {
+    try {
+      zakatData = JSON.parse(zakatRaw);
+      isZakat = true;
+      amount = (zakatData?.total as number[])?.[0] ?? 0;
+      localStorage.removeItem("zakatFormData");
+    } catch {
+      localStorage.removeItem("zakatFormData");
+    }
+  }
+
+  // Priority 2: nominal_donation (from program detail page)
+  if (!isZakat) {
+    const nominalRaw = localStorage.getItem("nominal_donation");
+    if (nominalRaw) {
+      try {
+        const parsed = JSON.parse(nominalRaw);
+        amount = parsed.amount ?? 0;
+        localStorage.removeItem("nominal_donation");
+      } catch {
+        localStorage.removeItem("nominal_donation");
       }
+    }
+  }
 
-      if (nominalInput && initialAmount > 0) {
-        (nominalInput as HTMLInputElement).value = new Intl.NumberFormat(
-          "id-ID",
-        ).format(initialAmount);
+  // ── Apply zakat UI ────────────────────────────────────────────────────────
+  if (isZakat) {
+    zakatBanner?.classList.remove("hidden");
 
-        // 🔥 penting: sync ke state & UI lain
-        formState.total = initialAmount;
-        setActiveAmount(initialAmount);
-        updatePaymentButton();
-      }
+    const zakatTypeMap: Record<number, string> = {
+      1: "Zakat Tabungan",
+      2: "Zakat Perdagangan",
+      3: "Zakat Emas",
+      6: "Zakat Penghasilan",
+    };
+    const zt = (zakatData?.zakat_type as number[])?.[0];
+    const label = zt ? (zakatTypeMap[zt] ?? "Zakat") : "Zakat";
+
+    if (zakatBannerTitle) zakatBannerTitle.textContent = label;
+    if (zakatBannerDesc)
+      zakatBannerDesc.textContent = `Nominal dihitung otomatis dari kalkulator zakat`;
+
+    if (bottomLabel) bottomLabel.textContent = "Total Zakat";
+    if (btnSubmit) btnSubmit.textContent = "Bayar Zakat";
+
+    cardOrangLain?.classList.add("hidden");
+  }
+
+  // ── Pre-fill nominal ──────────────────────────────────────────────────────
+  if (amount > 0) {
+    nominalInput.value = amount.toLocaleString("id-ID");
+    syncTotal();
+  }
+
+  // ── Total display ─────────────────────────────────────────────────────────
+  function syncTotal() {
+    totalDisplay.textContent =
+      amount > 0 ? `Rp${amount.toLocaleString("id-ID")}` : "Rp0";
+  }
+
+  // ── Nominal chips ─────────────────────────────────────────────────────────
+  function setChipActive(activeBtn: HTMLButtonElement | null) {
+    document
+      .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+      .forEach((b) => {
+        const on = b === activeBtn;
+        b.classList.toggle("border-primary-500", on);
+        b.classList.toggle("bg-primary-50", on);
+        b.classList.toggle("text-primary-700", on);
+        b.classList.toggle("border-gray-200", !on);
+        b.classList.toggle("text-gray-500", !on);
+      });
+  }
+
+  document
+    .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        amount = Number(btn.dataset.value);
+        nominalInput.value = amount.toLocaleString("id-ID");
+        setChipActive(btn);
+        syncTotal();
+      });
     });
 
-    const formState = {
-      total: 0,
-      payment_method_id: null,
-      name: "",
-      phone: "",
-      doa: "",
-      hideName: false,
-    };
+  nominalInput.addEventListener("input", () => {
+    const raw = nominalInput.value.replace(/[^0-9]/g, "");
+    amount = raw ? parseInt(raw, 10) : 0;
+    nominalInput.value = amount > 0 ? amount.toLocaleString("id-ID") : "";
+    setChipActive(null);
+    syncTotal();
+  });
 
-    function setLoading(isLoading: boolean) {
-      const btn = document.getElementById(
-        "btn-konfirmasi",
-      ) as HTMLButtonElement;
-      const text = document.getElementById("btn-text");
-      const loading = document.getElementById("btn-loading");
+  // ── Hide name toggle ──────────────────────────────────────────────────────
+  hideNameCheck?.addEventListener("change", () => {
+    hideName = hideNameCheck.checked;
+    if (inputName) {
+      inputName.disabled = hideName;
+      inputName.classList.toggle("opacity-40", hideName);
+    }
+  });
 
-      if (!btn || !text || !loading) return;
+  // ── Donasi untuk orang lain ───────────────────────────────────────────────
+  toggleOrangLain?.addEventListener("change", () => {
+    forOtherPerson = toggleOrangLain.checked;
+    formOrangLain?.classList.toggle("hidden", !forOtherPerson);
+    if (!forOtherPerson && inputAtasNama) inputAtasNama.value = "";
+  });
 
-      btn.disabled = isLoading;
-      text.classList.toggle("hidden", isLoading);
-      loading.classList.toggle("hidden", !isLoading);
+  // ── Payment modal ─────────────────────────────────────────────────────────
+  openModalBtn?.addEventListener("click", () => {
+    (window as any).openPaymentModal?.();
+  });
+
+  window.addEventListener("payment:selected", (e: Event) => {
+    const { id, name, image, type } = (e as CustomEvent).detail;
+    paymentMethodId = id;
+    paymentType = type ?? "";
+    paymentSelected = true;
+
+    walletInfo?.classList.toggle("hidden", paymentType !== "wallet");
+    paymentImg.src = image ?? "";
+    paymentImg.classList.toggle("hidden", !image);
+    paymentNameEl.textContent = name ?? "Pilih metode pembayaran";
+    paymentNameEl.classList.remove("text-gray-400");
+    paymentNameEl.classList.add("text-gray-800");
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  function cleanPayload(obj: Record<string, unknown>) {
+    return Object.fromEntries(
+      Object.entries(obj).filter(
+        ([, v]) =>
+          v !== "" &&
+          v !== null &&
+          v !== undefined &&
+          !(Array.isArray(v) && (v as unknown[]).length === 0),
+      ),
+    );
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
+  btnSubmit.addEventListener("click", async () => {
+    if (isProcessing) return;
+
+    const name = isAuth
+      ? userName
+      : hideName
+        ? "Hamba Allah"
+        : (inputName?.value.trim() ?? "");
+
+    const rawPhone = inputPhone?.value.trim() ?? "";
+    const phone = isAuth
+      ? userPhone
+      : rawPhone.startsWith("0")
+        ? rawPhone
+        : rawPhone
+          ? `0${rawPhone}`
+          : "";
+
+    const doa = inputDoa?.value.trim() ?? "";
+    const atasNama =
+      !isZakat && forOtherPerson ? (inputAtasNama?.value.trim() ?? "") : "";
+
+    // Validation
+    if (!isAuth && (!name || !phone)) {
+      showToast("Nama dan nomor WhatsApp wajib diisi", "error");
+      return;
+    }
+    if (amount < 10000) {
+      showToast("Minimal donasi Rp10.000", "error");
+      return;
+    }
+    if (!paymentSelected) {
+      showToast("Pilih metode pembayaran terlebih dahulu", "error");
+      return;
+    }
+    if (paymentType === "wallet" && amount > walletBal) {
+      showToast("Saldo Saku Berbagi tidak mencukupi", "error");
+      return;
+    }
+    if (!isZakat && forOtherPerson && !atasNama) {
+      showToast("Masukkan nama penerima donasi", "error");
+      return;
     }
 
-    const parseNumber = (val: any) =>
-      Number(String(val).replace(/\D/g, "")) || 0;
+    isProcessing = true;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Memproses...";
 
-    const formatRupiah = (num: number) =>
-      num ? num.toLocaleString("id-ID") : "";
-
-    function resetPayment() {
-      formState.payment_method_id = null;
-
-      const paymentName = document.getElementById("payment-name");
-      const paymentImage = document.getElementById("payment-image");
-
-      if (paymentName) {
-        paymentName.textContent = "Pilih Metode Pembayaran";
-      }
-
-      if (paymentImage) {
-        paymentImage.classList.add("hidden");
-      }
-    }
-
-    function updatePaymentButton() {
-      const btn = document.getElementById(
-        "btn-select-payment",
-      ) as HTMLButtonElement;
-      if (!btn) return;
-
-      const enabled = formState.total > 0;
-
-      btn.disabled = !enabled;
-
-      btn.classList.toggle("cursor-not-allowed", !enabled);
-      btn.classList.toggle("bg-gray-200", !enabled);
-      btn.classList.toggle("text-gray-400", !enabled);
-
-      btn.classList.toggle("bg-primary-500", enabled);
-      btn.classList.toggle("text-white", enabled);
-      btn.classList.toggle("shadow-sm", enabled);
-    }
-
-    function setActiveAmount(amount: number) {
-      document.querySelectorAll(".amount-button").forEach((btn) => {
-        const htmlBtn = btn as HTMLElement;
-        const btnAmount = Number(htmlBtn.dataset.amount || 0);
-        const isActive = btnAmount === amount;
-
-        htmlBtn.classList.remove("border-primary-500", "bg-primary-500");
-        htmlBtn.classList.add("border-primary-200");
-
-        const text = htmlBtn.querySelector(".text-amount");
-
-        if (text) {
-          text.classList.remove("text-white");
-          text.classList.add("text-primary-700");
-        }
-
-        if (isActive) {
-          htmlBtn.classList.remove("border-primary-200");
-          htmlBtn.classList.add("border-primary-500", "bg-primary-500");
-
-          if (text) {
-            text.classList.remove("text-primary-700");
-            text.classList.add("text-white");
+    const payload: Record<string, unknown> =
+      isZakat && zakatData
+        ? {
+            type: zakatData.type,
+            program_type: zakatData.program_type,
+            items: zakatData.items,
+            zakat_type: zakatData.zakat_type,
+            total: [amount],
+            payment_method_id: paymentMethodId,
+            name,
+            phone,
+            status: "Pending",
+            ...(doa ? { doa } : {}),
+            ...(utmParams ? { parameter_detail: utmParams } : {}),
           }
-        }
-      });
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const nominalInput = document.getElementById("nominalRupiah");
-      const el = document.getElementById("donation-page");
-
-      const programId = el?.dataset.programId;
-      const programName = el?.dataset.programLink;
-      const baseUrl = el?.dataset.baseUrl;
-      const utmParams = el?.dataset.utm ?? null;
-
-      nominalInput?.addEventListener("input", (e) => {
-        const target = e.target as HTMLInputElement | null;
-        if (!target) return;
-        const value = parseNumber(target.value);
-        formState.total = value;
-        target.value = formatRupiah(value);
-
-        setActiveAmount(value);
-        resetPayment();
-        updatePaymentButton();
-      });
-
-      document.querySelectorAll(".amount-button").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const htmlBtn = btn as HTMLElement;
-          const amount = Number(htmlBtn.dataset.amount || 0);
-          formState.total = amount;
-
-          if (nominalInput) {
-            (nominalInput as HTMLInputElement).value = formatRupiah(amount);
-          }
-
-          setActiveAmount(amount);
-          resetPayment();
-          updatePaymentButton();
-        });
-      });
-
-      window.addEventListener("payment:selected", (e) => {
-        const { id, name, image } = (e as CustomEvent).detail;
-
-        formState.payment_method_id = id;
-
-        const paymentName = document.getElementById("payment-name");
-        const img = document.getElementById("payment-image");
-
-        if (paymentName) paymentName.textContent = name;
-        if (img) {
-          (img as HTMLImageElement).src = image;
-          img.classList.remove("hidden");
-        }
-      });
-
-      document
-        .getElementById("btn-select-payment")
-        ?.addEventListener("click", () => {
-          if (formState.total <= 0) return;
-          // @ts-ignore
-          window.openPaymentModal?.();
-        });
-
-      document.getElementById("fullName")?.addEventListener("input", (e) => {
-        const target = e.target as HTMLInputElement | null;
-        if (!target) return;
-        formState.name = target.value;
-      });
-
-      document.getElementById("noWa")?.addEventListener("input", (e) => {
-        const target = e.target as HTMLInputElement | null;
-        if (!target) return;
-        formState.phone = target.value;
-      });
-
-      document.getElementById("message")?.addEventListener("input", (e) => {
-        const target = e.target as HTMLInputElement | null;
-        if (!target) return;
-        formState.doa = target.value;
-      });
-
-      document
-        .getElementById("hideNameCheck")
-        ?.addEventListener("change", (e) => {
-          const target = e.target as HTMLInputElement | null;
-          if (!target) return;
-          formState.hideName = target.checked;
-        });
-
-      let isSubmitting = false;
-
-      document
-        .getElementById("donation-form")
-        ?.addEventListener("submit", async (e) => {
-          e.preventDefault();
-          if (isSubmitting) return;
-
-          const name = formState.hideName ? "Hamba Allah" : formState.name;
-
-          if (!name || !formState.phone) {
-            showToast("Nama dan WhatsApp wajib diisi");
-            return;
-          }
-
-          if (formState.total < 10000) {
-            showToast("Donasi minimal Rp 10.000");
-            return;
-          }
-
-          if (!formState.payment_method_id) {
-            showToast("Pilih metode pembayaran");
-            return;
-          }
-
-          isSubmitting = true;
-          setLoading(true);
-
-          const dataForm: {
-            type: string;
-            program_type: string;
-            items: (string | undefined)[];
-            total: number[];
-            doa: string;
-            payment_method_id: any;
-            phone: string;
-            name: string;
-            status: string;
-            parameter_detail?: any;
-          } = {
+        : {
             type: "donation",
             program_type: "infaq",
             items: [programId],
-            total: [formState.total],
-            doa: formState.doa,
-            payment_method_id: formState.payment_method_id,
-            phone: formState.phone,
+            total: [amount],
+            payment_method_id: paymentMethodId,
             name,
+            phone,
             status: "Pending",
+            ...(doa ? { doa } : {}),
+            ...(atasNama ? { atas_nama: atasNama } : {}),
+            ...(utmParams ? { parameter_detail: utmParams } : {}),
           };
 
-          if (utmParams) {
-            dataForm.parameter_detail = utmParams;
-          }
+    try {
+      const res = await fetch(`${baseUrl}/transactions/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(cleanPayload(payload)),
+      });
 
-          try {
-            const res = await fetch(`${baseUrl}/transactions/store`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                accept: "application/json",
-              },
-              body: JSON.stringify(dataForm),
-            });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message ?? "Transaksi gagal");
 
-            const data = await res.json();
-            if (!res.ok) throw new Error();
-
-            const invoiceNumber = data.data.invoice;
-            // const totalAmount = data.data.total;
-
-            // trackBeginCheckout({
-            //   programId: programId || "",
-            //   programName: programName || "",
-            //   value: totalAmount,
-            // });
-            window.location.href = `/invoice/${invoiceNumber}/`;
-          } catch (error) {
-            showToast("Transaksi gagal, coba lagi");
-            isSubmitting = false;
-            setLoading(false);
-          }
-        });
-    });
-  </script>
-</MainLayout>
+      window.location.href = `/invoice/${data?.data?.invoice}/`;
+    } catch (err: unknown) {
+      const msg =
+        err instanceof Error ? err.message : "Terjadi kesalahan, coba lagi";
+      showToast(msg, "error");
+      isProcessing = false;
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = isZakat ? "Bayar Zakat" : "Konfirmasi";
+    }
+  });
+</script>

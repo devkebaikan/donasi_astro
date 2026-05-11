@@ -133,11 +133,11 @@ import MainLayout from "@/layouts/MainLayout.astro";
 
     const decodedPhone = phone ? decodeURIComponent(phone) : "";
 
-    // if (!decodedPhone) {
-    //   // Jika tidak ada phone cookie, redirect ke register
-    //   window.location.href = "/auth/register";
-    //   return;
-    // }
+    if (!decodedPhone) {
+      // Jika tidak ada phone cookie, redirect ke register
+      window.location.href = "/auth/register";
+      return;
+    }
 
     displayPhone.textContent = decodedPhone;
 
@@ -145,11 +145,13 @@ import MainLayout from "@/layouts/MainLayout.astro";
     function showError(msg: string) {
       errorText.textContent = msg;
       errorBox.classList.remove("hidden");
+      errorBox.classList.add("flex");
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
     function hideError() {
       errorBox.classList.add("hidden");
+      errorBox.classList.remove("flex");
     }
 
     function setLoading(
@@ -260,7 +262,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
       try {
         await useApi().post("/otp", { otp: otpString, phone: decodedPhone });
         showToast("Verifikasi berhasil!", "success");
-        window.location.href = "/set-password";
+        window.location.href = "/auth/set-password";
       } catch (err: any) {
         showError(err.message ?? "Kode OTP tidak valid");
         clearOtp();
@@ -275,7 +277,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
       setLoading(true, btnResend, "Kirim Ulang Kode");
 
       try {
-        await useApi().post("/register", { phone: decodedPhone });
+        await useApi().post("/request-otp", { phone: decodedPhone });
         showToast("Kode OTP berhasil dikirim ulang", "success");
         clearOtp();
         startCountdown();
