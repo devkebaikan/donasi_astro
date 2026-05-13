@@ -1,49 +1,39 @@
 ---
-import CampaignList from "@/components/ui/CampaignList.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
+import { Image } from "astro:assets";
 
-const campaign = [
+const reports = [
   {
-    link: "/campaign/1",
-    title: "Bantu Renovasi Masjid Al-Ikhlas",
-    image: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Al-Ikhlas",
-    },
-    category: {
-      name: "Renovasi",
-    },
-    progress_achieved: 75,
-    nominal_achieved: 7500000,
-    time_target: 10,
+    title: "Laporan Penyaluran Minggu ke-1: 1.200 Paket Sahur Terdistribusi",
+    tanggal: "7 Maret 2025",
+    status: "Salur",
+    image: "/images/banner/banner-qurban.avif",
+    ringkasan:
+      "Alhamdulillah, 1.200 paket sahur berhasil didistribusikan kepada pengungsi banjir di 5 titik lokasi di Aceh.",
   },
   {
-    link: "/campaign/2",
-    title: "Dukung Pendidikan Anak Yatim Piatu",
-    image: "/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Peduli Anak",
-    },
-    category: {
-      name: "Pendidikan",
-    },
-    progress_achieved: 60,
-    nominal_achieved: 6000000,
-    time_target: 20,
+    title: "Update: Pembangunan Masjid At-Taqwa Dimulai",
+    tanggal: "14 Maret 2025",
+    status: "Open",
+    image: "/images/banner/banner-qurban.avif",
+    ringkasan:
+      "Fondasi masjid At-Taqwa telah selesai dikerjakan. Target rampung sebelum akhir Ramadan.",
   },
   {
-    link: "/campaign/3",
-    title: "Bantu Pembangunan Sumur Wakaf",
-    image: "/images/thumbnail/Artboard22-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Air Bersih",
-    },
-    category: {
-      name: "Wakaf",
-    },
-    progress_achieved: 90,
-    nominal_achieved: 9000000,
-    time_target: 5,
+    title: "Laporan Penyaluran Minggu ke-2: 850 Buka Puasa Bersama",
+    tanggal: "14 Maret 2025",
+    status: "Open",
+    image: "/images/banner/banner-qurban.avif",
+    ringkasan:
+      "850 anak yatim dan dhuafa mendapatkan makan buka puasa dari program Ramadan Berbagi Kebaikan.",
+  },
+  {
+    title: "Testimoni: Ibu Sari, Penerima Manfaat dari Pelosok Aceh",
+    tanggal: "20 Maret 2025",
+    status: "Open",
+    image: "/images/banner/banner-qurban.avif",
+    ringkasan:
+      '"Kami tidak menyangka ada yang peduli sampai ke sini. Terima kasih atas bantuan makanan buka puasanya."',
   },
 ];
 ---
@@ -55,17 +45,36 @@ const campaign = [
     description="Satu niat baik hari ini, jadi alasan senyum mereka sepanjang hari."
   />
   {
-    campaign.map((campaign) => (
-      <CampaignList
-        link={`/donasi/${campaign.link}`}
-        title={campaign.title}
-        image={campaign.image}
-        mitra={campaign.mitra.name}
-        category={campaign.category.name}
-        progress_achieved={campaign.progress_achieved}
-        collected_amount={campaign.nominal_achieved}
-        days_left={campaign.time_target}
-      />
+    reports.map((r) => (
+      <div class="flex gap-3 bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 cursor-pointer">
+        <div class="shrink-0 w-36 overflow-hidden bg-gray-100 m-2.5 rounded-lg">
+          <Image
+            src={r.image}
+            alt={r.title}
+            width="90"
+            height="90"
+            class="object-cover w-full"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div class="flex-1 py-3 pr-3 min-w-0">
+          <div class="flex items-center gap-1.5 mb-1">
+            <span
+              class={`text-[9px] font-bold px-2 py-0.5 rounded-full leading-none bg-secondary-100 text-secondary-600`}
+            >
+              {r.status}
+            </span>
+            <span class="text-[10px] text-gray-400">{r.tanggal}</span>
+          </div>
+          <p class="text-[12px] font-semibold text-gray-800 leading-snug line-clamp-2 mb-1">
+            {r.title}
+          </p>
+          <p class="text-[11px] text-gray-400 truncate leading-relaxed">
+            {r.ringkasan}
+          </p>
+        </div>
+      </div>
     ))
   }
 </section>

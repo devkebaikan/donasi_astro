@@ -1,0 +1,379 @@
+---
+import MainLayout from "@/layouts/MainLayout.astro";
+import Header from "@/components/layouts/Header.astro";
+import { getServerToken } from "@/lib/auth";
+import CampaignList from "@/components/ui/CampaignList.astro";
+
+export const prerender = false;
+
+interface Mitra {
+  name: string;
+  image_url: string;
+  address: string;
+  number: string;
+  description: string;
+  program_count: number;
+  donor_count: number;
+  fundraiser_count: number;
+}
+
+interface Campaign {
+  category: { name: string };
+  image: string;
+  link: string;
+  mitra: { name: string };
+  nominal_achieved: number;
+  progress_achieved: number;
+  remaining_days: number;
+  title: string;
+}
+
+interface ProgramPage {
+  data: Campaign[];
+  current_page: number;
+  next_page_url: string | null;
+}
+
+const id = Astro.params.slug;
+if (!id) return Astro.redirect("/home");
+
+const search = Astro.url.searchParams.get("q") ?? "";
+
+const token = getServerToken(Astro.cookies);
+const API_URL = import.meta.env.ASTRO_API_URL;
+const headers = {
+  Accept: "application/json",
+  ...(token ? { Authorization: `Bearer ${token}` } : {}),
+};
+
+const buildProgramUrl = (page: number) => {
+  const params = new URLSearchParams({
+    limit: "4",
+    mode: "pagination",
+    page: String(page),
+    mitra_id: id,
+  });
+  if (search) params.set("search", search);
+  return `${API_URL}/program?${params.toString()}`;
+};
+
+const fetchMitra = async (): Promise<Mitra | null> => {
+  try {
+    const res = await fetch(`${API_URL}/mitra/${id}`, { headers });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const fetchPrograms = async (): Promise<ProgramPage | null> => {
+  try {
+    const res = await fetch(buildProgramUrl(1), { headers });
+    if (!res.ok) return null;
+    const json = await res.json();
+    return json?.data ?? null;
+  } catch {
+    return null;
+  }
+};
+
+const [mitra, programData] = await Promise.all([fetchMitra(), fetchPrograms()]);
+if (!mitra) return Astro.redirect("/404");
+
+const initialCampaigns = programData?.data ?? [];
+const hasNextInitial = !!programData?.next_page_url;
+const initialPage = programData?.current_page ?? 1;
+---
+
+<MainLayout
+  title={`Profil ${mitra.name}`}
+  description={mitra.description || mitra.name}
+>
+  <Header type="title" text={`Profil ${mitra.name}`} link="/" />
+
+  <main class="min-h-screen pb-8">
+    <div class="container py-4 pt-16 space-y-4 bg-white">
+      <!-- Profile Card -->
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+        <div class="flex flex-col items-center text-center mb-4">
+          <div
+            class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary-500 mb-3 flex-shrink-0"
+          >
+            <img
+              src={mitra.image_url}
+              alt={mitra.name}
+              width="96"
+              height="96"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-full object-cover"
+            />
+          </div>
+          <h1 class="font-bold text-lg text-gray-900">{mitra.name}</h1>
+        </div>
+
+        <div class="space-y-2.5 mb-4 text-sm">
+          {
+            mitra.address && (
+              <div class="flex gap-2">
+                <span class="font-semibold text-gray-700 w-20 flex-shrink-0">
+                  Lokasi
+                </span>
+                <span class="text-gray-600 break-words">{mitra.address}</span>
+              </div>
+            )
+          }
+          {
+            mitra.number && (
+              <div class="flex gap-2">
+                <span class="font-semibold text-gray-700 w-20 flex-shrink-0">
+                  No Telp
+                </span>
+                <span class="text-gray-600">{mitra.number}</span>
+              </div>
+            )
+          }
+          {
+            mitra.description && (
+              <p class="text-sm text-gray-600 leading-relaxed pt-1">
+                {mitra.description}
+              </p>
+            )
+          }
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="text-center py-3 px-2 bg-primary-50 rounded-xl">
+            <p class="text-lg font-bold text-primary-500">
+              {mitra.program_count ?? 0}
+            </p>
+            <p class="text-[11px] text-gray-500 mt-0.5">Program</p>
+          </div>
+          <div class="text-center py-3 px-2 bg-primary-50 rounded-xl">
+            <p class="text-lg font-bold text-primary-500">
+              {mitra.donor_count ?? 0}
+            </p>
+            <p class="text-[11px] text-gray-500 mt-0.5">Donatur</p>
+          </div>
+          <div class="text-center py-3 px-2 bg-primary-50 rounded-xl">
+            <p class="text-lg font-bold text-primary-500">
+              {mitra.fundraiser_count ?? 0}
+            </p>
+            <p class="text-[11px] text-gray-500 mt-0.5">Fundraiser</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Program Section -->
+      <section class="px-4">
+        <div class="mb-3">
+          <h2 class="font-semibold text-sm text-gray-900">Program Kebaikan</h2>
+          <p class="text-xs text-gray-500 mt-0.5">
+            Program yang digalang lembaga
+          </p>
+        </div>
+
+        {
+          initialCampaigns.length === 0 ? (
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 text-center">
+              <p class="text-sm text-gray-500">Belum ada program tersedia</p>
+            </div>
+          ) : (
+            <ul id="program-list" class="flex flex-col gap-3">
+              {initialCampaigns.map((c) => (
+                <li>
+                  <CampaignList
+                    category={c.category.name}
+                    image={c.image}
+                    link={c.link}
+                    mitra={c.mitra.name}
+                    nominal_achieved={c.nominal_achieved}
+                    progress_achieved={c.progress_achieved}
+                    remaining_days={c.remaining_days}
+                    title={c.title}
+                  />
+                </li>
+              ))}
+            </ul>
+          )
+        }
+
+        <!-- Skeleton for next page loading -->
+        <div id="loading-skeleton" class="hidden flex-col gap-3 mt-3">
+          {
+            Array.from({ length: 2 }).map(() => (
+              <div class="flex gap-3 bg-white rounded-2xl border border-gray-100 p-3 animate-pulse">
+                <div class="w-24 h-24 bg-gray-200 rounded-xl flex-shrink-0" />
+                <div class="flex-1 space-y-2 py-1">
+                  <div class="h-2 bg-gray-200 rounded w-1/4" />
+                  <div class="h-3 bg-gray-200 rounded w-3/4" />
+                  <div class="h-2 bg-gray-200 rounded w-1/2" />
+                  <div class="h-1.5 bg-gray-200 rounded mt-2" />
+                  <div class="h-2 bg-gray-200 rounded w-2/3" />
+                </div>
+              </div>
+            ))
+          }
+        </div>
+
+        <!-- Sentinel + config bridge -->
+        <div
+          id="sentinel"
+          class="h-4 mt-2"
+          data-mitra-id={id}
+          data-search={search}
+          data-current-page={String(initialPage)}
+          data-has-next={String(hasNextInitial)}
+          data-api-url={API_URL}
+        >
+        </div>
+
+        <p
+          id="end-message"
+          class="hidden text-center text-xs text-gray-400 py-4"
+        >
+          Semua program telah ditampilkan
+        </p>
+      </section>
+    </div>
+  </main>
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { formatRupiah } from "@/lib/formatter";
+
+  interface Campaign {
+    category: { name: string };
+    image: string;
+    link: string;
+    mitra: { name: string };
+    nominal_achieved: number;
+    progress_achieved: number;
+    remaining_days: number;
+    title: string;
+  }
+
+  const sentinel = document.getElementById("sentinel") as HTMLElement | null;
+  const programList = document.getElementById(
+    "program-list",
+  ) as HTMLUListElement | null;
+  const skeleton = document.getElementById(
+    "loading-skeleton",
+  ) as HTMLElement | null;
+  const endMessage = document.getElementById(
+    "end-message",
+  ) as HTMLElement | null;
+
+  if (sentinel) {
+    const { mitraId = "", search = "", apiUrl = "" } = sentinel.dataset;
+
+    let currentPage = Number(sentinel.dataset.currentPage) || 1;
+    let hasNext = sentinel.dataset.hasNext === "true";
+    let isLoading = false;
+
+    const escapeHtml = (s: string) =>
+      String(s ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+
+    // Mirror struktur CampaignCardList.astro
+    const buildCardHtml = (c: Campaign) => {
+      const progress = Math.min(Math.max(c.progress_achieved ?? 0, 0), 100);
+      return `
+        <li>
+          <a href="/program/${escapeHtml(c.link)}" class="block bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md active:scale-[0.99] transition-all">
+            <div class="flex gap-3 p-3">
+              <img src="${escapeHtml(c.image)}" alt="${escapeHtml(c.title)}" width="96" height="96" loading="lazy" decoding="async" class="w-[160px] md:w-[180px] h-fit rounded-xl object-cover flex-shrink-0" />
+              <div class="flex-1 min-w-0 flex flex-col justify-between">
+                <div>
+                  <p class="text-[10px] text-primary-500 font-semibold uppercase tracking-wide mb-1">${escapeHtml(c.category?.name ?? "")}</p>
+                  <p class="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-1">${escapeHtml(c.title)}</p>
+                  <p class="text-[11px] text-gray-500 truncate">${escapeHtml(c.mitra?.name ?? "")}</p>
+                </div>
+                <div class="mt-2">
+                  <div class="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1.5">
+                    <div class="h-full bg-primary-500 rounded-full" style="width: ${progress}%"></div>
+                  </div>
+                  <div class="flex justify-between items-center text-[11px]">
+                    <span class="font-semibold text-gray-900">${formatRupiah(c.nominal_achieved)}</span>
+                    <span class="text-gray-500">${c.remaining_days} hari lagi</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </a>
+        </li>
+      `;
+    };
+
+    const setSkeleton = (visible: boolean) => {
+      if (!skeleton) return;
+      if (visible) {
+        skeleton.classList.remove("hidden");
+        skeleton.classList.add("flex");
+      } else {
+        skeleton.classList.add("hidden");
+        skeleton.classList.remove("flex");
+      }
+    };
+
+    const loadMore = async () => {
+      if (isLoading || !hasNext || !programList) return;
+      isLoading = true;
+      setSkeleton(true);
+
+      try {
+        const params = new URLSearchParams({
+          limit: "6",
+          mode: "pagination",
+          page: String(currentPage + 1),
+          mitra_id: mitraId,
+        });
+        if (search) params.set("search", search);
+
+        const res = await fetch(`${apiUrl}/program?${params.toString()}`, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error("fetch failed");
+
+        const json = await res.json();
+        const pageData = json?.data;
+        if (!pageData) throw new Error("invalid response");
+
+        const campaigns: Campaign[] = pageData.data ?? [];
+        const html = campaigns.map(buildCardHtml).join("");
+        programList.insertAdjacentHTML("beforeend", html);
+
+        currentPage = pageData.current_page;
+        hasNext = !!pageData.next_page_url;
+
+        if (!hasNext && endMessage) {
+          endMessage.classList.remove("hidden");
+        }
+      } catch (err) {
+        console.error(err);
+        showToast("Gagal memuat program lainnya", "error");
+      } finally {
+        isLoading = false;
+        setSkeleton(false);
+      }
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          loadMore();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+  }
+</script>

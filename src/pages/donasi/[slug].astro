@@ -4,15 +4,10 @@ export const prerender = false;
 import Banner from "@/components/sections/donasi/Banner.astro";
 import ProfileMitra from "@/components/sections/donasi/ProfileMitra.astro";
 import Story from "@/components/sections/donasi/Story.astro";
-import Donor from "@/components/sections/donasi/Donor.astro";
-import Fundraiser from "@/components/sections/donasi/Fundraiser.astro";
-import Report from "@/components/sections/donasi/Report.astro";
 
 import {
   getCampaignByLink,
-  getReportByLink,
   getDonorsByLink,
-  getFundraisersByLink,
   getNominalOptions,
 } from "@/lib/FetchData";
 import MainLayout from "@/layouts/MainLayout.astro";
@@ -36,25 +31,15 @@ if (isUtmPresent) {
   });
 }
 
-const [
-  dataCampaign,
-  dataReport,
-  dataDonor,
-  dataFundraiser,
-  dataNominalOptions,
-] = await Promise.all([
+const [dataCampaign, dataDonor, dataNominalOptions] = await Promise.all([
   getCampaignByLink(slug),
-  getReportByLink(slug),
   getDonorsByLink(slug),
-  getFundraisersByLink(slug),
   getNominalOptions(slug),
 ]);
 
 const nominalOptions = dataNominalOptions?.data ?? [];
 const detailCampaign = dataCampaign?.data ?? null;
-const report = dataReport ?? null;
 const donors = dataDonor?.data ?? null;
-const fundraiser = dataFundraiser?.data.data ?? null;
 
 const isActive = detailCampaign?.status === "PUBLISH";
 
@@ -103,11 +88,7 @@ const campaignJsonLd = JSON.stringify({
 // Tab configuration
 const tabs = [
   { id: "cerita", label: "Cerita", show: true },
-  {
-    id: "salur",
-    label: "Salur",
-    show: true,
-  },
+  { id: "salur", label: "Salur", show: true },
   { id: "donatur", label: "Donatur", show: true },
   { id: "fundraiser", label: "Fundraiser", show: true },
 ];
@@ -147,8 +128,15 @@ const tabs = [
       <ProfileMitra
         programLink={detailCampaign?.link}
         programId={detailCampaign?.id}
-        report={!!(report?.data?.[0] || report?.news?.[0])}
         projekSalur={detailCampaign?.last_two_projects}
+      />
+
+      <!-- Config for lazy tab loading -->
+      <div
+        id="lazy-tab-config"
+        data-slug={slug}
+        data-api={import.meta.env.PUBLIC_API_URL}
+        hidden
       />
 
       <!-- Tab Navigation -->
@@ -193,7 +181,7 @@ const tabs = [
           />
         </article>
 
-        <!-- Report Tab -->
+        <!-- Report Tab — lazy loaded on first click -->
         <section
           id="tab-salur"
           role="tabpanel"
@@ -201,41 +189,10 @@ const tabs = [
           tabindex="-1"
           class="tab-content hidden"
         >
-          {
-            report?.data?.[0] || report?.news?.[0] ? (
-              <Report report={report} programLink={detailCampaign?.link} />
-            ) : (
-              // No Report Available
-              <div class="text-center py-12">
-                <div class="flex flex-col items-center gap-4">
-                  <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
-                    <svg
-                      class="w-16 h-16 text-gray-300"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="1.5"
-                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <h5 class="text font-semibold text-gray-600 mb-1">
-                      Belum ada Laporan Penyaluran
-                    </h5>
-                    {/* <p class="text-sm text-gray-500">Jadilah fundraiser pertama untuk program ini</p> */}
-                  </div>
-                </div>
-              </div>
-            )
-          }
+          <div id="report-container"></div>
         </section>
 
-        <!-- Donatur Tab -->
+        <!-- Donatur Tab — lazy loaded on first click -->
         <section
           id="tab-donatur"
           role="tabpanel"
@@ -243,10 +200,10 @@ const tabs = [
           tabindex="-1"
           class="tab-content hidden"
         >
-          <Donor donors={donors} programLink={detailCampaign?.link} />
+          <div id="donors-container"></div>
         </section>
 
-        <!-- Fundraiser Tab -->
+        <!-- Fundraiser Tab — lazy loaded on first click -->
         <section
           id="tab-fundraiser"
           role="tabpanel"
@@ -254,10 +211,7 @@ const tabs = [
           tabindex="-1"
           class="tab-content hidden"
         >
-          <Fundraiser
-            fundraiser={fundraiser}
-            programLink={detailCampaign?.link}
-          />
+          <div id="fundraiser-container"></div>
         </section>
       </div>
     </div>
@@ -402,6 +356,10 @@ const tabs = [
         panel.classList.toggle("hidden", !active);
         panel.setAttribute("tabindex", active ? "0" : "-1");
       });
+
+      if (tabId === "salur") loadReport();
+      else if (tabId === "donatur") loadDonors();
+      else if (tabId === "fundraiser") loadFundraisers();
     }
 
     tabButtons.forEach((btn) => {
@@ -436,30 +394,6 @@ const tabs = [
     const stickyButton = document.getElementById("sticky-donate");
     const sentinel = document.createElement("div");
     document.body.prepend(sentinel);
-
-    // const observer = new IntersectionObserver(([e]) => {
-    //   if (stickyButton) {
-    //     stickyButton.classList.toggle("hidden", e.isIntersecting);
-    //   }
-    // });
-
-    // observer.observe(sentinel);
-
-    // Handle donate button click
-    // const donateButton = document.getElementById("btn-donasi-sekarang");
-    // if (donateButton) {
-    //   donateButton.addEventListener("click", () => {
-    //     const isActive = donateButton.getAttribute("data-active") === "true";
-    //     const programId = donateButton.getAttribute("data-program-id");
-    //     const programLink = donateButton.getAttribute("data-program-link");
-
-    //     if (isActive && programId && programLink) {
-    //       window.location.assign(
-    //         `/donasi/form/${programLink}/?id=${programId}`,
-    //       );
-    //     }
-    //   });
-    // }
 
     // Share modal
     const shareButton = document.getElementById("btn-share-dp");
@@ -547,13 +481,11 @@ const tabs = [
       if (!input) return;
       const raw = parseNumber((input as HTMLInputElement).value);
 
-      // VALIDASI (anti bug)
       if (!raw || raw < 10000) {
         showToast("Minimal donasi Rp 10.000");
         return;
       }
 
-      // SIMPAN (SAFE)
       const payload = {
         amount: raw,
         updatedAt: Date.now(),
@@ -566,8 +498,351 @@ const tabs = [
       const programId = openBtn.getAttribute("data-program-id");
       const programLink = openBtn.getAttribute("data-program-link");
 
-      // REDIRECT
       window.location.assign(`/donasi/form/${programLink}/?id=${programId}`);
     });
+
+    // ── Lazy tab loading ──────────────────────────────────────────────────────
+    const lazyConfig = document.getElementById(
+      "lazy-tab-config",
+    ) as HTMLElement;
+    const programSlug = lazyConfig?.dataset.slug ?? "";
+    const apiBase = lazyConfig?.dataset.api ?? "";
+
+    const tabLoaded: Record<string, boolean> = {
+      salur: false,
+      donatur: false,
+      fundraiser: false,
+    };
+
+    function skeletonHtml(): string {
+      return `<div class="p-4 space-y-3 animate-pulse">
+        <div class="h-5 bg-gray-200 rounded-full w-1/3"></div>
+        <div class="h-36 bg-gray-200 rounded-lg"></div>
+        <div class="h-4 bg-gray-200 rounded w-full"></div>
+        <div class="h-4 bg-gray-200 rounded w-4/5"></div>
+        <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+      </div>`;
+    }
+
+    function titleBorderHtml(title: string, amount?: number): string {
+      const badge =
+        amount && amount >= 1
+          ? `<span class="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-primary-600 text-white text-xs font-medium shadow">${amount}</span>`
+          : "";
+      return `<div class="flex items-center gap-3">
+        <div class="px-4 py-1.5 rounded-full bg-gradient-to-r from-primary-100 to-white border border-primary-300 text-primary-700 font-semibold text-sm shadow-sm">${title}</div>
+        ${badge}
+      </div>`;
+    }
+
+    function fmtDate(dateStr: string): string {
+      if (!dateStr) return "";
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    function timeAgo(dateStr: string): string {
+      if (!dateStr) return "";
+      const ms = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(ms / 60000);
+      const hours = Math.floor(ms / 3600000);
+      const days = Math.floor(ms / 86400000);
+      if (mins < 1) return "Baru saja";
+      if (mins < 60) return `${mins} menit yang lalu`;
+      if (hours < 24) return `${hours} jam yang lalu`;
+      if (days < 7) return `${days} hari yang lalu`;
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
+    function getInitials(name: string): string {
+      if (!name) return "?";
+      const words = name.trim().split(/\s+/);
+      if (words.length === 1) return words[0].charAt(0).toUpperCase();
+      return (
+        words[0].charAt(0) + words[words.length - 1].charAt(0)
+      ).toUpperCase();
+    }
+
+    function errorHtml(): string {
+      return `<p class="text-center text-gray-500 py-8">Gagal memuat data. Silakan coba lagi.</p>`;
+    }
+
+    async function loadReport(): Promise<void> {
+      if (tabLoaded.salur) return;
+      tabLoaded.salur = true;
+      const container = document.getElementById("report-container")!;
+      container.innerHTML = skeletonHtml();
+      try {
+        const res = await fetch(
+          `${apiBase}/report?program_link=${programSlug}&limit=1`,
+        );
+        const json = await res.json();
+        const reportData = json?.data?.[0] ?? null;
+        const reportNews = json?.news?.[0] ?? null;
+        if (!reportData && !reportNews) {
+          container.innerHTML = `<div class="text-center py-12">
+            <div class="flex flex-col items-center gap-4">
+              <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
+                <svg class="w-16 h-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+              </div>
+              <h5 class="text font-semibold text-gray-600">Belum ada Laporan Penyaluran</h5>
+            </div>
+          </div>`;
+          return;
+        }
+        const isReport = !!reportData;
+        const item = reportData ?? reportNews;
+        const imgHtml =
+          isReport &&
+          (reportData.image || reportData.wa_image || reportData.kegiatan?.image)
+            ? `<div class="mb-4"><img src="${reportData.image || reportData.wa_image || reportData.kegiatan?.image}" alt="Report" class="w-full rounded-lg h-auto object-cover"/></div>`
+            : "";
+        const titleHtml = isReport
+          ? `<h6 class="font-bold text-lg text-gray-900 mb-3">${reportData.project?.title ?? ""}</h6>`
+          : `<h6 class="font-bold text-lg text-gray-900 mb-3">${reportNews.title ?? ""}</h6>`;
+        const contentHtml = isReport
+          ? reportData.kegiatan?.deskripsi || reportData.wa_caption || ""
+          : reportNews.content || "";
+        container.innerHTML = `<div class="bg-white rounded-lg shadow-sm">
+          <div class="p-4 md:p-6">
+            <div class="mb-6">${titleBorderHtml("Laporan Penyaluran")}</div>
+            <div class="relative overflow-hidden">
+              <div class="pointer-events-none absolute inset-x-0 bottom-0 h-[600px] bg-gradient-to-t from-white to-transparent z-10"></div>
+              <ul class="max-h-[1000px] space-y-4">
+                <li class="bg-primary-100/50 rounded-lg p-4 md:p-6 border border-primary-100">
+                  <div class="flex items-start gap-3 mb-4">
+                    <div class="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-white border-2 border-primary-200">
+                      <img src="${item.mitra?.[0]?.image_url ?? ""}" alt="Mitra" class="w-full h-full object-cover"/>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h4 class="font-semibold text-gray-900 text-base">${item.mitra?.[0]?.name ?? "Aksiberbagi"}</h4>
+                      <p class="text-sm text-gray-600">${fmtDate(item.date)}</p>
+                    </div>
+                  </div>
+                  ${imgHtml}
+                  ${titleHtml}
+                  <div class="text-gray-700 leading-relaxed [&_p]:mb-3 [&_p]:text-base [&_strong]:font-semibold [&_strong]:text-gray-900 [&_a]:text-primary-600 [&_a]:underline [&_ul]:ml-6 [&_ul]:list-disc [&_ul]:mb-3 [&_ol]:ml-6 [&_ol]:list-decimal [&_ol]:mb-3 [&_li]:mb-1 [&_img]:rounded-lg [&_img]:my-4 [&_img]:max-w-full">
+                    ${contentHtml}
+                  </div>
+                </li>
+              </ul>
+              <div class="pt-6 text-center z-20 relative">
+                <a href="/donasi/report/${programSlug}/" class="text-xs md:text-sm inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary-500 text-white font-semibold transition-all duration-300 hover:bg-primary-600 hover:shadow-lg hover:-translate-y-0.5">
+                  Lihat Dampak Kebaikanmu Selengkapnya
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      } catch {
+        tabLoaded.salur = false;
+        container.innerHTML = errorHtml();
+      }
+    }
+
+    async function loadDonors(): Promise<void> {
+      if (tabLoaded.donatur) return;
+      tabLoaded.donatur = true;
+      const container = document.getElementById("donors-container")!;
+      container.innerHTML = skeletonHtml();
+      try {
+        const res = await fetch(
+          `${apiBase}/program/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
+        );
+        const json = await res.json();
+        const total: number = json?.total ?? 0;
+        const donorList: any[] = json?.data ?? [];
+        const itemsHtml = donorList
+          .map((d: any) => {
+            const rutinBadge =
+              d.source === "RUTIN"
+                ? `<a href="/donasi-rutin/program/${programSlug}" class="flex-shrink-0 w-7 h-7" title="Donasi Rutin">
+                    <img src="/img/icons/menu/6. Donasi rutin.webp" alt="Donasi Rutin" class="w-full h-full object-contain" width="28" height="28"/>
+                  </a>`
+                : "";
+            const likeCount = d.liked ?? 0;
+            const doaSection = d.doa
+              ? `<div class="bg-gray-50 rounded-lg p-4 mt-3">
+                  <p class="text-gray-700 text-sm leading-relaxed mb-3">${d.doa}</p>
+                  <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                    <div class="text-sm text-gray-600">
+                      <span class="like-count" data-count="${likeCount}">${likeCount === 0 ? "Yuk aminkan doa saudara kita" : `<strong class="text-primary-600">${likeCount}</strong> orang mengaminkan doa ini`}</span>
+                    </div>
+                    <button class="like-button flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary-500 text-primary-500 font-semibold text-sm transition-all duration-300 hover:bg-primary-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" data-donor-id="${d.id}">
+                      <svg class="w-4 h-4 heart-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
+                      <span class="button-text">Aamiin</span>
+                    </button>
+                  </div>
+                </div>`
+              : "";
+            return `<div class="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100" data-donor-id="${d.id}">
+              <div class="flex items-start gap-3 mb-3">
+                <div class="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-md">
+                  <span class="text-white text-base font-bold">${getInitials(d.name)}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <h4 class="font-semibold text-gray-900 text-base truncate">${d.name}</h4>
+                    ${rutinBadge}
+                  </div>
+                  <p class="text-sm text-gray-600">${timeAgo(d.date)} Via ${d.bank_name}</p>
+                </div>
+                <div class="flex-shrink-0">
+                  <p class="font-bold text-primary-600 text-base md:text-lg">${formatRupiah(d.nominal_donasi)}</p>
+                </div>
+              </div>
+              ${doaSection}
+            </div>`;
+          })
+          .join("");
+        container.innerHTML = `<div class="bg-white rounded-lg shadow-sm p-4 md:p-6">
+          <div class="flex items-end justify-between mb-6">${titleBorderHtml("Donatur", total)}</div>
+          <div class="donate-body-content pb-0">${itemsHtml}</div>
+        </div>`;
+        initLikeButtons(container);
+      } catch {
+        tabLoaded.donatur = false;
+        container.innerHTML = errorHtml();
+      }
+    }
+
+    async function loadFundraisers(): Promise<void> {
+      if (tabLoaded.fundraiser) return;
+      tabLoaded.fundraiser = true;
+      const container = document.getElementById("fundraiser-container")!;
+      container.innerHTML = skeletonHtml();
+      try {
+        const res = await fetch(
+          `${apiBase}/program/link/${programSlug}/fundraisers?limit=6&mode=pagination&page=1`,
+        );
+        const json = await res.json();
+        const total: number = json?.data?.total ?? 0;
+        const list: any[] = json?.data?.data ?? [];
+        const itemsHtml =
+          list.length > 0
+            ? list
+                .map(
+                  (fr: any) =>
+                    `<div class="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-gray-50 to-white border border-gray-100 hover:border-primary-200 transition-all duration-300 hover:shadow-md">
+                      <div class="w-14 h-14 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-md">
+                        <span class="text-white text-lg font-bold">${getInitials(fr.name)}</span>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <h4 class="text-lg md:text-xl font-semibold text-gray-900 mb-1 truncate">${fr.name}</h4>
+                        <p class="text-sm text-gray-600 mb-2">Mengajak <strong class="text-gray-900">${fr.total_donatur} orang</strong> berinfak</p>
+                        <div class="flex items-center gap-2">
+                          <svg class="w-5 h-5 text-primary-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                          </svg>
+                          <h6 class="text-lg font-bold text-primary-600">${formatRupiah(fr.total_donasi)}</h6>
+                        </div>
+                      </div>
+                    </div>`,
+                )
+                .join("")
+            : `<div class="text-center py-12">
+                <div class="flex flex-col items-center gap-4">
+                  <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <h5 class="text-lg font-semibold text-gray-700 mb-1">Belum ada Fundraiser</h5>
+                    <p class="text-sm text-gray-500">Jadilah fundraiser pertama untuk program ini</p>
+                  </div>
+                </div>
+              </div>`;
+        container.innerHTML = `<div class="space-y-3">
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+            <div class="p-4 md:p-6">
+              <div class="flex items-center justify-between mb-6">${titleBorderHtml("Fundraiser", total)}</div>
+              <div class="space-y-3">${itemsHtml}</div>
+            </div>
+          </div>
+          <a href="https://aksiberbagi.com/login" class="block rounded-lg shadow-md overflow-hidden">
+            <img width="400" height="400" src="/images/banner/JadiFundraiser.webp" alt="Jadi Fundraiser" class="w-full h-auto"/>
+          </a>
+        </div>`;
+      } catch {
+        tabLoaded.fundraiser = false;
+        container.innerHTML = errorHtml();
+      }
+    }
+
+    function initLikeButtons(container: HTMLElement): void {
+      const buttons =
+        container.querySelectorAll<HTMLButtonElement>(".like-button");
+      buttons.forEach((btn) => {
+        const donorId = btn.getAttribute("data-donor-id");
+        if (!donorId) return;
+        if (localStorage.getItem(`liked_${donorId}`) === "true") {
+          btn.classList.remove(
+            "border-primary-500",
+            "text-primary-500",
+            "hover:bg-primary-100",
+          );
+          btn.classList.add("bg-primary-500", "text-white");
+          btn.disabled = true;
+          btn.querySelector(".heart-icon")?.classList.add("text-white");
+        }
+        btn.addEventListener("click", async function () {
+          if (this.disabled) return;
+          const id = this.getAttribute("data-donor-id")!;
+          const card = this.closest("[data-donor-id]");
+          const countSpan = card?.querySelector<HTMLElement>(".like-count");
+          const cur = parseInt(countSpan?.dataset.count ?? "0");
+          const next = cur + 1;
+          if (countSpan) {
+            countSpan.dataset.count = String(next);
+            countSpan.innerHTML = `<strong class="text-primary-600">${next}</strong> orang mengaminkan doa ini`;
+          }
+          this.classList.remove(
+            "border-primary-500",
+            "text-primary-500",
+            "hover:bg-primary-100",
+          );
+          this.classList.add("bg-primary-500", "text-white");
+          this.disabled = true;
+          this.querySelector(".heart-icon")?.classList.add("text-white");
+          localStorage.setItem(`liked_${id}`, "true");
+          try {
+            await fetch(`/amin/${id}/like`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ id }),
+            });
+          } catch {
+            if (countSpan) {
+              countSpan.dataset.count = String(cur);
+              countSpan.innerHTML =
+                cur === 0
+                  ? "Yuk aminkan doa saudara kita"
+                  : `<strong class="text-primary-600">${cur}</strong> orang mengaminkan doa ini`;
+            }
+            this.classList.add(
+              "border-primary-500",
+              "text-primary-500",
+              "hover:bg-primary-100",
+            );
+            this.classList.remove("bg-primary-500", "text-white");
+            this.disabled = false;
+            this.querySelector(".heart-icon")?.classList.remove("text-white");
+            localStorage.removeItem(`liked_${id}`);
+          }
+        });
+      });
+    }
   </script>
 </MainLayout>
