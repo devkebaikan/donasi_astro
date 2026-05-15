@@ -8,7 +8,7 @@ import {
   getMitraSalurByLink,
   getProjectByLink,
 } from "@/lib/FetchData";
-import { formatRupiah } from "@/lib/formatter";
+import { formatDate, formatRupiah } from "@/lib/formatter";
 import { Image } from "astro:assets";
 
 const { slug } = Astro.params;
@@ -29,15 +29,6 @@ const mitra = mitraList[0] || null;
 function progressPercent(achieved: number, target: number): number {
   if (!target) return 0;
   return Math.min(100, Math.round((achieved / target) * 100));
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
 }
 
 function activityLabel(activity: string): string {
@@ -64,8 +55,28 @@ function activityBadgeClass(activity: string): string {
 >
 <Header type="title" text="Proyek Salur" />
   <div class="container bg-white pb-24 pt-12">
-<h1 class="text-center font-medium">Detail Proyek Salur</h1>
-   
+     <!-- Ringkasan Statistik -->
+    {projectSummary && (
+      <section class="mx-4 mt-4 bg-white rounded-xl border border-gray-100 overflow-hidden">
+        {[
+          { label: "Jumlah Proyek Salur", value: projectSummary.jumlahProject ?? 0, accent: false },
+          { label: "Proyek Akan / Sudah Tergalang", value: projectSummary.activeOpen ?? 0, accent: false },
+          { label: "Proyek Sedang Tergalang", value: projectSummary.activeClose ?? 0, accent: true },
+          { label: "Proyek Selesai", value: projectSummary.done ?? 0, accent: false },
+          { label: "Total Penerima Manfaat", value: projectSummary.pmTotal ?? 0, accent: true },
+        ].map((item, i, arr) => (
+          <div>
+            <div class="flex items-center justify-between px-4 py-3">
+              <span class="text-sm text-gray-500">{item.label}</span>
+              <span class={`text-sm font-semibold ${item.accent ? "text-primary-600" : "text-gray-800"}`}>
+                {item.value}
+              </span>
+            </div>
+            {i < arr.length - 1 && <div class="h-px bg-gray-100 mx-4"></div>}
+          </div>
+        ))}
+      </section>
+    )}
     <!-- Mitra Salur -->
     {mitra && (
       <section class="mx-4 mt-3 bg-white rounded-xl border border-gray-100 px-4 py-3">
@@ -191,14 +202,14 @@ function activityBadgeClass(activity: string): string {
                         <p  class="w-full text-end text-xs text-gray-500 cursor-pointer hover:underline  mb-4">Selengkapnya</p>
                       </a>
                     )}
-
-
+                    {project.activity === 'active open' &&
                     <a
-                      href={`/donasi/${slug}?project=${project.id}`}
-                      class="block w-full py-3 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-semibold text-center rounded-lg transition-all duration-150"
+                    href={`/donasi/${slug}?project=${project.id}`}
+                    class="block w-full py-3 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-semibold text-center rounded-lg transition-all duration-150"
                     >
                       Donasi Untuk Proyek Ini
                     </a>
+                    }
                   </div>
                 </div>
               </div>

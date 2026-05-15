@@ -4,7 +4,7 @@
   /* ===================== */
   /* Primary (Teal)        */
   /* ===================== */
-  --color-primary-50:  #f0fdf9;
+  /* --color-primary-50:  #f0fdf9;
   --color-primary-100: #ddf5f1;
   --color-primary-200: #b7e9e0;
   --color-primary-300: #8edcd0;
@@ -13,12 +13,22 @@
   --color-primary-600: #139e82;
   --color-primary-700: #0f7f69;
   --color-primary-800: #0c6657;
-  --color-primary-900: #094d42;
+  --color-primary-900: #094d42; */
 
+  --color-primary-50: #eefbff;
+  --color-primary-100: #d7f4fb;
+  --color-primary-200: #afe8f7;
+  --color-primary-300: #7fd8ef;
+  --color-primary-400: #42c3e1;
+  --color-primary-500: #049dc7;
+  --color-primary-600: #0289af;
+  --color-primary-700: #026f8f;
+  --color-primary-800: #035b74;
+  --color-primary-900: #044b5f;
   /* ===================== */
   /* Secondary (Orange)    */
   /* ===================== */
-  --color-secondary-50:  #fff8f5;
+  --color-secondary-50: #fff8f5;
   --color-secondary-100: #fff1ec;
   --color-secondary-200: #ffd4c6;
   --color-secondary-300: #ffb39b;
@@ -30,7 +40,7 @@
   /* ===================== */
   /* Neutral               */
   /* ===================== */
-  --color-neutral-50:  #fafafa;
+  --color-neutral-50: #fafafa;
   --color-neutral-100: #f2f2f2;
   --color-neutral-200: #e5e5e5;
   --color-neutral-300: #d4d4d4;
@@ -58,7 +68,7 @@
 
 /* CSS variable aliases — kode lama pakai var(--primary-*) tanpa prefix 'color-' */
 :root {
-  --primary-50:  var(--color-primary-50);
+  --primary-50: var(--color-primary-50);
   --primary-100: var(--color-primary-100);
   --primary-200: var(--color-primary-200);
   --primary-300: var(--color-primary-300);
@@ -69,7 +79,7 @@
   --primary-800: var(--color-primary-800);
   --primary-900: var(--color-primary-900);
 
-  --secondary-50:  var(--color-secondary-50);
+  --secondary-50: var(--color-secondary-50);
   --secondary-100: var(--color-secondary-100);
   --secondary-200: var(--color-secondary-200);
   --secondary-300: var(--color-secondary-300);
@@ -81,7 +91,12 @@
 
 /* Global styles */
 body {
-  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
   background-color: var(--color-neutral-100);
   color: var(--color-neutral-700);
   line-height: 1.6;

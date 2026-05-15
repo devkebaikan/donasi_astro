@@ -1,0 +1,636 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { getCampaignByLink, getProjectByLink } from "@/lib/FetchData";
+import { formatDate, formatRupiah } from "@/lib/formatter";
+import { Image } from "astro:assets";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const dataProject = await getProjectByLink(slug);
+
+let campaignTitle = "";
+try {
+  const dataCampaign = await getCampaignByLink(slug);
+  campaignTitle = dataCampaign?.data?.title ?? "";
+} catch {}
+
+const dummyProject = {
+  id: 20,
+  title: "Tebar Mushaf Al-Quran Pelosok Negeri",
+  nominal_target: 208236,
+  nominal_achieved: 208236,
+  nominal_used: 0,
+  excecution_time: "2025-03-14",
+  image:
+    "https://admin.aksiberbagi.com/storage/user-uploads/project-banner/image-1738811836.jpg",
+  beneficiary: "699",
+  location: "Donggo, Kabupaten Bima, Nusa Tenggara Barat (NTB)",
+  status: "diterima",
+  activity: "selesai",
+  mitra: {
+    id: 11,
+    name: "Aksiberbagi",
+    image:
+      "https://admin.aksiberbagi.com/storage/user-uploads/mitra-logo/logo-1737686881.png",
+    location: "",
+  },
+  description:
+    "<p>Masih banyak kaum muslimin yang membutuhkan Mushaf baru untuk memudahkan mereka dalam membaca dan menghafalkan Al-quran, Program Sebarkan Mushaf Al-Quran pelosok negeri untuk menjangkau masyarakat yang membutuhkan mushaf yang nantinya mereka gunakan sehari-harinya</p>",
+  reason: "Sangat Dibutuhkan",
+};
+
+const p = dataProject?.data?.[0] ?? dummyProject;
+const pct = !p.nominal_target
+  ? 0
+  : Math.min(100, Math.round((p.nominal_achieved / p.nominal_target) * 100));
+
+const tabs = [
+  { id: "update", label: "Update" },
+  { id: "donatur", label: "Donatur" },
+];
+---
+
+<MainLayout
+  title={p.title}
+  description={`Detail project penyaluran: ${p.title}`}
+>
+  <Header type="title" text="Detail Project" link={`/donasi/${slug}`} />
+
+  <div class="bg-white min-h-screen container pb-32">
+    <div class="mb-24">
+      <!-- Banner Image -->
+      {
+        p.image && (
+          <div class="w-full overflow-hidden">
+            <Image
+              width={480}
+              height={320}
+              src={p.image}
+              alt={p.title}
+              class="w-full object-cover max-h-[300px]"
+              loading="eager"
+            />
+          </div>
+        )
+      }
+
+      <!-- Mitra Info -->
+      <a
+        href={`/mitra/${p.mitra?.id}`}
+        class="flex items-center gap-3 py-3 px-4 border-b border-gray-100 hover:bg-primary-50/50 transition-colors group"
+      >
+        <div
+          class="w-12 h-12 rounded-full border-2 border-primary-500 overflow-hidden flex-shrink-0 bg-white"
+        >
+          {
+            p.mitra?.image ? (
+              <img
+                src={p.mitra.image}
+                alt={p.mitra.name}
+                class="w-full h-full object-contain"
+              />
+            ) : (
+              <div class="w-full h-full flex items-center justify-center bg-primary-50 text-primary-600 font-bold text-lg">
+                {p.mitra?.name?.charAt(0)}
+              </div>
+            )
+          }
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-gray-900 truncate">
+            {p.mitra?.name ?? "Mitra"}
+          </p>
+          <span
+            class="inline-block text-xs text-cyan-600 bg-cyan-50 px-2.5 py-0.5 rounded-full mt-0.5"
+          >
+            Lembaga Mitra
+          </span>
+        </div>
+        <svg
+          class="w-5 h-5 text-gray-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path
+            fill-rule="evenodd"
+            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+            clip-rule="evenodd"></path>
+        </svg>
+      </a>
+
+      <!-- Main Content -->
+      <div class="px-4 pt-4 pb-5 border-b border-gray-100">
+        <!-- Title -->
+        <h1 class="text-lg font-bold text-gray-900 leading-tight mb-2">
+          {p.title}
+        </h1>
+
+        <!-- Location -->
+        {
+          p.location && (
+            <div class="flex items-center gap-1.5 mb-3">
+              <svg
+                class="w-4 h-4 text-primary-500 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span class="text-sm text-gray-500">{p.location}</span>
+            </div>
+          )
+        }
+
+        <!-- Bagian dari program -->
+        <a
+          href={`/donasi/${slug}`}
+          class="flex items-center gap-2 mb-5 bg-primary-50 border border-primary-100 rounded-lg px-3 py-2.5 hover:bg-primary-100 transition-colors group"
+        >
+          <svg
+            class="w-4 h-4 text-primary-500 flex-shrink-0"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            ></path>
+          </svg>
+          <span class="text-xs text-gray-500 flex-shrink-0"
+            >Proyek ini bagian dari program</span
+          >
+          <span class="text-xs font-semibold text-primary-600 truncate flex-1">
+            {campaignTitle || slug}
+          </span>
+          <svg
+            class="w-3.5 h-3.5 text-primary-400 group-hover:text-primary-600 flex-shrink-0 transition-all"
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              clip-rule="evenodd"></path>
+          </svg>
+        </a>
+
+        <!-- Nominal Cards -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-gray-50 rounded-xl border border-gray-100 px-3 py-3">
+            <p class="text-xs text-gray-400 mb-1">Kebutuhan Dana</p>
+            <p class="text-base font-bold text-gray-800">
+              {formatRupiah(p.nominal_target)}
+            </p>
+          </div>
+          <div
+            class="bg-primary-50 rounded-xl border border-primary-100 px-3 py-3"
+          >
+            <p class="text-xs text-primary-500 mb-1">Terkumpul</p>
+            <p class="text-base font-bold text-primary-600">
+              {formatRupiah(p.nominal_achieved)}
+            </p>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-4">
+          <div
+            class="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-1.5"
+          >
+            <div
+              class="h-full bg-gradient-to-r from-primary-400 to-primary-500 rounded-full transition-all duration-500"
+              style={`width: ${pct}%`}
+              role="progressbar"
+              aria-valuenow={pct}
+              aria-valuemin="0"
+              aria-valuemax="100"
+            >
+            </div>
+          </div>
+          <div class="flex justify-between text-xs text-gray-400">
+            <span>{pct}% terkumpul</span>
+            {p.beneficiary && <span>{p.beneficiary} penerima manfaat</span>}
+          </div>
+        </div>
+
+        <!-- Tanggal Pelaksanaan -->
+        {
+          p.excecution_time && (
+            <div class="flex items-center gap-2 text-xs text-gray-400">
+              <svg
+                class="w-4 h-4 flex-shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              <span>Pelaksanaan: {formatDate(p.excecution_time)}</span>
+            </div>
+          )
+        }
+      </div>
+
+      <!-- Deskripsi Project -->
+      <div class="px-4 py-4 border-b border-gray-100">
+        <h2 class="text-sm font-semibold text-gray-700 mb-3">
+          Deskripsi Project
+        </h2>
+        {
+          p.description && (
+            <div
+              class="text-sm text-gray-600 leading-relaxed [&_p]:mb-3 [&_strong]:font-semibold [&_ul]:ml-4 [&_ul]:list-disc [&_ol]:ml-4 [&_ol]:list-decimal [&_li]:mb-1 [&_img]:rounded-lg [&_img]:my-3 [&_img]:max-w-full"
+              set:html={p.description}
+            />
+          )
+        }
+      </div>
+
+      <!-- Lazy tab config -->
+      <div
+        id="lazy-tab-config"
+        data-slug={slug}
+        data-project-id={String(p.id)}
+        data-api={import.meta.env.PUBLIC_API_URL}
+        hidden
+      >
+      </div>
+
+      <!-- Tab Navigation -->
+      <div
+        class="grid grid-cols-2 mt-3 gap-2 px-2"
+        role="tablist"
+        aria-label="Navigasi konten project"
+      >
+        {
+          tabs.map((tab, i) => (
+            <button
+              id={`tab-btn-${tab.id}`}
+              data-tab={tab.id}
+              role="tab"
+              aria-selected={i === 0 ? "true" : "false"}
+              aria-controls={`tab-${tab.id}`}
+              tabindex={i === 0 ? 0 : -1}
+              class="tab-button min-h-[38px] w-full text-sm font-medium rounded-md transition-all duration-300 bg-white text-gray-700 shadow-md"
+            >
+              {tab.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <!-- Tab Content -->
+      <div class="mt-4 transition-all duration-300 ease-in-out">
+        <section
+          id="tab-update"
+          role="tabpanel"
+          aria-labelledby="tab-btn-update"
+          tabindex="0"
+          class="tab-content"
+        >
+          <div id="update-container"></div>
+        </section>
+
+        <section
+          id="tab-donatur"
+          role="tabpanel"
+          aria-labelledby="tab-btn-donatur"
+          tabindex="-1"
+          class="tab-content hidden"
+        >
+          <div id="donors-container"></div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom: Share + Donasi -->
+    <div class="fixed bottom-0 left-0 right-0 z-40">
+      <div class="mx-auto max-w-120">
+        <div
+          class="bg-white/80 backdrop-blur-sm shadow-lg rounded-t-xl p-4 flex gap-3 border-t border-gray-100"
+        >
+          <button
+            id="btn-share-lp"
+            class="flex items-center bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors text-sm"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"
+              ></path>
+            </svg>
+            Bagikan
+          </button>
+          <a
+            href={`/donasi/${slug}?project=${p.id}`}
+            class="flex items-center justify-center w-2/3 py-2.5 px-4 rounded-md font-semibold bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white text-sm transition-all duration-300"
+          >
+            DONASI SEKARANG
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    import { formatRupiah } from "@/lib/formatter";
+
+    // ── Tab system ─────────────────────────────────────────────────────────────
+    const tabButtons = Array.from(
+      document.querySelectorAll<HTMLElement>("[role='tab']"),
+    );
+    const tabPanels = Array.from(
+      document.querySelectorAll<HTMLElement>("[role='tabpanel']"),
+    );
+
+    function activateTab(btn: HTMLElement) {
+      const tabId = btn.dataset.tab;
+
+      tabButtons.forEach((b) => {
+        const active = b === btn;
+        b.setAttribute("aria-selected", active ? "true" : "false");
+        b.setAttribute("tabindex", active ? "0" : "-1");
+        b.classList.toggle("bg-primary-500", active);
+        b.classList.toggle("text-white", active);
+        b.classList.toggle("shadow-sm", active);
+        b.classList.toggle("bg-white", !active);
+        b.classList.toggle("text-gray-700", !active);
+        b.classList.toggle("shadow-md", !active);
+      });
+
+      tabPanels.forEach((panel) => {
+        const active = panel.id === `tab-${tabId}`;
+        panel.classList.toggle("hidden", !active);
+        panel.setAttribute("tabindex", active ? "0" : "-1");
+      });
+
+      // if (tabId === "update") loadUpdate();
+      if (tabId === "donatur") loadDonors();
+    }
+
+    tabButtons.forEach((btn) => {
+      btn.addEventListener("click", () => activateTab(btn));
+
+      btn.addEventListener("keydown", (e) => {
+        const key = e.key;
+        const idx = tabButtons.indexOf(btn);
+        const last = tabButtons.length - 1;
+        const moves: Record<string, number> = {
+          ArrowRight: (idx + 1) % tabButtons.length,
+          ArrowLeft: (idx - 1 + tabButtons.length) % tabButtons.length,
+          Home: 0,
+          End: last,
+        };
+        if (key in moves) {
+          e.preventDefault();
+          const target = tabButtons[moves[key]];
+          target.focus();
+          activateTab(target);
+        }
+      });
+    });
+
+    if (tabButtons[0]) activateTab(tabButtons[0]);
+
+    // ── Config ─────────────────────────────────────────────────────────────────
+    const lazyConfig = document.getElementById(
+      "lazy-tab-config",
+    ) as HTMLElement;
+    const programSlug = lazyConfig?.dataset.slug ?? "";
+    const apiBase = lazyConfig?.dataset.api ?? "";
+
+    const tabLoaded: Record<string, boolean> = {
+      update: false,
+      donatur: false,
+    };
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function skeletonHtml(): string {
+      return `<div class="p-4 space-y-3 animate-pulse">
+        <div class="h-5 bg-gray-200 rounded-full w-1/3"></div>
+        <div class="h-36 bg-gray-200 rounded-lg"></div>
+        <div class="h-4 bg-gray-200 rounded w-full"></div>
+        <div class="h-4 bg-gray-200 rounded w-4/5"></div>
+      </div>`;
+    }
+
+    function fmtDate(dateStr: string): string {
+      if (!dateStr) return "";
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+
+    function timeAgo(dateStr: string): string {
+      if (!dateStr) return "";
+      const ms = Date.now() - new Date(dateStr).getTime();
+      const mins = Math.floor(ms / 60000);
+      const hours = Math.floor(ms / 3600000);
+      const days = Math.floor(ms / 86400000);
+      if (mins < 1) return "Baru saja";
+      if (mins < 60) return `${mins} menit yang lalu`;
+      if (hours < 24) return `${hours} jam yang lalu`;
+      if (days < 7) return `${days} hari yang lalu`;
+      return new Date(dateStr).toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    }
+
+    function getInitials(name: string): string {
+      if (!name) return "?";
+      const words = name.trim().split(/\s+/);
+      if (words.length === 1) return words[0].charAt(0).toUpperCase();
+      return (
+        words[0].charAt(0) + words[words.length - 1].charAt(0)
+      ).toUpperCase();
+    }
+
+    function dummyUpdateHtml(): string {
+      return `<div class="px-4 pb-4">
+        <div class="bg-primary-50 rounded-xl border border-primary-100 p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <div class="w-2 h-2 rounded-full bg-green-500"></div>
+            <span class="text-xs text-gray-400">14 Maret 2025</span>
+            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Selesai</span>
+          </div>
+          <h4 class="text-sm font-bold text-gray-800 mb-2">Penyaluran Telah Dilaksanakan</h4>
+          <p class="text-xs text-gray-500 leading-relaxed">
+            Alhamdulillah, program penyaluran telah berhasil dilaksanakan dan menjangkau penerima manfaat yang membutuhkan. Terima kasih atas kepercayaan dan dukungan para donatur.
+          </p>
+        </div>
+        <p class="text-center text-xs text-gray-400 mt-4">Update selengkapnya akan ditampilkan segera</p>
+      </div>`;
+    }
+
+    function titleBorderHtml(title: string, amount?: number): string {
+      const badge =
+        amount && amount >= 1
+          ? `<span class="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-primary-600 text-white text-xs font-medium shadow">${amount}</span>`
+          : "";
+      return `<div class="flex items-center gap-3">
+        <div class="px-4 py-1.5 rounded-full bg-gradient-to-r from-primary-100 to-white border border-primary-300 text-primary-700 font-semibold text-sm shadow-sm">${title}</div>
+        ${badge}
+      </div>`;
+    }
+
+    // ── Load Update tab ────────────────────────────────────────────────────────
+    async function loadUpdate(): Promise<void> {
+      if (tabLoaded.update) return;
+      tabLoaded.update = true;
+      const container = document.getElementById("update-container")!;
+      container.innerHTML = skeletonHtml();
+      try {
+        const res = await fetch(
+          `${apiBase}/report?program_link=${programSlug}&limit=5`,
+        );
+        const json = await res.json();
+        const items: any[] = json?.data ?? [];
+
+        if (!items.length) {
+          container.innerHTML = dummyUpdateHtml();
+          return;
+        }
+
+        const itemsHtml = items
+          .map((item: any) => {
+            const img =
+              item.image || item.wa_image || item.kegiatan?.image || "";
+            const title = item.project?.title || item.title || "Update Project";
+            const body = (item.kegiatan?.deskripsi || item.wa_caption || "")
+              .replace(/<[^>]*>/g, " ")
+              .trim();
+            return `<div class="bg-primary-50 rounded-xl border border-primary-100 p-4 mb-3">
+              ${img ? `<img src="${img}" alt="${title}" class="w-full rounded-lg h-auto object-cover mb-3"/>` : ""}
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-xs text-gray-400">${fmtDate(item.date)}</span>
+              </div>
+              <h4 class="text-sm font-bold text-gray-800 mb-2">${title}</h4>
+              ${body ? `<p class="text-xs text-gray-500 leading-relaxed line-clamp-4">${body}</p>` : ""}
+            </div>`;
+          })
+          .join("");
+
+        container.innerHTML = `<div class="px-4 pb-4">${itemsHtml}</div>`;
+      } catch {
+        tabLoaded.update = false;
+        container.innerHTML = dummyUpdateHtml();
+      }
+    }
+
+    // ── Load Donatur tab ───────────────────────────────────────────────────────
+    async function loadDonors(): Promise<void> {
+      if (tabLoaded.donatur) return;
+      tabLoaded.donatur = true;
+      const container = document.getElementById("donors-container")!;
+      container.innerHTML = skeletonHtml();
+      try {
+        const res = await fetch(
+          `${apiBase}/program/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
+        );
+        const json = await res.json();
+        const total: number = json?.data?.total ?? 0;
+        const donorList: any[] = json?.data?.data ?? [];
+
+        if (!donorList.length) {
+          container.innerHTML = `<div class="px-4 pb-4 text-center py-10 text-gray-400 text-sm">Belum ada donatur</div>`;
+          return;
+        }
+
+        const itemsHtml = donorList
+          .map((d: any) => {
+            const rutinBadge =
+              d.source === "RUTIN"
+                ? `<a href="/donasi-rutin/program/${programSlug}" class="flex-shrink-0 w-7 h-7" title="Donasi Rutin">
+                    <img src="/img/icons/menu/6. Donasi rutin.webp" alt="Donasi Rutin" class="w-full h-full object-contain" width="28" height="28"/>
+                  </a>`
+                : "";
+            const likeCount = d.liked ?? 0;
+            const doaSection = d.doa
+              ? `<div class="bg-gray-50 rounded-lg p-4 mt-3">
+                  <p class="text-gray-700 text-sm leading-relaxed mb-3">${d.doa}</p>
+                  <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                    <div class="text-sm text-gray-600">
+                      <span class="like-count" data-count="${likeCount}">${likeCount === 0 ? "Yuk aminkan doa saudara kita" : `<strong class="text-primary-600">${likeCount}</strong> orang mengaminkan doa ini`}</span>
+                    </div>
+                    <button class="like-button flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary-500 text-primary-500 font-semibold text-sm transition-all duration-300 hover:bg-primary-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" data-donor-id="${d.id}">
+                      <svg class="w-4 h-4 heart-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
+                      <span class="button-text">Aamiin</span>
+                    </button>
+                  </div>
+                </div>`
+              : "";
+            return `<div class="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100" data-donor-id="${d.id}">
+              <div class="flex items-start gap-3 mb-3">
+                <div class="w-12 h-12 flex-shrink-0 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center shadow-md">
+                  <span class="text-white text-base font-bold">${getInitials(d.name)}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-1">
+                    <h4 class="font-semibold text-gray-900 text-base truncate">${d.name}</h4>
+                    ${rutinBadge}
+                  </div>
+                  <p class="text-sm text-gray-600">${timeAgo(d.date)} Via ${d.bank_name}</p>
+                </div>
+                <div class="flex-shrink-0">
+                  <p class="font-bold text-primary-600 text-base md:text-lg">${formatRupiah(d.nominal_donasi)}</p>
+                </div>
+              </div>
+              ${doaSection}
+            </div>`;
+          })
+          .join("");
+
+        container.innerHTML = `<div class="bg-white rounded-lg shadow-sm p-4 md:p-6">
+          <div class="flex items-end justify-between mb-6">${titleBorderHtml("Donatur", total)}</div>
+          <div class="donate-body-content pb-0">${itemsHtml}</div>
+        </div>`;
+      } catch {
+        tabLoaded.donatur = false;
+        container.innerHTML = `<div class="px-4 pb-4 text-center py-10 text-gray-400 text-sm">Gagal memuat data donatur</div>`;
+      }
+    }
+
+    loadUpdate();
+
+    // ── Share button ───────────────────────────────────────────────────────────
+    const shareBtn = document.getElementById("btn-share-lp");
+    if (shareBtn) {
+      shareBtn.addEventListener("click", () => {
+        const url = window.location.href;
+        if (navigator.share) {
+          navigator.share({ title: document.title, url }).catch(() => {});
+        } else {
+          navigator.clipboard
+            .writeText(url)
+            .then(() => alert("Link berhasil disalin!"));
+        }
+      });
+    }
+  </script>
+</MainLayout>

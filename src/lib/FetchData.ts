@@ -51,6 +51,13 @@ export async function getDonorsByLink(link: string) {
   );
 }
 
+export async function getDonorsList(limit: number) {
+  return safe(
+    () => publicApi.get(`/donors/list?limit=${limit}`),
+    "getDonorsList",
+  );
+}
+
 export async function getFundraisersByLink(link: string) {
   return safe(
     () =>

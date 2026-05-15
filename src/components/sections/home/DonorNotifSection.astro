@@ -1,0 +1,93 @@
+---
+import { Image } from "astro:assets";
+---
+
+<div
+  class="fixed z-50 bottom-[80px] md:left-6 inset-x-0 left-1/2 md:translate-x-0 -translate-x-1/2"
+>
+  <div
+    id="donatur-notif"
+    data-api={import.meta.env.PUBLIC_API_URL}
+    class="z-10 max-w-[200px] md:max-w-[270px] flex items-center gap-2
+    bg-white/80 rounded-md px-3 py-2 overflow-hidden
+    transition-all duration-700 ease-out
+    opacity-0 pointer-events-none"
+  >
+    <div
+      class="min-w-6 max-w-6 md:max-w-8 md:min-w-8 overflow-hidden flex items-center justify-center"
+    >
+      <Image
+        width={80}
+        height={60}
+        src="/images/logo.avif"
+        alt="notif donatur terbaru"
+        class="w-full object-contain"
+      />
+    </div>
+
+    <div class="text-xs md:text-sm">
+      <span id="donatur-name" class="font-semibold text-tosca-primary"></span>
+      &nbsp;baru saja berdonasi sebesar&nbsp;
+      <span id="donatur-nominal" class="font-semibold text-tosca-primary"
+      ></span>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  (async () => {
+    const notif = document.getElementById("donatur-notif");
+    const nameEl = document.getElementById("donatur-name");
+    const nominalEl = document.getElementById("donatur-nominal");
+    if (!notif || !nameEl || !nominalEl) return;
+
+    const apiBase = notif.dataset.api ?? "";
+
+    const formatRupiah = (value) =>
+      new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(value);
+
+    let donors = [];
+    let index = 0;
+
+    const showNext = () => {
+      if (!donors.length) return;
+
+      notif.classList.add("opacity-0");
+      notif.classList.remove("opacity-90", "translate-y-0");
+
+      setTimeout(() => {
+        const d = donors[index];
+        nameEl.textContent = d.name;
+        nominalEl.textContent = formatRupiah(d.nominal);
+        index = (index + 1) % donors.length;
+
+        requestAnimationFrame(() => {
+          notif.classList.remove("opacity-0");
+          notif.classList.add("opacity-90", "translate-y-0");
+        });
+      }, 700);
+    };
+
+    try {
+      const res = await fetch(`${apiBase}/donors/list?limit=5`);
+      const json = await res.json();
+      const list = json?.data?.data ?? json?.data ?? [];
+
+      donors = list.map((d) => ({
+        name: d.user?.name ?? d.name ?? "Hamba Allah",
+        nominal: d.total ?? d.nominal_donasi ?? 0,
+      }));
+
+      if (!donors.length) return;
+
+      showNext();
+      setInterval(showNext, 5500);
+    } catch {
+      // fetch gagal, notif tidak tampil
+    }
+  })();
+</script>

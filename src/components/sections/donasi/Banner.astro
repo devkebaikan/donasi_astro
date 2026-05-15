@@ -7,11 +7,11 @@ import { capitalizeFirstLetter, formatRupiah } from "@/lib/formatter";
 
 interface Props {
   detailCampaign: any;
-  active: boolean;
+  link: string;
   donors: any;
 }
 
-const { detailCampaign, active, donors } = Astro.props;
+const { detailCampaign, link, donors } = Astro.props;
 
 // Computed values
 const type = capitalizeFirstLetter(detailCampaign?.type || "");
@@ -52,7 +52,7 @@ const progressPercent = Math.min(detailCampaign?.progress_achieved || 0, 100);
       class="flex items-center gap-4 py-3 px-4 relative hover:bg-primary-50/50 transition-colors duration-200 group"
     >
       <div
-        class="w-16 h-16 rounded-full bg-white border-2 border-primary-500 overflow-hidden"
+        class="w-16 h-16 rounded-full bg-white border-1 border-neutral-100 group-hover:border-primary-500 overflow-hidden"
       >
         <Image
           width={80}
@@ -100,6 +100,38 @@ const progressPercent = Math.min(detailCampaign?.progress_achieved || 0, 100);
     <h1 class="text-lg md:text-xl font-bold text-gray-900 mb-4 leading-tight">
       {detailCampaign?.title}
     </h1>
+
+    <!-- last proyek program -->
+    <a
+      href={`/donasi/last-project/${link}`}
+      class="flex items-center gap-2 mb-5 bg-primary-50 border border-primary-100 rounded-lg px-3 py-2.5 hover:bg-primary-100 transition-colors group"
+    >
+      <svg
+        class="w-4 h-4 text-primary-500 flex-shrink-0"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span class="text-xs text-gray-500 flex-shrink-0"
+        >Lihat proyek terakhir</span
+      >
+      <svg
+        class="w-3.5 h-3.5 text-primary-400 group-hover:text-primary-600 flex-shrink-0 transition-all"
+        fill="currentColor"
+        viewBox="0 0 20 20"
+      >
+        <path
+          fill-rule="evenodd"
+          d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+          clip-rule="evenodd"></path>
+      </svg>
+    </a>
 
     <!-- Available Funds -->
     <div class="flex justify-between items-start mb-3">

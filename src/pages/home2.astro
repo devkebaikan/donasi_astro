@@ -1,0 +1,963 @@
+---
+import MainLayout from "../layouts/MainLayout.astro";
+
+// ============================================
+// DATA
+// ============================================
+
+const heroGallery = [
+  "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80",
+  "https://images.unsplash.com/photo-1517483000871-1dbf64a6e1c6?w=400&q=80",
+  "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=400&q=80",
+  "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&q=80",
+  "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=400&q=80",
+  "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80",
+];
+
+const brands = ["CONRAD", "AirArabia", "QATAR", "Saudia", "sky", "KUWAIT"];
+
+const programs = [
+  {
+    icon: "🥗",
+    title: "Healthy Food",
+    desc: "Donate to charity for those who need healthy and nutrious food.",
+    tone: "primary",
+  },
+  {
+    icon: "➕",
+    title: "Medical Help",
+    desc: "Donate to charity for those who need better medical care.",
+    tone: "secondary",
+    featured: true,
+  },
+  {
+    icon: "👥",
+    title: "Social Service",
+    desc: "Support charitable causes to help people in need around the world.",
+    tone: "primary",
+  },
+  {
+    icon: "📖",
+    title: "Education",
+    desc: "Donating to charity for children who need quality education.",
+    tone: "secondary",
+  },
+];
+
+const campaigns = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1497486751825-1233686d5d80?w=600&q=80",
+    category: "Education",
+    title: "Campaign To Provide Books For Children",
+    desc: "Campaign to provide quality books for children who are in need of proper education for their development",
+    raised: 1750,
+    goal: 2950,
+    featured: false,
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=600&q=80",
+    category: "Social Service",
+    title: "Help Donate For Gaza attack israil victims",
+    desc: "Help Donate for Gaza people by providing food, clothes, medicines for their daily needs.",
+    raised: 1450,
+    goal: 4450,
+    featured: true,
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&q=80",
+    category: "Medical Help",
+    title: "Help Children Cancer Fighters",
+    desc: "Help the children of cancer Warriors to meet their needs for care and treatment as well as possible to achieve recovery.",
+    raised: 1130,
+    goal: 3450,
+    featured: false,
+  },
+];
+
+const insights = [
+  {
+    image:
+      "https://images.unsplash.com/photo-1518176258769-f227c798150e?w=600&q=80",
+    date: "FEB 21, 2024",
+    category: "INSPIRATION",
+    title: "Iconic and ironic: how Israel attack on Gaza reflects its strategy",
+    desc: "Learn about innovative marketing strategies tailored for small businesses to stand out, attract customers, and drive growth in competitive markets.",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=600&q=80",
+    date: "APL 11, 2024",
+    category: "INSPIRATION",
+    title: "Israel carries out air strikes on Gaza after Hamas fires rockets",
+    desc: "Learn about innovative marketing strategies tailored for small businesses to stand out, attract customers, and drive growth in competitive markets.",
+  },
+  {
+    image:
+      "https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=600&q=80",
+    date: "DEC 21, 2024",
+    category: "INSPIRATION",
+    title:
+      "Israel strikes Hamas target in Gaza after rocket attack near Tel Aviv",
+    desc: "Learn about innovative marketing strategies tailored for small businesses to stand out, attract customers, and drive growth in competitive markets.",
+  },
+];
+---
+
+<MainLayout title="Zakat — Donation Platform" description="">
+  {
+    /* ============================================
+      HERO SECTION
+      ============================================ */
+  }
+  <section
+    class="relative overflow-hidden bg-primary-50 px-6 pt-16 pb-10 lg:px-12"
+  >
+    {/* Decorative curved arrows */}
+    <svg
+      class="reveal-fade absolute left-4 top-32 hidden h-32 w-32 text-primary-600 md:block lg:left-24"
+      viewBox="0 0 100 100"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+    >
+      <path d="M10,10 Q40,20 50,50 T80,90" stroke-linecap="round" fill="none"
+      ></path>
+      <path d="M75,85 L82,92 L72,93" stroke-linecap="round" fill="none"></path>
+    </svg>
+    <svg
+      class="reveal-fade absolute right-4 top-32 hidden h-32 w-32 -scale-x-100 text-primary-600 md:block lg:right-24"
+      viewBox="0 0 100 100"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="1.5"
+    >
+      <path d="M10,10 Q40,20 50,50 T80,90" stroke-linecap="round" fill="none"
+      ></path>
+      <path d="M75,85 L82,92 L72,93" stroke-linecap="round" fill="none"></path>
+    </svg>
+
+    <div class="relative mx-auto max-w-4xl text-center">
+      <h1
+        class="reveal-up text-4xl font-bold leading-tight text-primary-700 md:text-5xl lg:text-6xl"
+      >
+        Dedicate your Zakat to
+        <br />
+        <span class="text-secondary-600">Gaza</span> this Month
+      </h1>
+
+      <p
+        class="reveal-up mx-auto mt-6 max-w-xl text-sm leading-relaxed text-primary-700/70 md:text-base"
+        style="--delay: 100ms"
+      >
+        "And establish prayer and give zakah, and whatever good you put forward
+        for yourselves - you will find it with Allah. Indeed, Allah of what you
+        do, is Seeing."
+      </p>
+      <p
+        class="reveal-up mt-2 text-sm font-medium text-primary-700/60"
+        style="--delay: 150ms"
+      >
+        [Surah Al-Baqarah, Ayah: 110]
+      </p>
+
+      <div
+        class="reveal-up mt-8 flex flex-wrap items-center justify-center gap-4"
+        style="--delay: 200ms"
+      >
+        <a
+          href="/donate"
+          class="group relative overflow-hidden rounded-full bg-primary-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-primary-700/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-700 hover:shadow-xl"
+        >
+          <span class="relative z-10">Donate Now</span>
+        </a>
+        <button
+          class="group flex items-center gap-2 rounded-full px-5 py-3.5 font-semibold text-primary-700 transition hover:text-primary-600"
+        >
+          <span
+            class="flex h-9 w-9 items-center justify-center rounded-full bg-primary-100 text-primary-600 transition-transform duration-300 group-hover:scale-110"
+          >
+            <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"></path>
+            </svg>
+          </span>
+          Watch Video
+        </button>
+      </div>
+    </div>
+
+    {
+      /* ============================================
+        HERO TILTED IMAGE GALLERY
+        ============================================ */
+    }
+    <div class="relative mx-auto mt-16 max-w-7xl">
+      <div
+        class="flex items-end justify-center gap-3 overflow-x-auto pb-4 md:gap-4 [perspective:1200px]"
+      >
+        {
+          heroGallery.map((src, i) => {
+            const tilts = [
+              "tilt-1",
+              "tilt-2",
+              "tilt-3",
+              "tilt-4",
+              "tilt-5",
+              "tilt-6",
+            ];
+            return (
+              <div
+                class={`reveal-scale relative flex-shrink-0 origin-bottom ${tilts[i]} transition-transform duration-500 hover:!translate-y-[-8px]`}
+                style={`--delay: ${i * 80}ms`}
+              >
+                <img
+                  src={src}
+                  alt={`Beneficiary ${i + 1}`}
+                  class="h-48 w-32 rounded-2xl object-cover shadow-xl shadow-primary-700/20 md:h-56 md:w-40 lg:h-64 lg:w-48"
+                />
+              </div>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      BRANDS / PARTNERS
+      ============================================ */
+  }
+  <section class="bg-primary-50 px-6 pb-16 pt-8 lg:px-12">
+    <div class="mx-auto max-w-7xl">
+      <p
+        class="reveal-fade mb-8 text-center text-sm font-medium text-primary-700/70"
+      >
+        Worked more than 50+ global largest brands
+      </p>
+      <div class="grid grid-cols-3 items-center gap-8 md:grid-cols-6 md:gap-12">
+        {
+          brands.map((b, i) => (
+            <div
+              class="reveal-up text-center text-lg font-bold tracking-tight text-primary-700/60 transition hover:text-primary-700 md:text-xl"
+              style={`--delay: ${i * 50}ms`}
+            >
+              {b}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      PROGRAM TO EMPOWER OTHERS
+      ============================================ */
+  }
+  <section class="bg-primary-100/50 px-6 py-20 lg:px-12">
+    <div class="mx-auto max-w-7xl">
+      <div class="text-center">
+        <h2 class="reveal-up text-3xl font-bold text-primary-700 md:text-4xl">
+          Program to Empowe Others
+        </h2>
+        <p
+          class="reveal-up mx-auto mt-4 max-w-xl text-sm text-primary-700/60"
+          style="--delay: 100ms"
+        >
+          At Vitality, our mission is to foster a supportive community that
+          accompanies you on yh to healthcare.
+        </p>
+      </div>
+
+      <div class="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {
+          programs.map((p, i) => (
+            <div
+              class={`reveal-up group rounded-2xl bg-white p-6 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary-700/10 ${
+                p.featured
+                  ? "shadow-xl shadow-primary-700/10"
+                  : "shadow-md shadow-primary-700/5"
+              }`}
+              style={`--delay: ${i * 100}ms`}
+            >
+              <div
+                class={`mb-5 flex h-14 w-14 items-center justify-center rounded-full text-2xl transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6 ${
+                  p.tone === "secondary"
+                    ? "bg-secondary-100 text-secondary-600"
+                    : "bg-primary-100 text-primary-600"
+                }`}
+              >
+                {p.icon}
+              </div>
+              <h3 class="text-xl font-bold text-primary-700">{p.title}</h3>
+              <p class="mt-2 text-sm leading-relaxed text-primary-700/60">
+                {p.desc}
+              </p>
+              <a
+                href="#"
+                class="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-primary-700 transition group-hover:gap-2"
+              >
+                Read More
+                <svg
+                  class="h-3.5 w-3.5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
+                </svg>
+              </a>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      WHY CHOOSE US — ASYMMETRIC GRID
+      ============================================ */
+  }
+  <section class="bg-primary-50 px-6 py-20 lg:px-12">
+    <div class="mx-auto max-w-7xl">
+      <div class="grid gap-6 lg:grid-cols-2">
+        {/* LEFT COLUMN */}
+        <div class="flex flex-col gap-6">
+          <div class="reveal-up">
+            <h2
+              class="text-3xl font-bold leading-tight text-primary-700 md:text-4xl"
+            >
+              Why You Should Choose Us as Your Trusted Partner
+            </h2>
+            <p class="mt-4 text-sm leading-relaxed text-primary-700/60">
+              In a world filled with diverse challeges and hardships, there are
+              countless individuals and organizations dedicated to helping.
+            </p>
+            <a
+              href="#"
+              class="mt-6 inline-block rounded-full bg-primary-600 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-primary-700"
+            >
+              Gift a membership
+            </a>
+          </div>
+
+          {/* 98% Card */}
+          <div
+            class="reveal-up rounded-3xl bg-primary-600 p-8 text-white"
+            style="--delay: 150ms"
+          >
+            <div
+              class="text-5xl font-bold md:text-6xl"
+              data-counter="98"
+              data-suffix="%"
+            >
+              0%
+            </div>
+            <div class="mt-3">
+              <div class="font-semibold">Clients</div>
+              <div class="text-sm text-primary-50/90">Satisfaction Rate</div>
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN */}
+        <div class="grid grid-cols-2 gap-6">
+          {/* 12+ Stats */}
+          <div
+            class="reveal-scale col-span-2 rounded-3xl bg-secondary-100 p-8"
+            style="--delay: 100ms"
+          >
+            <div
+              class="text-5xl font-bold text-primary-700 md:text-6xl"
+              data-counter="12"
+              data-suffix="+"
+            >
+              0+
+            </div>
+            <div class="mt-3 text-primary-700">
+              <div class="font-semibold">Year of</div>
+              <div class="text-sm text-primary-700/70">Experiences</div>
+            </div>
+          </div>
+
+          <div
+            class="reveal-scale overflow-hidden rounded-2xl"
+            style="--delay: 200ms"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=400&q=80"
+              alt="Image"
+              class="h-32 w-full object-cover transition duration-500 hover:scale-110 md:h-40"
+            />
+          </div>
+
+          <div
+            class="reveal-scale overflow-hidden rounded-2xl"
+            style="--delay: 250ms"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=400&q=80"
+              alt="Image"
+              class="h-32 w-full object-cover transition duration-500 hover:scale-110 md:h-40"
+            />
+          </div>
+
+          <div
+            class="reveal-scale overflow-hidden rounded-2xl"
+            style="--delay: 300ms"
+          >
+            <img
+              src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&q=80"
+              alt="Image"
+              class="h-32 w-full object-cover transition duration-500 hover:scale-110 md:h-40"
+            />
+          </div>
+
+          {/* 666+ Card */}
+          <div
+            class="reveal-scale rounded-2xl bg-primary-200/60 p-6"
+            style="--delay: 350ms"
+          >
+            <div
+              class="text-3xl font-bold text-primary-700 md:text-4xl"
+              data-counter="666"
+              data-suffix="+"
+            >
+              0+
+            </div>
+            <div class="mt-2 text-sm">
+              <div class="font-semibold text-primary-700">Positive Review</div>
+              <div class="text-primary-700/70">Clients</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      INTRODUCE OUR CAMPAIGN (DARK)
+      ============================================ */
+  }
+  <section class="bg-primary-700 px-6 py-20 text-white lg:px-12">
+    <div class="mx-auto max-w-7xl">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="reveal-up">
+          <h2 class="text-3xl font-bold md:text-4xl">Introduce Our Campaign</h2>
+          <p class="mt-2 text-sm text-primary-50/70">
+            How do something great to help others
+          </p>
+        </div>
+        <a
+          href="/campaign"
+          class="reveal-up group inline-flex items-center gap-2 rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+          style="--delay: 100ms"
+        >
+          View All
+          <svg
+            class="h-3.5 w-3.5 transition group-hover:translate-x-1"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+          </svg>
+        </a>
+      </div>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {
+          campaigns.map((c, i) => {
+            const percent = Math.min(
+              100,
+              Math.round((c.raised / c.goal) * 100),
+            );
+            return (
+              <article
+                class="reveal-up group overflow-hidden rounded-2xl bg-primary-50 text-primary-700 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/40"
+                style={`--delay: ${i * 120}ms`}
+              >
+                <div class="overflow-hidden">
+                  <img
+                    src={c.image}
+                    alt={c.title}
+                    class="h-44 w-full object-cover transition duration-500 group-hover:scale-110"
+                  />
+                </div>
+                <div class="p-5">
+                  <span
+                    class={`inline-block rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider ${
+                      c.featured
+                        ? "bg-secondary-100 text-secondary-700"
+                        : "bg-primary-100 text-primary-700"
+                    }`}
+                  >
+                    {c.category}
+                  </span>
+                  <h3 class="mt-3 line-clamp-2 min-h-[3rem] font-bold leading-snug">
+                    {c.title}
+                  </h3>
+                  <p class="mt-2 line-clamp-3 text-xs leading-relaxed text-primary-700/60">
+                    {c.desc}
+                  </p>
+
+                  {/* Progress */}
+                  <div class="mt-4">
+                    <div class="h-1.5 w-full overflow-hidden rounded-full bg-primary-100">
+                      <div
+                        class="progress-bar h-full rounded-full bg-secondary-500 transition-all duration-1000 ease-out"
+                        style="width: 0%"
+                        data-progress={percent}
+                      />
+                    </div>
+                    <div class="mt-2 flex justify-between text-xs">
+                      <span class="font-semibold text-secondary-600">
+                        Raised:{" "}
+                        <span class="text-primary-700">${c.raised}</span>
+                      </span>
+                      <span class="font-semibold text-primary-700">
+                        Goal: <span class="text-primary-700">${c.goal}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <button
+                    class={`mt-5 w-full rounded-full py-3 text-sm font-semibold transition-all duration-300 hover:-translate-y-0.5 ${
+                      c.featured
+                        ? "bg-primary-600 text-white hover:bg-primary-700"
+                        : "border border-primary-200 bg-white text-primary-700 hover:bg-primary-50"
+                    }`}
+                  >
+                    Donate
+                  </button>
+                </div>
+              </article>
+            );
+          })
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      FUNDRAISERS COUNTER
+      ============================================ */
+  }
+  <section class="relative overflow-hidden bg-primary-50 px-6 py-24 lg:px-12">
+    {/* Decorative corner images */}
+    <img
+      src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=200&q=80"
+      alt=""
+      class="reveal-scale absolute left-4 top-12 h-20 w-20 rounded-2xl object-cover shadow-lg md:left-12 md:h-28 md:w-28"
+    />
+    <img
+      src="https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=200&q=80"
+      alt=""
+      class="reveal-scale absolute bottom-12 left-12 h-20 w-20 rounded-2xl object-cover shadow-lg md:left-32 md:h-28 md:w-28"
+      style="--delay: 100ms"
+    />
+    <img
+      src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=200&q=80"
+      alt=""
+      class="reveal-scale absolute right-4 top-12 h-20 w-20 rounded-2xl object-cover shadow-lg md:right-12 md:h-28 md:w-28"
+      style="--delay: 150ms"
+    />
+    <img
+      src="https://images.unsplash.com/photo-1593113598332-cd288d649433?w=200&q=80"
+      alt=""
+      class="reveal-scale absolute bottom-12 right-12 h-20 w-20 rounded-2xl object-cover shadow-lg md:right-32 md:h-28 md:w-28"
+      style="--delay: 200ms"
+    />
+
+    <div class="relative mx-auto max-w-3xl text-center">
+      <p class="reveal-up text-lg font-medium text-primary-700/80 md:text-xl">
+        Be The Part of Fundraisers With Over
+      </p>
+      <h2
+        class="reveal-up my-6 text-6xl font-bold text-primary-700 md:text-7xl lg:text-8xl"
+        style="--delay: 100ms"
+        data-counter="448783"
+        data-suffix="+"
+      >
+        0+
+      </h2>
+      <p
+        class="reveal-up text-lg font-medium text-primary-700/80 md:text-xl"
+        style="--delay: 200ms"
+      >
+        People From Around The World Joined
+      </p>
+      <a
+        href="#"
+        class="reveal-up mt-8 inline-block rounded-full bg-primary-600 px-8 py-3.5 font-semibold text-white shadow-lg shadow-primary-700/20 transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-700 hover:shadow-xl"
+        style="--delay: 300ms"
+      >
+        Join Fundraisers Now!
+      </a>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      OUR EXPERT INSIGHTS
+      ============================================ */
+  }
+  <section class="bg-primary-50 px-6 pb-24 pt-8 lg:px-12">
+    <div class="mx-auto max-w-7xl">
+      <div class="flex flex-wrap items-end justify-between gap-4">
+        <div class="reveal-up">
+          <h2 class="text-3xl font-bold text-primary-700 md:text-4xl">
+            Our Expert Insights
+          </h2>
+          <p class="mt-2 text-sm text-primary-700/60">
+            How do something great to help others
+          </p>
+        </div>
+        <a
+          href="/blog"
+          class="reveal-up rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-primary-700"
+          style="--delay: 100ms"
+        >
+          Read All Blog
+        </a>
+      </div>
+
+      <div class="mt-10 grid gap-6 md:grid-cols-3">
+        {
+          insights.map((post, i) => (
+            <article
+              class="reveal-up group cursor-pointer"
+              style={`--delay: ${i * 120}ms`}
+            >
+              <div class="overflow-hidden rounded-2xl">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  class="h-48 w-full object-cover transition duration-700 group-hover:scale-110"
+                />
+              </div>
+              <div class="pt-5">
+                <div class="text-[11px] font-semibold uppercase tracking-wider text-primary-700/60">
+                  {post.date} / {post.category}
+                </div>
+                <h3 class="mt-2 line-clamp-2 font-bold leading-snug text-primary-700 transition group-hover:text-primary-600">
+                  {post.title}
+                </h3>
+                <p class="mt-2 line-clamp-3 text-xs leading-relaxed text-primary-700/60">
+                  {post.desc}
+                </p>
+                <button class="mt-4 rounded-full border border-primary-200 px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-primary-700 transition hover:bg-primary-600 hover:text-white">
+                  Read More
+                </button>
+              </div>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    /* ============================================
+      FOOTER — pindahkan ke MainLayout jika perlu
+      ============================================ */
+  }
+  <footer class="bg-primary-700 px-6 py-16 text-primary-50 lg:px-12">
+    <div class="mx-auto grid max-w-7xl gap-12 lg:grid-cols-2">
+      <div class="reveal-up">
+        <h3 class="text-xl font-bold text-white">Follow Us</h3>
+        <p class="mt-3 max-w-sm text-sm text-primary-50/70">
+          Global Health Innovationd is a Us registered all Donation are zakat.
+        </p>
+        <div class="mt-5 flex gap-3">
+          {
+            ["f", "t", "in", "ig"].map((s) => (
+              <a
+                href="#"
+                class="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-bold transition hover:bg-secondary-500"
+              >
+                {s}
+              </a>
+            ))
+          }
+        </div>
+
+        <div class="mt-10 grid grid-cols-2 gap-8 sm:grid-cols-4">
+          {
+            [
+              {
+                title: "Company",
+                items: ["Features", "Contact Us", "Faqs", "Blog"],
+              },
+              {
+                title: "Resource",
+                items: ["Visual Sales", "Trend Analysis", "Real time"],
+              },
+              { title: "Career", items: ["Jobs", "Hiring"] },
+              {
+                title: "Help",
+                items: ["Tips & Tricks", "Help center", "Support", "24/7"],
+              },
+            ].map((col) => (
+              <div>
+                <h4 class="font-semibold text-white">{col.title}</h4>
+                <ul class="mt-3 space-y-2 text-sm text-primary-50/70">
+                  {col.items.map((item) => (
+                    <li>
+                      <a href="#" class="transition hover:text-white">
+                        {item}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      {/* Newsletter */}
+      <div class="reveal-up" style="--delay: 150ms">
+        <div class="rounded-2xl bg-white p-8 text-primary-700 shadow-2xl">
+          <h3 class="text-2xl font-bold">Stay Connectd</h3>
+          <p class="mt-2 text-sm text-primary-700/60">
+            Sign up with your email address to receive news and updates.
+          </p>
+          <form class="mt-6 space-y-4" onsubmit="event.preventDefault()">
+            <div>
+              <label class="text-sm font-medium">Name</label>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                class="mt-1.5 w-full rounded-lg border border-primary-200 bg-primary-50/40 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+            </div>
+            <div>
+              <label class="text-sm font-medium">Email</label>
+              <input
+                type="email"
+                placeholder="Enter your email"
+                class="mt-1.5 w-full rounded-lg border border-primary-200 bg-primary-50/40 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+            </div>
+            <div>
+              <label class="text-sm font-medium">Country</label>
+              <input
+                type="text"
+                placeholder="Your Country"
+                class="mt-1.5 w-full rounded-lg border border-primary-200 bg-primary-50/40 px-4 py-2.5 text-sm focus:border-primary-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-200"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full rounded-lg bg-primary-600 py-3 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-primary-700"
+            >
+              Sign Up
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="mx-auto mt-12 flex max-w-7xl flex-wrap items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-primary-50/60"
+    >
+      <p>© 2025 Copywrite By Zakat</p>
+      <div class="flex gap-6">
+        <a href="#" class="hover:text-white">Terms & Condition</a>
+        <a href="#" class="hover:text-white">Privacy Policy</a>
+      </div>
+    </div>
+  </footer>
+</MainLayout>
+
+{
+  /* ============================================
+    ANIMATION STYLES
+    ============================================ */
+}
+<style>
+  /* Reveal animations */
+  .reveal-up,
+  .reveal-fade,
+  .reveal-scale {
+    opacity: 0;
+    transition:
+      opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--delay, 0ms);
+    will-change: opacity, transform;
+  }
+
+  .reveal-up {
+    transform: translateY(28px);
+  }
+
+  .reveal-scale {
+    transform: scale(0.92);
+  }
+
+  .reveal-up.is-visible,
+  .reveal-fade.is-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-scale.is-visible {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* Tilted hero gallery (perspective effect) */
+  .tilt-1 {
+    transform: rotateY(20deg) translateX(-8px);
+  }
+  .tilt-2 {
+    transform: rotateY(14deg);
+  }
+  .tilt-3 {
+    transform: rotateY(6deg);
+  }
+  .tilt-4 {
+    transform: rotateY(-6deg);
+  }
+  .tilt-5 {
+    transform: rotateY(-14deg);
+  }
+  .tilt-6 {
+    transform: rotateY(-20deg) translateX(8px);
+  }
+
+  .tilt-1:hover,
+  .tilt-2:hover,
+  .tilt-3:hover,
+  .tilt-4:hover,
+  .tilt-5:hover,
+  .tilt-6:hover {
+    transform: rotateY(0) translateY(-8px);
+  }
+
+  /* Floating animation for decorative corner images */
+  @keyframes floaty {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-up,
+    .reveal-fade,
+    .reveal-scale {
+      opacity: 1;
+      transform: none;
+      transition: none;
+    }
+    .tilt-1,
+    .tilt-2,
+    .tilt-3,
+    .tilt-4,
+    .tilt-5,
+    .tilt-6 {
+      transform: none;
+    }
+  }
+</style>
+
+{
+  /* ============================================
+    ANIMATION SCRIPTS
+    ============================================ */
+}
+<script>
+  // ===== Intersection Observer for reveals =====
+  const revealEls = document.querySelectorAll(
+    ".reveal-up, .reveal-fade, .reveal-scale",
+  );
+
+  const io = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.12, rootMargin: "0px 0px -50px 0px" },
+  );
+
+  revealEls.forEach((el) => io.observe(el));
+
+  // ===== Progress bars =====
+  const bars = document.querySelectorAll<HTMLElement>(".progress-bar");
+  const barIO = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const el = entry.target as HTMLElement;
+          const pct = el.dataset.progress || "0";
+          setTimeout(() => {
+            el.style.width = `${pct}%`;
+          }, 200);
+          barIO.unobserve(el);
+        }
+      });
+    },
+    { threshold: 0.4 },
+  );
+  bars.forEach((b) => barIO.observe(b));
+
+  // ===== Number counters =====
+  const counters = document.querySelectorAll<HTMLElement>("[data-counter]");
+
+  const animateCount = (el: HTMLElement) => {
+    const target = parseInt(el.dataset.counter || "0", 10);
+    const suffix = el.dataset.suffix || "";
+    const duration = 1600;
+    const start = performance.now();
+
+    const step = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      // ease-out cubic
+      const eased = 1 - Math.pow(1 - progress, 3);
+      const value = Math.floor(eased * target);
+      el.textContent = value.toLocaleString("en-US") + suffix;
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+
+  const counterIO = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          animateCount(entry.target as HTMLElement);
+          counterIO.unobserve(entry.target);
+        }
+      });
+    },
+    { threshold: 0.5 },
+  );
+
+  counters.forEach((c) => counterIO.observe(c));
+</script>
