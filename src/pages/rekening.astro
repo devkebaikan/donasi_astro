@@ -1,0 +1,280 @@
+---
+// src/pages/rekening.astro
+import MainLayout from "@/layouts/MainLayout.astro";
+import Header from "@/components/layouts/Header.astro";
+import Footer from "@/components/layouts/Footer.astro";
+
+const noRek = [
+  { label: "BSI", number: "7418889998" },
+  { label: "BRI", number: "001201001453562" },
+  { label: "Bank Mandiri", number: "1330015666886" },
+  { label: "BCA", number: "8720367352" },
+  { label: "BNI", number: "1227401168" },
+];
+
+const csNumbers = [
+  { label: "Notifikasi Center", number: "0813-1996-4703" },
+  { label: "Asisten Kebaikan", number: "0821-3492-9144" },
+  { label: "Asisten Kebaikan", number: "0819-9292-3400" },
+];
+
+const toWaLink = (n: string) =>
+  `https://wa.me/${n.replace(/-/g, "").replace(/^0/, "62")}`;
+
+const offices = [
+  {
+    label: "Kantor Operasional",
+    address:
+      "Gg Waru No 47, Petoran, Kel Jebres, Kec Jebres, Kota Surakarta. 57126",
+  },
+  {
+    label: "Kantor Marketing",
+    address:
+      "Jl. Tirtosumirat II No 4, Kampung Bumi, Kec Laweyan, Kota Surakarta. 57149",
+  },
+];
+---
+
+<MainLayout
+  title="Rekening Aksiberbagi.com"
+  description="Salurkan kebaikan Anda melalui rekening resmi Aksiberbagi.com"
+>
+  <Header type="title" text="Rekening" />
+
+  <main class="min-h-screen">
+    <div class="container bg-neutral-50">
+      <!-- Hero -->
+      <section
+        class="bg-gradient-to-br from-primary-500 to-primary-600 px-5 pb-7 pt-20"
+      >
+        <p
+          class="text-primary-100 text-[11px] font-semibold tracking-widest uppercase mb-1"
+        >
+          Donasi & Pembayaran
+        </p>
+        <h1 class="text-xl font-bold text-white leading-tight">
+          Rekening Aksiberbagi.com
+        </h1>
+        <p class="text-primary-100 text-xs mt-2 leading-relaxed">
+          Salurkan kebaikan Anda melalui rekening resmi kami
+        </p>
+      </section>
+
+      <div class="space-y-4">
+        <!-- QRIS -->
+        <div class="bg-white border-b border-gray-100 shadow-sm p-4">
+          <p class="text-xs font-semibold text-gray-500 mb-3">QRIS</p>
+          <div
+            class="overflow-hidden rounded-xl flex items-center justify-center"
+          >
+            <img
+              src="/images/qrBMI.webp"
+              alt="QRIS Bank Muamalat Indonesia"
+              width="400"
+              height="560"
+              loading="lazy"
+              decoding="async"
+              class="w-full h-auto object-contain"
+            />
+          </div>
+          <p class="text-[11px] text-gray-500 mt-3 text-center">
+            Scan kode QR di atas untuk donasi via QRIS Bank Muamalat Indonesia
+          </p>
+        </div>
+
+        <!-- No Rekening -->
+        <div
+          class="bg-white border-b border-gray-100 shadow-sm overflow-hidden"
+        >
+          <div class="px-4 py-3 border-b border-gray-100">
+            <p class="text-xs font-semibold text-gray-500 mb-0.5">
+              REKENING BANK
+            </p>
+            <p class="text-[11px] text-gray-500">
+              Semua rekening atas nama
+              <span class="font-semibold text-gray-700"
+                >Yayasan Aksi Berbagi</span
+              >
+            </p>
+          </div>
+          <ul class="divide-y divide-gray-100">
+            {
+              noRek.map((rek) => (
+                <li class="flex justify-between items-center px-4 py-3">
+                  <div class="min-w-0">
+                    <p class="text-[11px] text-primary-500 font-bold uppercase tracking-wide mb-0.5">
+                      {rek.label}
+                    </p>
+                    <p class="text-sm font-semibold text-gray-900 tracking-wide">
+                      {rek.number}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="copy-rek flex-shrink-0 w-9 h-9 flex items-center justify-center bg-primary-500 hover:bg-primary-600 active:scale-95 text-white rounded-lg transition-all duration-150"
+                    data-rek={rek.number}
+                    aria-label={`Salin nomor rekening ${rek.label}`}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="w-4 h-4"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"
+                      />
+                    </svg>
+                  </button>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <!-- CS Numbers -->
+        <div
+          class="bg-white border-b border-gray-100 shadow-sm overflow-hidden"
+        >
+          <div
+            class="px-4 py-3 border-b border-gray-100 flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-4 h-4 text-primary-500"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"
+              ></path>
+            </svg>
+            <p class="text-xs font-semibold text-gray-500">
+              HUBUNGI CUSTOMER SERVICE
+            </p>
+          </div>
+          <ul class="divide-y divide-gray-100">
+            {
+              csNumbers.map((cs) => (
+                <li>
+                  <a
+                    href={toWaLink(cs.number)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                  >
+                    <div class="min-w-0">
+                      <p class="text-[11px] text-gray-400 mb-0.5">{cs.label}</p>
+                      <p class="text-sm font-semibold text-gray-900">
+                        {cs.number}
+                      </p>
+                    </div>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke-width="2"
+                      stroke="currentColor"
+                      class="w-5 h-5 text-gray-400 flex-shrink-0"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                      />
+                    </svg>
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <!-- Alamat -->
+        <div
+          class="bg-white border-b mb-4 border-gray-100 shadow-sm overflow-hidden"
+        >
+          <div
+            class="px-4 py-3 border-b border-gray-100 flex items-center gap-2"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              stroke="currentColor"
+              class="w-4 h-4 text-primary-500"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+              ></path>
+            </svg>
+            <p class="text-xs font-semibold text-gray-500">ALAMAT KANTOR</p>
+          </div>
+          <div class="divide-y divide-gray-100">
+            {
+              offices.map((o) => (
+                <div class="px-4 py-3">
+                  <p class="text-[11px] text-primary-500 font-bold uppercase tracking-wide mb-1">
+                    {o.label}
+                  </p>
+                  <p class="text-sm text-gray-700 leading-relaxed">
+                    {o.address}
+                  </p>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+      </div>
+      <Footer />
+    </div>
+  </main>
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+
+  const copyButtons = document.querySelectorAll<HTMLButtonElement>(".copy-rek");
+
+  copyButtons.forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const value = btn.dataset.rek ?? "";
+      if (!value) return;
+
+      try {
+        await navigator.clipboard.writeText(value);
+        showToast("Nomor rekening disalin", "success");
+      } catch {
+        // Fallback untuk browser/context tanpa Clipboard API
+        const ta = document.createElement("textarea");
+        ta.value = value;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+          document.execCommand("copy");
+          showToast("Nomor rekening disalin", "success");
+        } catch {
+          showToast("Gagal menyalin nomor", "error");
+        }
+        document.body.removeChild(ta);
+      }
+    });
+  });
+</script>

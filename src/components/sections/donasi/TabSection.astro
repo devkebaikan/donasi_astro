@@ -1,0 +1,499 @@
+---
+import Story from "@/components/sections/donasi/Story.astro";
+
+interface Props {
+  slug: string;
+  detailCampaign: any;
+}
+
+const { slug, detailCampaign } = Astro.props;
+
+const tabs = [
+  { id: "cerita", label: "Cerita" },
+  { id: "salur", label: "Salur" },
+  { id: "donatur", label: "Donatur" },
+  { id: "fundraiser", label: "Fundraiser" },
+];
+---
+
+<div
+  id="lazy-tab-config"
+  data-slug={slug}
+  data-api={import.meta.env.PUBLIC_API_URL}
+  hidden
+>
+</div>
+
+<!-- Tab Navigation -->
+<div
+  class="grid grid-cols-4 mt-1 gap-2 px-2"
+  role="tablist"
+  aria-label="Navigasi konten program"
+>
+  {
+    tabs.map((tab, i) => (
+      <button
+        id={`tab-btn-${tab.id}`}
+        data-tab={tab.id}
+        role="tab"
+        aria-selected={i === 0 ? "true" : "false"}
+        aria-controls={`tab-${tab.id}`}
+        tabindex={i === 0 ? 0 : -1}
+        class="tab-button min-h-[38px] w-full text-sm md:text-base font-medium rounded-md transition-all duration-300 bg-white text-gray-700 shadow-md"
+      >
+        {tab.label}
+      </button>
+    ))
+  }
+</div>
+
+<!-- Tab Content -->
+<div class="mt-4 transition-all duration-300 ease-in-out">
+  <article
+    id="tab-cerita"
+    role="tabpanel"
+    aria-labelledby="tab-btn-cerita"
+    tabindex="0"
+    class="tab-content"
+  >
+    <Story story={detailCampaign?.content} date={detailCampaign?.updated_at} />
+  </article>
+
+  <section
+    id="tab-salur"
+    role="tabpanel"
+    aria-labelledby="tab-btn-salur"
+    tabindex="-1"
+    class="tab-content hidden"
+  >
+    <div id="report-container"></div>
+  </section>
+
+  <section
+    id="tab-donatur"
+    role="tabpanel"
+    aria-labelledby="tab-btn-donatur"
+    tabindex="-1"
+    class="tab-content hidden"
+  >
+    <div id="donors-container"></div>
+  </section>
+
+  <section
+    id="tab-fundraiser"
+    role="tabpanel"
+    aria-labelledby="tab-btn-fundraiser"
+    tabindex="-1"
+    class="tab-content hidden"
+  >
+    <div id="fundraiser-container"></div>
+  </section>
+</div>
+
+<script>
+  import { formatRupiah } from "@/lib/formatter";
+
+  // Tab system — ARIA-compliant (WCAG 2.1 §4.1.2)
+  const tabButtons = Array.from(
+    document.querySelectorAll<HTMLElement>("[role='tab']"),
+  );
+  const tabPanels = Array.from(
+    document.querySelectorAll<HTMLElement>("[role='tabpanel']"),
+  );
+
+  function activateTab(btn: HTMLElement) {
+    const tabId = btn.dataset.tab;
+
+    tabButtons.forEach((b) => {
+      const active = b === btn;
+      b.setAttribute("aria-selected", active ? "true" : "false");
+      b.setAttribute("tabindex", active ? "0" : "-1");
+      b.classList.toggle("bg-primary-500", active);
+      b.classList.toggle("text-white", active);
+      b.classList.toggle("shadow-sm", active);
+      b.classList.toggle("bg-white", !active);
+      b.classList.toggle("text-gray-700", !active);
+      b.classList.toggle("shadow-md", !active);
+    });
+
+    tabPanels.forEach((panel) => {
+      const active = panel.id === `tab-${tabId}`;
+      panel.classList.toggle("hidden", !active);
+      panel.setAttribute("tabindex", active ? "0" : "-1");
+    });
+
+    if (tabId === "salur") loadReport();
+    else if (tabId === "donatur") loadDonors();
+    else if (tabId === "fundraiser") loadFundraisers();
+  }
+
+  tabButtons.forEach((btn) => {
+    btn.addEventListener("click", () => activateTab(btn));
+
+    btn.addEventListener("keydown", (e) => {
+      const key = e.key;
+      const idx = tabButtons.indexOf(btn);
+      const last = tabButtons.length - 1;
+
+      const moves: Record<string, number> = {
+        ArrowRight: (idx + 1) % tabButtons.length,
+        ArrowDown: (idx + 1) % tabButtons.length,
+        ArrowLeft: (idx - 1 + tabButtons.length) % tabButtons.length,
+        ArrowUp: (idx - 1 + tabButtons.length) % tabButtons.length,
+        Home: 0,
+        End: last,
+      };
+
+      if (key in moves) {
+        e.preventDefault();
+        const target = tabButtons[moves[key]];
+        target.focus();
+        activateTab(target);
+      }
+    });
+  });
+
+  if (tabButtons[0]) activateTab(tabButtons[0]);
+
+  // ── Lazy tab loading ──────────────────────────────────────────────────────
+  const lazyConfig = document.getElementById("lazy-tab-config") as HTMLElement;
+  const programSlug = lazyConfig?.dataset.slug ?? "";
+  const apiBase = lazyConfig?.dataset.api ?? "";
+
+  const tabLoaded: Record<string, boolean> = {
+    salur: false,
+    donatur: false,
+    fundraiser: false,
+  };
+
+  function skeletonHtml(): string {
+    return `<div class="p-4 space-y-3 animate-pulse">
+      <div class="h-5 bg-gray-200 rounded-full w-1/3"></div>
+      <div class="h-36 bg-gray-200 rounded-lg"></div>
+      <div class="h-4 bg-gray-200 rounded w-full"></div>
+      <div class="h-4 bg-gray-200 rounded w-4/5"></div>
+      <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+    </div>`;
+  }
+
+  function titleBorderHtml(title: string, amount?: number): string {
+    const badge =
+      amount && amount >= 1
+        ? `<span class="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-full bg-primary-600 text-white text-xs font-medium shadow">${amount}</span>`
+        : "";
+    return `<div class="flex items-center gap-3">
+      <div class="px-4 py-1.5 rounded-full bg-gradient-to-r from-primary-100 to-white border border-primary-300 text-primary-700 font-semibold text-sm shadow-sm">${title}</div>
+      ${badge}
+    </div>`;
+  }
+
+  function fmtDate(dateStr: string): string {
+    if (!dateStr) return "";
+    return new Date(dateStr).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  }
+
+  function timeAgo(dateStr: string): string {
+    if (!dateStr) return "";
+    const ms = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(ms / 60000);
+    const hours = Math.floor(ms / 3600000);
+    const days = Math.floor(ms / 86400000);
+    if (mins < 1) return "Baru saja";
+    if (mins < 60) return `${mins} menit yang lalu`;
+    if (hours < 24) return `${hours} jam yang lalu`;
+    if (days < 7) return `${days} hari yang lalu`;
+    return new Date(dateStr).toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  }
+
+  function getInitials(name: string): string {
+    if (!name) return "?";
+    const words = name.trim().split(/\s+/);
+    if (words.length === 1) return words[0].charAt(0).toUpperCase();
+    return (
+      words[0].charAt(0) + words[words.length - 1].charAt(0)
+    ).toUpperCase();
+  }
+
+  function errorHtml(): string {
+    return `<p class="text-center text-gray-500 py-8">Gagal memuat data. Silakan coba lagi.</p>`;
+  }
+
+  async function loadReport(): Promise<void> {
+    if (tabLoaded.salur) return;
+    tabLoaded.salur = true;
+    const container = document.getElementById("report-container")!;
+    container.innerHTML = skeletonHtml();
+    try {
+      const res = await fetch(
+        `${apiBase}/report?program_link=${programSlug}&limit=1`,
+      );
+      const json = await res.json();
+      const reportData = json?.data?.[0] ?? null;
+      const reportNews = json?.news?.[0] ?? null;
+      if (!reportData && !reportNews) {
+        container.innerHTML = `<div class="text-center py-12">
+          <div class="flex flex-col items-center gap-4">
+            <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center">
+              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
+            </div>
+            <h5 class="font-medium text-sm text-gray-600">Belum ada Laporan Penyaluran</h5>
+          </div>
+        </div>`;
+        return;
+      }
+      const isReport = !!reportData;
+      const item = reportData ?? reportNews;
+      const imgHtml =
+        isReport &&
+        (reportData.image || reportData.wa_image || reportData.kegiatan?.image)
+          ? `<div class="mb-4"><img src="${reportData.image || reportData.wa_image || reportData.kegiatan?.image}" alt="Report" class="w-full rounded-lg h-auto object-cover"/></div>`
+          : "";
+      const titleHtml = isReport
+        ? `<h6 class="font-bold text-lg text-gray-900 mb-3">${reportData.project?.title ?? ""}</h6>`
+        : `<h6 class="font-bold text-lg text-gray-900 mb-3">${reportNews.title ?? ""}</h6>`;
+      const contentHtml = isReport
+        ? reportData.kegiatan?.deskripsi || reportData.wa_caption || ""
+        : reportNews.content || "";
+      container.innerHTML = `<div class="bg-white rounded-lg shadow-sm">
+        <div class="p-4 md:p-6">
+          <div class="mb-6">${titleBorderHtml("Laporan Penyaluran")}</div>
+          <div class="relative overflow-hidden">
+            <div class="pointer-events-none absolute inset-x-0 bottom-0 h-[600px] bg-gradient-to-t from-white to-transparent z-10"></div>
+            <ul class="max-h-[1000px] space-y-4">
+              <li class="bg-primary-100/50 rounded-lg p-4 md:p-6 border border-primary-100">
+                <div class="flex items-start gap-3 mb-4">
+                  <div class="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-white border-2 border-primary-200">
+                    <img src="${item.mitra?.[0]?.image_url ?? ""}" alt="Mitra" class="w-full h-full object-cover"/>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-semibold text-gray-900 text-base">${item.mitra?.[0]?.name ?? "Aksiberbagi"}</h4>
+                    <p class="text-sm text-gray-600">${fmtDate(item.date)}</p>
+                  </div>
+                </div>
+                ${imgHtml}
+                ${titleHtml}
+                <div class="text-gray-700 leading-relaxed [&_p]:mb-3 [&_p]:text-base [&_strong]:font-semibold [&_strong]:text-gray-900 [&_a]:text-primary-600 [&_a]:underline [&_ul]:ml-6 [&_ul]:list-disc [&_ul]:mb-3 [&_ol]:ml-6 [&_ol]:list-decimal [&_ol]:mb-3 [&_li]:mb-1 [&_img]:rounded-lg [&_img]:my-4 [&_img]:max-w-full">
+                  ${contentHtml}
+                </div>
+              </li>
+            </ul>
+            <div class="pt-6 text-center z-20 relative">
+              <a href="/donasi/report/${programSlug}/" class="text-xs md:text-sm inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary-500 text-white font-semibold transition-all duration-300 hover:bg-primary-600 hover:shadow-lg hover:-translate-y-0.5">
+                Lihat Dampak Kebaikanmu Selengkapnya
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    } catch {
+      tabLoaded.salur = false;
+      container.innerHTML = errorHtml();
+    }
+  }
+
+  async function loadDonors(): Promise<void> {
+    if (tabLoaded.donatur) return;
+    tabLoaded.donatur = true;
+    const container = document.getElementById("donors-container")!;
+    container.innerHTML = skeletonHtml();
+    try {
+      const res = await fetch(
+        `${apiBase}/program/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
+      );
+      const json = await res.json();
+      const total: number = json?.data.total ?? 0;
+      const donorList: any[] = json?.data.data ?? [];
+      const itemsHtml = donorList
+        .map((d: any) => {
+          const rutinBadge =
+            d.source === "RUTIN"
+              ? `<a href="/donasi-rutin/program/${programSlug}" class="flex-shrink-0 w-7 h-7" title="Donasi Rutin">
+                  <img src="/img/icons/menu/6. Donasi rutin.webp" alt="Donasi Rutin" class="w-full h-full object-contain" width="28" height="28"/>
+                </a>`
+              : "";
+          const likeCount = d.liked ?? 0;
+          const doaSection = d.doa
+            ? `<div class="bg-gray-50 rounded-lg p-4 mt-3">
+                <p class="text-gray-700 text-sm leading-relaxed mb-3">${d.doa}</p>
+                <div class="flex justify-between items-center pt-3 border-t border-gray-200">
+                  <div class="text-sm text-gray-600">
+                    <span class="like-count" data-count="${likeCount}">${likeCount === 0 ? "Yuk aminkan doa saudara kita" : `<strong class="text-primary-600">${likeCount}</strong> orang mengaminkan doa ini`}</span>
+                  </div>
+                  <button class="like-button flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-primary-500 text-primary-500 font-semibold text-sm transition-all duration-300 hover:bg-primary-100 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed" data-donor-id="${d.id}">
+                    <svg class="w-4 h-4 heart-icon" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"/></svg>
+                    <span class="button-text">Aamiin</span>
+                  </button>
+                </div>
+              </div>`
+            : "";
+          return `<div class="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100" data-donor-id="${d.id}">
+            <div class="flex items-start gap-3 mb-3">
+            <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+              <span class="text-sm font-bold text-primary-700">
+                ${getInitials(d.name)}
+              </span>
+            </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-1">
+                  <h4 class="font-semibold text-gray-900 text-base truncate">${d.name}</h4>
+                  ${rutinBadge}
+                </div>
+                <p class="text-xs text-gray-600">${timeAgo(d.date)} Via ${d.bank_name}</p>
+              </div>
+              <div class="flex-shrink-0">
+                <p class="font-bold text-primary-600">${formatRupiah(d.nominal_donasi)}</p>
+              </div>
+            </div>
+            ${doaSection}
+          </div>`;
+        })
+        .join("");
+      container.innerHTML = `<div class="bg-white rounded-lg shadow-sm p-4 md:p-6">
+        <div class="flex items-end justify-between mb-6">${titleBorderHtml("Donatur", total)}</div>
+        <div class="donate-body-content pb-0">${itemsHtml}</div>
+      </div>`;
+      initLikeButtons(container);
+    } catch {
+      tabLoaded.donatur = false;
+      container.innerHTML = errorHtml();
+    }
+  }
+
+  async function loadFundraisers(): Promise<void> {
+    if (tabLoaded.fundraiser) return;
+    tabLoaded.fundraiser = true;
+    const container = document.getElementById("fundraiser-container")!;
+    container.innerHTML = skeletonHtml();
+    try {
+      const res = await fetch(
+        `${apiBase}/program/link/${programSlug}/fundraisers?limit=6&mode=pagination&page=1`,
+      );
+      const json = await res.json();
+      const total: number = json?.data?.total ?? 0;
+      const list: any[] = json?.data?.data ?? [];
+      const itemsHtml =
+        list.length > 0
+          ? list
+              .map(
+                (fr: any) =>
+                  `<div class="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-gray-50 to-white border border-gray-100 hover:border-primary-200 transition-all duration-300 hover:shadow-md">
+                    <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+                      <span class="text-sm font-bold text-primary-700">
+                        ${getInitials(fr.name)}
+                      </span>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h4 class="font-semibold text-gray-900 mb-1 truncate">${fr.name}</h4>
+                      <p class="text-xs text-gray-600 mb-2">Mengajak <strong class="text-gray-900">${fr.total_donatur} orang</strong> berinfak</p>
+                      <div class="flex items-center gap-2">
+                        <h6 class="font-bold text-primary-600">${formatRupiah(fr.total_donasi)}</h6>
+                      </div>
+                    </div>
+                  </div>`,
+              )
+              .join("")
+          : `<div class="text-center py-12">
+              <div class="flex flex-col items-center gap-4">
+                <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
+                  <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h5 class="text-gray-700 mb-1">Belum ada Fundraiser</h5>
+                  <p class="text-sm text-gray-500">Jadilah fundraiser pertama untuk program ini</p>
+                </div>
+              </div>
+            </div>`;
+      container.innerHTML = `<div class="space-y-3">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="p-4 md:p-6">
+            <div class="flex items-center justify-between mb-6">${titleBorderHtml("Fundraiser", total)}</div>
+            <div class="space-y-3">${itemsHtml}</div>
+          </div>
+        </div>
+        <a href="https://aksiberbagi.com/login" class="block rounded-lg shadow-md overflow-hidden">
+          <img width="400" height="400" src="/images/banner/JadiFundraiser.webp" alt="Jadi Fundraiser" class="w-full h-auto"/>
+        </a>
+      </div>`;
+    } catch {
+      tabLoaded.fundraiser = false;
+      container.innerHTML = errorHtml();
+    }
+  }
+
+  function initLikeButtons(container: HTMLElement): void {
+    const buttons =
+      container.querySelectorAll<HTMLButtonElement>(".like-button");
+    buttons.forEach((btn) => {
+      const donorId = btn.getAttribute("data-donor-id");
+      if (!donorId) return;
+      if (localStorage.getItem(`liked_${donorId}`) === "true") {
+        btn.classList.remove(
+          "border-primary-500",
+          "text-primary-500",
+          "hover:bg-primary-100",
+        );
+        btn.classList.add("bg-primary-500", "text-white");
+        btn.disabled = true;
+        btn.querySelector(".heart-icon")?.classList.add("text-white");
+      }
+      btn.addEventListener("click", async function () {
+        if (this.disabled) return;
+        const id = this.getAttribute("data-donor-id")!;
+        const card = this.closest("[data-donor-id]");
+        const countSpan = card?.querySelector<HTMLElement>(".like-count");
+        const cur = parseInt(countSpan?.dataset.count ?? "0");
+        const next = cur + 1;
+        if (countSpan) {
+          countSpan.dataset.count = String(next);
+          countSpan.innerHTML = `<strong class="text-primary-600">${next}</strong> orang mengaminkan doa ini`;
+        }
+        this.classList.remove(
+          "border-primary-500",
+          "text-primary-500",
+          "hover:bg-primary-100",
+        );
+        this.classList.add("bg-primary-500", "text-white");
+        this.disabled = true;
+        this.querySelector(".heart-icon")?.classList.add("text-white");
+        localStorage.setItem(`liked_${id}`, "true");
+        try {
+          await fetch(`/amin/${id}/like`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          });
+        } catch {
+          if (countSpan) {
+            countSpan.dataset.count = String(cur);
+            countSpan.innerHTML =
+              cur === 0
+                ? "Yuk aminkan doa saudara kita"
+                : `<strong class="text-primary-600">${cur}</strong> orang mengaminkan doa ini`;
+          }
+          this.classList.add(
+            "border-primary-500",
+            "text-primary-500",
+            "hover:bg-primary-100",
+          );
+          this.classList.remove("bg-primary-500", "text-white");
+          this.disabled = false;
+          this.querySelector(".heart-icon")?.classList.remove("text-white");
+          localStorage.removeItem(`liked_${id}`);
+        }
+      });
+    });
+  }
+</script>

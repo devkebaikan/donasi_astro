@@ -1,0 +1,105 @@
+---
+interface Props {
+  qr: any;
+}
+
+const { qr } = Astro.props;
+---
+
+<div id="tab-qr" class="hidden py-3 flex flex-col items-center">
+  {
+    qr ? (
+      <div class="bg-white rounded border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-5 w-full">
+        <div class="flex items-center gap-2.5 self-start">
+          <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0" />
+          <p class="text-sm font-bold text-gray-800">Scan untuk Berinfaq</p>
+        </div>
+
+        <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+          <img
+            src={qr.image_url}
+            alt={qr.name ?? "QR Code Infaq"}
+            width="220"
+            height="220"
+            loading="lazy"
+            class="w-56 h-56 object-contain"
+          />
+        </div>
+
+        <div class="text-center space-y-1.5">
+          <p class="text-sm font-semibold text-gray-700">{qr.name ?? "QR Infaq"}</p>
+          <p class="text-xs text-gray-400 leading-relaxed max-w-[240px]">
+            Buka aplikasi m-banking atau dompet digital, lalu scan QR di atas
+          </p>
+        </div>
+
+        <button
+          id="btn-download-qr"
+          type="button"
+          data-qr-url={qr.image_url}
+          class="w-full flex items-center justify-center gap-2 border border-primary-200 text-primary-600 bg-primary-50 hover:bg-primary-100 font-semibold py-3 rounded-xl text-sm transition-colors"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Unduh QR Code
+        </button>
+      </div>
+    ) : (
+      <div class="bg-white rounded border border-gray-100 shadow-sm p-12 flex flex-col items-center gap-3 w-full">
+        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            class="text-gray-300"
+          >
+            <rect x="3" y="3" width="7" height="7" />
+            <rect x="14" y="3" width="7" height="7" />
+            <rect x="14" y="14" width="7" height="7" />
+            <rect x="3" y="14" width="7" height="7" />
+          </svg>
+        </div>
+        <p class="text-sm text-gray-400 text-center">QR Code belum tersedia</p>
+      </div>
+    )
+  }
+</div>
+
+<script>
+  import { showToast } from "@/lib/toast";
+
+  const btnDownloadQr = document.getElementById(
+    "btn-download-qr",
+  ) as HTMLButtonElement | null;
+
+  btnDownloadQr?.addEventListener("click", async () => {
+    const url = btnDownloadQr.dataset.qrUrl;
+    if (!url) return;
+    try {
+      const res = await fetch(url);
+      const blob = await res.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "qr-infaq.png";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {
+      showToast("Gagal mengunduh QR Code", "error");
+    }
+  });
+</script>

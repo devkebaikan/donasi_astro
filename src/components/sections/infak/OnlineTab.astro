@@ -1,0 +1,289 @@
+---
+import { formatRupiah, formatCompactNumber } from "@/lib/formatter";
+
+interface Props {
+  isAuth: boolean;
+  userName: string;
+  userPhone: string;
+  walletBal: number;
+  nominalOptions: number[];
+}
+
+const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
+---
+
+<div id="tab-online" class="py-3 space-y-3">
+  <!-- Nominal -->
+  <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+    <div class="flex items-center gap-2.5 mb-4">
+      <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+      <p class="text-sm font-bold text-gray-800">Nominal Infaq</p>
+    </div>
+
+    <div class="relative mb-3">
+      <span
+        class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold pointer-events-none select-none"
+      >
+        Rp
+      </span>
+      <input
+        id="nominal-input"
+        type="text"
+        inputmode="numeric"
+        placeholder="0"
+        class="w-full pl-10 pr-4 py-3.5 rounded-lg border border-gray-200 text-base font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+      />
+    </div>
+
+    <div class="grid grid-cols-4 gap-2">
+      {
+        nominalOptions.map((n) => (
+          <button
+            type="button"
+            class="nominal-chip text-xs py-2.5 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
+            data-value={n}
+          >
+            {formatCompactNumber(n)}
+          </button>
+        ))
+      }
+    </div>
+
+    <p class="text-[11px] text-gray-400 mt-3 flex items-center gap-1.5">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="12"
+        height="12"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        class="shrink-0"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      Minimal infaq Rp1.000
+    </p>
+  </div>
+
+  <!-- Metode Pembayaran -->
+  <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+    <div class="flex items-center gap-2.5 mb-4">
+      <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+      <p class="text-sm font-bold text-gray-800">Metode Pembayaran</p>
+    </div>
+
+    <button
+      id="open-payment-modal"
+      type="button"
+      class="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3.5 hover:border-primary-400 hover:bg-primary-50/50 transition-all duration-150 group"
+    >
+      <div class="flex items-center gap-3 min-w-0">
+        <img
+          id="payment-img"
+          src=""
+          alt=""
+          width="64"
+          height="32"
+          class="h-7 w-auto object-contain hidden shrink-0"
+        />
+        <span id="payment-name" class="text-sm text-gray-400 truncate">
+          Pilih metode pembayaran
+        </span>
+      </div>
+      <span
+        class="text-xs text-primary-600 font-semibold border border-primary-200 bg-primary-50 group-hover:bg-primary-100 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
+      >
+        Pilih
+      </span>
+    </button>
+
+    <div
+      id="wallet-info"
+      class="hidden mt-3 flex items-center justify-between bg-primary-50 rounded-xl px-4 py-3 border border-primary-100"
+    >
+      <div class="flex items-center gap-2">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="text-primary-500 shrink-0"
+        >
+          <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
+          <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
+          <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
+        </svg>
+        <span class="text-xs text-primary-700 font-medium">Saldo Saku Berbagi</span>
+      </div>
+      <span class="text-sm font-bold text-primary-700">{formatRupiah(walletBal)}</span>
+    </div>
+  </div>
+
+  <!-- Data Donatur -->
+  <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
+    <div class="flex items-center gap-2.5 mb-4">
+      <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
+      <p class="text-sm font-bold text-gray-800">Data Donatur</p>
+    </div>
+
+    {
+      isAuth ? (
+        <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+          <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+            <span class="text-sm font-bold text-primary-700">
+              {userName.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-gray-900 truncate">{userName}</p>
+            <p class="text-xs text-gray-400 mt-0.5">{userPhone}</p>
+          </div>
+          <a
+            href="/profil"
+            class="text-[11px] text-primary-600 font-semibold border border-primary-200 bg-primary-50 rounded-lg px-2.5 py-1.5 shrink-0 hover:bg-primary-100 transition-colors"
+          >
+            Edit
+          </a>
+        </div>
+      ) : (
+        <div class="space-y-3.5">
+          <div class="flex items-center justify-center gap-1.5 py-1">
+            <p class="text-xs text-gray-400">
+              Sudah punya akun?{" "}
+              <a href="/auth/login" class="text-primary-600 font-semibold hover:underline">
+                Login
+              </a>
+            </p>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-500 font-medium mb-1.5 block">Nama Lengkap</label>
+            <input
+              id="input-name"
+              type="text"
+              placeholder="Masukkan nama lengkap"
+              class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            />
+            <label class="flex items-center gap-2 mt-2 cursor-pointer w-fit">
+              <input
+                id="hide-name"
+                type="checkbox"
+                class="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-400"
+              />
+              <span class="text-xs text-gray-400">
+                Sembunyikan nama{" "}
+                <em class="not-italic text-gray-300">(sebagai Hamba Allah)</em>
+              </span>
+            </label>
+          </div>
+
+          <div>
+            <label class="text-xs text-gray-500 font-medium mb-1.5 block">Nomor WhatsApp</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
+                +62
+              </span>
+              <input
+                id="input-phone"
+                type="tel"
+                inputmode="numeric"
+                placeholder="8xx-xxxx-xxxx"
+                class="w-full border border-gray-200 rounded-xl py-3 pl-12 pr-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+              />
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    <!-- Doa & Pesan -->
+    <div class="mt-4">
+      <label class="text-xs text-gray-500 font-medium mb-1.5 block">
+        Doa & Pesan
+        <span class="text-gray-300 font-normal ml-1">(opsional)</span>
+      </label>
+      <textarea
+        id="input-doa"
+        rows={3}
+        placeholder="Tuliskan doa atau pesan Anda..."
+        class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+      ></textarea>
+    </div>
+
+    <!-- Donasi untuk Orang Lain -->
+    <div class="flex items-center justify-between mt-4">
+      <div class="flex-1 pr-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-1 h-5 bg-amber-400 rounded-full shrink-0"></div>
+          <p class="text-sm font-bold text-gray-800">Donasi untuk Orang Lain</p>
+        </div>
+        <p class="text-xs text-gray-400 mt-1.5 ml-[14px]">
+          Niatkan donasi ini atas nama seseorang
+        </p>
+      </div>
+      <label class="relative inline-flex items-center cursor-pointer shrink-0">
+        <input id="toggle-orang-lain" type="checkbox" class="sr-only peer" />
+        <div
+          class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary-300 peer-checked:bg-primary-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm"
+        >
+        </div>
+      </label>
+    </div>
+
+    <div id="form-orang-lain" class="hidden mt-4 space-y-3">
+      <div class="w-full h-px bg-gray-100"></div>
+      <div>
+        <label
+          class="text-xs text-gray-500 font-medium mb-1.5 block"
+          for="input-atas-nama"
+        >
+          Nama Penerima / Atas Nama
+        </label>
+        <input
+          id="input-atas-nama"
+          type="text"
+          placeholder="cth. Almarhum Bapak Ahmad, Ibu Siti..."
+          class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+        />
+      </div>
+      <div
+        class="flex items-start gap-2.5 bg-amber-50 rounded-xl px-3.5 py-3 border border-amber-100"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="text-amber-500 shrink-0 mt-0.5"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <p class="text-xs text-amber-700 leading-relaxed">
+          Nama ini akan dicantumkan sebagai penerima manfaat dari infaq yang Anda tunaikan.
+        </p>
+      </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div id="bottom-bar" class="container flex items-center gap-3 mt-4">
+      <button
+        id="btn-submit"
+        type="button"
+        class="bg-primary-500 hover:bg-primary-600 w-full active:scale-[0.98] text-white font-semibold py-3.5 px-6 rounded-md transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+      >
+        Lanjutkan Pembayaran
+      </button>
+    </div>
+  </div>
+</div>

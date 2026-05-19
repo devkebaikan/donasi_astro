@@ -1,0 +1,74 @@
+---
+import { formatRupiah } from "@/lib/formatter";
+
+interface Props {
+  donors: any[];
+}
+
+const { donors } = Astro.props;
+---
+
+<div id="tab-donatur" class="hidden py-3 space-y-2">
+  {
+    donors.length > 0 ? (
+      donors.map((d: any) => (
+        <div class="flex flex-col bg-white rounded border border-gray-100 shadow-sm px-4 py-3.5">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
+              <span class="text-sm font-bold text-primary-700">
+                {(d.name ?? "H").charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-gray-900 truncate">
+                {d.name ?? "Hamba Allah"}
+              </p>
+              <p class="text-xs text-gray-400 mt-0.5">via {d.bank_name}</p>
+            </div>
+            <div class="shrink-0 text-right">
+              <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-1 font-medium border border-emerald-100">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                {formatRupiah(d.nominal_donasi ?? 0)}
+              </span>
+            </div>
+          </div>
+
+          {d.doa !== "" && (
+            <div class="mx-3 my-4">
+              <div class="border border-neutral-100 rounded-t-lg text-sm px-3 py-2.5">
+                {d.doa}
+              </div>
+              <div class="border border-neutral-100 rounded-b-lg text-sm flex items-center justify-between gap-3 px-3 py-2.5">
+                <p>{d.liked} Aminkan do'a ini</p>
+                <div class="border rounded-lg border-primary-300 px-3 py-2.5">
+                  Amin
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      ))
+    ) : (
+      <div class="bg-white rounded border border-gray-100 shadow-sm py-16 flex flex-col items-center gap-3">
+        <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+            class="text-gray-300"
+          >
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+          </svg>
+        </div>
+        <p class="text-sm text-gray-400">Belum ada donatur</p>
+      </div>
+    )
+  }
+</div>

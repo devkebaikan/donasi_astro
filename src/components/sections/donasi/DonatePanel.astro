@@ -1,0 +1,132 @@
+---
+import { formatRupiah } from "@/lib/formatter";
+
+interface Props {
+  nominalOptions: any[];
+  programId: string | number | undefined;
+  programLink: string | undefined;
+}
+
+const { nominalOptions, programId, programLink } = Astro.props;
+---
+
+<div
+  id="donate-panel"
+  class="fixed bottom-0 left-0 right-0 z-50 translate-y-full transition-transform duration-300"
+>
+  <div class="mx-auto max-w-120 rounded-t-2xl shadow-lg border-2 border-neutral-300">
+    <div class="bg-white rounded-t-xl shadow-lg p-4 space-y-4">
+      <div class="flex justify-between items-center">
+        <h3 class="font-semibold text-base">Masukkan Nominal</h3>
+        <button id="close-panel" class="text-gray-500">✕</button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        {
+          nominalOptions.map((amount: any, index: number) => (
+            <button
+              type="button"
+              data-value={amount.nominal}
+              class="preset-btn group relative border-2 border-primary-200
+                     hover:border-primary-500 rounded-md p-3 sm:p-4
+                     transition-all duration-300 hover:shadow-md"
+            >
+              {index === 1 && (
+                <span
+                  class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
+                         bg-linear-to-r from-secondary-400 to-secondary-500
+                         text-white text-[10px] text-xs font-semibold px-2 py-1
+                         rounded-t-full rounded-br-full"
+                >
+                  Nominal Favorit
+                </span>
+              )}
+              <div class="flex flex-col items-center gap-1">
+                <span class="text-sm font-bold text-amount">
+                  {formatRupiah(amount.nominal)}
+                </span>
+              </div>
+            </button>
+          ))
+        }
+      </div>
+
+      <input
+        id="donation-amount"
+        type="text"
+        inputmode="numeric"
+        placeholder="Masukkan nominal"
+        class="w-full border rounded-md px-3 py-2"
+      />
+
+      <button
+        id="submit-donation"
+        data-program-id={programId}
+        data-program-link={programLink}
+        class="w-full bg-orange-500 text-white py-2 rounded-md font-semibold"
+      >
+        Lanjut Donasi
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { formatRupiah } from "@/lib/formatter";
+  import { showToast } from "@/lib/toast";
+
+  const panel = document.getElementById("donate-panel");
+  const closeBtn = document.getElementById("close-panel");
+  const input = document.getElementById(
+    "donation-amount",
+  ) as HTMLInputElement | null;
+  const presetBtns = document.querySelectorAll(".preset-btn");
+  const submitBtn = document.getElementById("submit-donation");
+
+  function parseNumber(value: string) {
+    return Number(value.replace(/\D/g, "")) || 0;
+  }
+
+  // Buka panel — dipicu oleh StickyDonateBar via custom event
+  document.addEventListener("donate:open", () => {
+    panel?.classList.remove("translate-y-full");
+  });
+
+  closeBtn?.addEventListener("click", () => {
+    panel?.classList.add("translate-y-full");
+  });
+
+  presetBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const value = btn.getAttribute("data-value");
+      if (!value || !input) return;
+      input.value = formatRupiah(Number(value));
+    });
+  });
+
+  input?.addEventListener("input", (e) => {
+    const target = e.target as HTMLInputElement;
+    const raw = parseNumber(target.value);
+    target.value = raw ? formatRupiah(raw) : "";
+  });
+
+  submitBtn?.addEventListener("click", () => {
+    if (!input) return;
+    const raw = parseNumber(input.value);
+
+    if (!raw || raw < 10000) {
+      showToast("Minimal donasi Rp 10.000");
+      return;
+    }
+
+    localStorage.setItem(
+      "nominal_donation",
+      JSON.stringify({ amount: raw, updatedAt: Date.now() }),
+    );
+
+    const programId = submitBtn.getAttribute("data-program-id");
+    const programLink = submitBtn.getAttribute("data-program-link");
+
+    window.location.assign(`/donasi/form/${programLink}/?id=${programId}`);
+  });
+</script>

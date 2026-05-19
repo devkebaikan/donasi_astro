@@ -4,10 +4,11 @@ export const prerender = false;
 import Footer from "@/components/layouts/Footer.astro";
 import Header from "@/components/layouts/Header.astro";
 import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
-
+import OnlineTab from "@/components/sections/infak/OnlineTab.astro";
+import QrTab from "@/components/sections/infak/QrTab.astro";
+import DonaturTab from "@/components/sections/infak/DonaturTab.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getServerToken } from "@/lib/auth";
-import { formatRupiah, formatCompactNumber } from "@/lib/formatter";
 
 const API_URL = import.meta.env.ASTRO_API_URL;
 const token = getServerToken(Astro.cookies);
@@ -77,9 +78,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             <div class="absolute bottom-4 left-4 right-4">
-              <p class="text-white text-base font-bold drop-shadow-sm">
-                Infaq Online
-              </p>
+              <p class="text-white text-base font-bold drop-shadow-sm">Infaq Online</p>
               <p class="text-white/75 text-xs mt-0.5">Aksiberbagi.com</p>
             </div>
           </div>
@@ -87,9 +86,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
       }
 
       <!-- Tab Navigation -->
-      <div
-        class="bg-white sticky top-16 z-20 border-b border-gray-100 flex shadow-sm"
-      >
+      <div class="bg-white sticky top-16 z-20 border-b border-gray-100 flex shadow-sm">
         {
           [
             { id: "online", label: "Infaq Online" },
@@ -111,467 +108,20 @@ const nominalOptions = [10000, 25000, 50000, 100000];
         }
       </div>
 
-      <!-- ── Tab: Infaq Online ────────────────────────────────────────────── -->
-      <div id="tab-online" class="py-3 space-y-3">
-        <!-- Nominal -->
-        <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
-          <div class="flex items-center gap-2.5 mb-4">
-            <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
-            <p class="text-sm font-bold text-gray-800">Nominal Infaq</p>
-          </div>
+      <OnlineTab
+        isAuth={isAuth}
+        userName={userName}
+        userPhone={userPhone}
+        walletBal={walletBal}
+        nominalOptions={nominalOptions}
+      />
+      <QrTab qr={qr} />
+      <DonaturTab donors={donors} />
 
-          <div class="relative mb-3">
-            <span
-              class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm font-bold pointer-events-none select-none"
-            >
-              Rp
-            </span>
-            <input
-              id="nominal-input"
-              type="text"
-              inputmode="numeric"
-              placeholder="0"
-              class="w-full pl-10 pr-4 py-3.5 rounded-lg border border-gray-200 text-base font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-            />
-          </div>
-
-          <div class="grid grid-cols-4 gap-2">
-            {
-              nominalOptions.map((n) => (
-                <button
-                  type="button"
-                  class="nominal-chip text-xs py-2.5 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
-                  data-value={n}
-                >
-                  {formatCompactNumber(n)}
-                </button>
-              ))
-            }
-          </div>
-
-          <p class="text-[11px] text-gray-400 mt-3 flex items-center gap-1.5">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              class="shrink-0"
-            >
-              <circle cx="12" cy="12" r="10"></circle>
-              <line x1="12" y1="8" x2="12" y2="12"></line>
-              <line x1="12" y1="16" x2="12.01" y2="16"></line>
-            </svg>
-            Minimal infaq Rp1.000
-          </p>
-        </div>
-
-        <!-- Metode Pembayaran -->
-        <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
-          <div class="flex items-center gap-2.5 mb-4">
-            <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
-            <p class="text-sm font-bold text-gray-800">Metode Pembayaran</p>
-          </div>
-
-          <button
-            id="open-payment-modal"
-            type="button"
-            class="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3.5 hover:border-primary-400 hover:bg-primary-50/50 transition-all duration-150 group"
-          >
-            <div class="flex items-center gap-3 min-w-0">
-              <img
-                id="payment-img"
-                src=""
-                alt=""
-                width="64"
-                height="32"
-                class="h-7 w-auto object-contain hidden shrink-0"
-              />
-              <span id="payment-name" class="text-sm text-gray-400 truncate">
-                Pilih metode pembayaran
-              </span>
-            </div>
-            <span
-              class="text-xs text-primary-600 font-semibold border border-primary-200 bg-primary-50 group-hover:bg-primary-100 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
-            >
-              Pilih
-            </span>
-          </button>
-
-          <!-- Wallet balance info -->
-          <div
-            id="wallet-info"
-            class="hidden mt-3 flex items-center justify-between bg-primary-50 rounded-xl px-4 py-3 border border-primary-100"
-          >
-            <div class="flex items-center gap-2">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="text-primary-500 shrink-0"
-              >
-                <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path>
-                <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path>
-                <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
-              </svg>
-              <span class="text-xs text-primary-700 font-medium"
-                >Saldo Saku Berbagi</span
-              >
-            </div>
-            <span class="text-sm font-bold text-primary-700"
-              >{formatRupiah(walletBal)}</span
-            >
-          </div>
-        </div>
-
-        <!-- Data Donatur -->
-        <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
-          <div class="flex items-center gap-2.5 mb-4">
-            <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
-            <p class="text-sm font-bold text-gray-800">Data Donatur</p>
-          </div>
-
-          {
-            isAuth ? (
-              /* Logged-in user card */
-              <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
-                <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                  <span class="text-sm font-bold text-primary-700">
-                    {userName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-gray-900 truncate">
-                    {userName}
-                  </p>
-                  <p class="text-xs text-gray-400 mt-0.5">{userPhone}</p>
-                </div>
-                <a
-                  href="/profil"
-                  class="text-[11px] text-primary-600 font-semibold border border-primary-200 bg-primary-50 rounded-lg px-2.5 py-1.5 shrink-0 hover:bg-primary-100 transition-colors"
-                >
-                  Edit
-                </a>
-              </div>
-            ) : (
-              /* Guest form */
-              <div class="space-y-3.5">
-                <div class="flex items-center justify-center gap-1.5 py-1">
-                  <p class="text-xs text-gray-400">
-                    Sudah punya akun?{" "}
-                    <a
-                      href="/auth/login"
-                      class="text-primary-600 font-semibold hover:underline"
-                    >
-                      Login
-                    </a>
-                  </p>
-                </div>
-
-                <div>
-                  <label class="text-xs text-gray-500 font-medium mb-1.5 block">
-                    Nama Lengkap
-                  </label>
-                  <input
-                    id="input-name"
-                    type="text"
-                    placeholder="Masukkan nama lengkap"
-                    class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-                  />
-                  <label class="flex items-center gap-2 mt-2 cursor-pointer w-fit">
-                    <input
-                      id="hide-name"
-                      type="checkbox"
-                      class="w-4 h-4 rounded border-gray-300 text-primary-500 focus:ring-primary-400"
-                    />
-                    <span class="text-xs text-gray-400">
-                      Sembunyikan nama{" "}
-                      <em class="not-italic text-gray-300">
-                        (sebagai Hamba Allah)
-                      </em>
-                    </span>
-                  </label>
-                </div>
-
-                <div>
-                  <label class="text-xs text-gray-500 font-medium mb-1.5 block">
-                    Nomor WhatsApp
-                  </label>
-                  <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
-                      +62
-                    </span>
-                    <input
-                      id="input-phone"
-                      type="tel"
-                      inputmode="numeric"
-                      placeholder="8xx-xxxx-xxxx"
-                      class="w-full border border-gray-200 rounded-xl py-3 pl-12 pr-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-                    />
-                  </div>
-                </div>
-              </div>
-            )
-          }
-
-          <!-- Doa & Pesan -->
-          <div class="mt-4">
-            <label class="text-xs text-gray-500 font-medium mb-1.5 block">
-              Doa & Pesan
-              <span class="text-gray-300 font-normal ml-1">(opsional)</span>
-            </label>
-            <textarea
-              id="input-doa"
-              rows={3}
-              placeholder="Tuliskan doa atau pesan Anda..."
-              class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-            ></textarea>
-          </div>
-
-          <!-- Donasi untuk Orang Lain -->
-          <div class="flex items-center justify-between mt-4">
-            <div class="flex-1 pr-4">
-              <div class="flex items-center gap-2.5">
-                <div class="w-1 h-5 bg-amber-400 rounded-full shrink-0"></div>
-                <p class="text-sm font-bold text-gray-800">
-                  Donasi untuk Orang Lain
-                </p>
-              </div>
-              <p class="text-xs text-gray-400 mt-1.5 ml-[14px]">
-                Niatkan donasi ini atas nama seseorang
-              </p>
-            </div>
-
-            <!-- Toggle Switch -->
-            <label
-              class="relative inline-flex items-center cursor-pointer shrink-0"
-            >
-              <input
-                id="toggle-orang-lain"
-                type="checkbox"
-                class="sr-only peer"
-              />
-              <div
-                class="w-11 h-6 bg-gray-200 rounded-full peer peer-focus:ring-2 peer-focus:ring-primary-300 peer-checked:bg-primary-500 transition-all after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-5 after:shadow-sm"
-              >
-              </div>
-            </label>
-          </div>
-
-          <!-- Expanded form -->
-          <div id="form-orang-lain" class="hidden mt-4 space-y-3">
-            <div class="w-full h-px bg-gray-100"></div>
-
-            <div>
-              <label
-                class="text-xs text-gray-500 font-medium mb-1.5 block"
-                for="input-atas-nama"
-              >
-                Nama Penerima / Atas Nama
-              </label>
-              <input
-                id="input-atas-nama"
-                type="text"
-                placeholder="cth. Almarhum Bapak Ahmad, Ibu Siti..."
-                class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-              />
-            </div>
-
-            <div
-              class="flex items-start gap-2.5 bg-amber-50 rounded-xl px-3.5 py-3 border border-amber-100"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                class="text-amber-500 shrink-0 mt-0.5"
-              >
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="8" x2="12" y2="12"></line>
-                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-              </svg>
-              <p class="text-xs text-amber-700 leading-relaxed">
-                Nama ini akan dicantumkan sebagai penerima manfaat dari infaq
-                yang Anda tunaikan.
-              </p>
-            </div>
-          </div>
-
-          <!-- Submit Button -->
-          <div id="bottom-bar" class="container flex items-center gap-3 mt-4">
-            <button
-              id="btn-submit"
-              type="button"
-              class="bg-primary-500 hover:bg-primary-600 w-full active:scale-[0.98] text-white font-semibold py-3.5 px-6 rounded-md transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
-            >
-              Lanjutkan Pembayaran
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- ── Tab: QR Code ────────────────────────────────────────────────── -->
-      <div id="tab-qr" class="hidden py-3 flex flex-col items-center">
-        {
-          qr ? (
-            <div class="bg-white rounded border border-gray-100 shadow-sm p-6 flex flex-col items-center gap-5 w-full">
-              <div class="flex items-center gap-2.5 self-start">
-                <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0" />
-                <p class="text-sm font-bold text-gray-800">
-                  Scan untuk Berinfaq
-                </p>
-              </div>
-
-              <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
-                <img
-                  src={qr.image_url}
-                  alt={qr.name ?? "QR Code Infaq"}
-                  width="220"
-                  height="220"
-                  loading="lazy"
-                  class="w-56 h-56 object-contain"
-                />
-              </div>
-
-              <div class="text-center space-y-1.5">
-                <p class="text-sm font-semibold text-gray-700">
-                  {qr.name ?? "QR Infaq"}
-                </p>
-                <p class="text-xs text-gray-400 leading-relaxed max-w-[240px]">
-                  Buka aplikasi m-banking atau dompet digital, lalu scan QR di
-                  atas
-                </p>
-              </div>
-
-              <button
-                id="btn-download-qr"
-                type="button"
-                data-qr-url={qr.image_url}
-                class="w-full flex items-center justify-center gap-2 border border-primary-200 text-primary-600 bg-primary-50 hover:bg-primary-100 font-semibold py-3 rounded-xl text-sm transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                Unduh QR Code
-              </button>
-            </div>
-          ) : (
-            <div class="bg-white rounded border border-gray-100 shadow-sm p-12 flex flex-col items-center gap-3 w-full">
-              <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="text-gray-300"
-                >
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                </svg>
-              </div>
-              <p class="text-sm text-gray-400 text-center">
-                QR Code belum tersedia
-              </p>
-            </div>
-          )
-        }
-      </div>
-
-      <!-- ── Tab: Donatur ──────────────────────────────────────────────────── -->
-      <div id="tab-donatur" class="hidden py-3 space-y-2">
-        {
-          (donors as any[]).length > 0 ? (
-            (donors as any[]).map((d: any) => (
-              <div class="flex flex-col bg-white rounded border border-gray-100 shadow-sm px-4 py-3.5">
-                <div class=" flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
-                    <span class="text-sm font-bold text-primary-700">
-                      {(d.name ?? "H").charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-semibold text-gray-900 truncate">
-                      {d.name ?? "Hamba Allah"}
-                    </p>
-                    <p class="text-xs text-gray-400 mt-0.5">
-                      via {d.bank_name}
-                    </p>
-                  </div>
-                  <div class="shrink-0 text-right">
-                    <span class="inline-flex items-center gap-1 text-[10px] text-emerald-600 bg-emerald-50 rounded-full px-2.5 py-1 font-medium border border-emerald-100">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
-                      {formatRupiah(d.nominal_donasi ?? 0)}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="mx-3 my-4">
-                  <div class="border border-neutral-100 rounded-t-lg text-sm px-3 py-2.5">
-                    {d.doa}
-                  </div>
-                  <div class="border border-neutral-100 rounded-b-lg text-sm flex items-center justify-between gap-3 px-3 py-2.5">
-                    <p>{d.liked} Aminkan do'a ini</p>
-                    <div class="border rounded-lg border-primary-300 px-3 py-2.5">
-                      Amin
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div class="bg-white rounded border border-gray-100 shadow-sm py-16 flex flex-col items-center gap-3">
-              <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="28"
-                  height="28"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.5"
-                  class="text-gray-300"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-              </div>
-              <p class="text-sm text-gray-400">Belum ada donatur</p>
-            </div>
-          )
-        }
-      </div>
       <Footer />
     </div>
   </div>
 
-  <!-- Payment Modal -->
   <PaymentMethodModal paymentMethods={paymentMethods} />
 </MainLayout>
 
@@ -597,43 +147,20 @@ const nominalOptions = [10000, 25000, 50000, 100000];
   let forOtherPerson = false;
 
   // ── Element refs ──────────────────────────────────────────────────────────
-  const nominalInput = document.getElementById(
-    "nominal-input",
-  ) as HTMLInputElement;
-  const inputName = document.getElementById(
-    "input-name",
-  ) as HTMLInputElement | null;
-  const inputPhone = document.getElementById(
-    "input-phone",
-  ) as HTMLInputElement | null;
-  const hideNameCheck = document.getElementById(
-    "hide-name",
-  ) as HTMLInputElement | null;
+  const nominalInput = document.getElementById("nominal-input") as HTMLInputElement;
+  const inputName = document.getElementById("input-name") as HTMLInputElement | null;
+  const inputPhone = document.getElementById("input-phone") as HTMLInputElement | null;
+  const hideNameCheck = document.getElementById("hide-name") as HTMLInputElement | null;
   const inputDoa = document.getElementById("input-doa") as HTMLTextAreaElement;
   const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
   const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
   const walletInfo = document.getElementById("wallet-info") as HTMLElement;
-  const openModalBtn = document.getElementById(
-    "open-payment-modal",
-  ) as HTMLButtonElement;
+  const openModalBtn = document.getElementById("open-payment-modal") as HTMLButtonElement;
   const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
   const bottomBar = document.getElementById("bottom-bar") as HTMLElement;
-
-  // Donasi untuk orang lain
-  const toggleOrangLain = document.getElementById(
-    "toggle-orang-lain",
-  ) as HTMLInputElement;
-  const formOrangLain = document.getElementById(
-    "form-orang-lain",
-  ) as HTMLElement;
-  const inputAtasNama = document.getElementById(
-    "input-atas-nama",
-  ) as HTMLInputElement;
-
-  // QR download
-  const btnDownloadQr = document.getElementById(
-    "btn-download-qr",
-  ) as HTMLButtonElement | null;
+  const toggleOrangLain = document.getElementById("toggle-orang-lain") as HTMLInputElement;
+  const formOrangLain = document.getElementById("form-orang-lain") as HTMLElement;
+  const inputAtasNama = document.getElementById("input-atas-nama") as HTMLInputElement;
 
   // ── localStorage pre-fill ─────────────────────────────────────────────────
   const savedNominal = localStorage.getItem("nominalInfaq");
@@ -675,27 +202,23 @@ const nominalOptions = [10000, 25000, 50000, 100000];
 
   // ── Nominal ───────────────────────────────────────────────────────────────
   function setChipActive(activeBtn: HTMLButtonElement | null) {
-    document
-      .querySelectorAll<HTMLButtonElement>(".nominal-chip")
-      .forEach((b) => {
-        const on = b === activeBtn;
-        b.classList.toggle("border-primary-500", on);
-        b.classList.toggle("bg-primary-50", on);
-        b.classList.toggle("text-primary-700", on);
-        b.classList.toggle("border-gray-200", !on);
-        b.classList.toggle("text-gray-500", !on);
-      });
+    document.querySelectorAll<HTMLButtonElement>(".nominal-chip").forEach((b) => {
+      const on = b === activeBtn;
+      b.classList.toggle("border-primary-500", on);
+      b.classList.toggle("bg-primary-50", on);
+      b.classList.toggle("text-primary-700", on);
+      b.classList.toggle("border-gray-200", !on);
+      b.classList.toggle("text-gray-500", !on);
+    });
   }
 
-  document
-    .querySelectorAll<HTMLButtonElement>(".nominal-chip")
-    .forEach((btn) => {
-      btn.addEventListener("click", () => {
-        amount = Number(btn.dataset.value);
-        nominalInput.value = amount.toLocaleString("id-ID");
-        setChipActive(btn);
-      });
+  document.querySelectorAll<HTMLButtonElement>(".nominal-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      amount = Number(btn.dataset.value);
+      nominalInput.value = amount.toLocaleString("id-ID");
+      setChipActive(btn);
     });
+  });
 
   nominalInput.addEventListener("input", () => {
     const raw = nominalInput.value.replace(/[^0-9]/g, "");
@@ -737,23 +260,6 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     paymentNameEl.textContent = name ?? "Pilih metode pembayaran";
     paymentNameEl.classList.toggle("text-gray-400", false);
     paymentNameEl.classList.toggle("text-gray-800", true);
-  });
-
-  // ── QR Download ───────────────────────────────────────────────────────────
-  btnDownloadQr?.addEventListener("click", async () => {
-    const url = btnDownloadQr.dataset.qrUrl;
-    if (!url) return;
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "qr-infaq.png";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    } catch {
-      showToast("Gagal mengunduh QR Code", "error");
-    }
   });
 
   // ── Helpers ───────────────────────────────────────────────────────────────

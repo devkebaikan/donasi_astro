@@ -1,0 +1,100 @@
+---
+interface Props {
+  isRutin: boolean;
+  isActive: boolean;
+  link?: string;
+}
+
+const { isRutin, isActive, link } = Astro.props;
+---
+
+<div
+  id="sticky-donate"
+  aria-label="Aksi donasi cepat"
+  class="donate-sticky fixed bottom-0 left-0 right-0 z-40 animate-fade-up"
+>
+  <div class="mx-auto max-w-120">
+    <div
+      class="donate-sticky-content bg-white/70 shadow-lg rounded-t-xl p-4 flex gap-3"
+    >
+      {
+        isRutin ? (
+          <a
+            href={`/donasi-rutin/program/${link}`}
+            id="btn-rutin-dp"
+            class="btn flex items-center bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path
+                fill-rule="evenodd"
+                d="M6 2a1 1 0 012 0v1h4V2a1 1 0 112 0v1h1a2 2 0 012 2v2H3V5a2 2 0 012-2h1V2zm11 7H3v6a2 2 0 002 2h10a2 2 0 002-2V9zm-9 2a1 1 0 000 2h4a1 1 0 100-2H8z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Rutin
+          </a>
+        ) : (
+          <button
+            id="btn-share-dp"
+            class="btn flex items-center bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+            </svg>
+            Bagikan
+          </button>
+        )
+      }
+
+      <button
+        id="btn-donasi-sekarang"
+        data-active={isActive}
+        class:list={[
+          "btn w-2/3 py-2.5 px-4 rounded-md font-semibold transition-all duration-300 text-sm md:text-base",
+          isActive
+            ? "bg-orange-500 hover:bg-orange-600 text-white cursor-pointer"
+            : "bg-gray-300 text-gray-500 cursor-not-allowed",
+        ]}
+      >
+        {isActive ? "DONASI SEKARANG" : "BELUM DIBUKA"}
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Simpan parameter URL ke localStorage
+  const urlParams = new URLSearchParams(window.location.search);
+  const reffCode = urlParams.get("reff_code");
+  const leads = urlParams.get("leads");
+
+  if (reffCode) localStorage.setItem("reffCode", reffCode);
+  if (leads) localStorage.setItem("leads", leads);
+
+  // Tombol Bagikan
+  const shareButton = document.getElementById("btn-share-dp");
+  shareButton?.addEventListener("click", () => {
+    const savedReffCode = localStorage.getItem("save_reff_code") || "";
+    const url = new URL(window.location.href);
+    url.searchParams.set("reff_code", savedReffCode);
+    const shareUrl = url.toString();
+
+    if (navigator.share) {
+      navigator
+        .share({ title: document.title, url: shareUrl })
+        .catch((err) => console.log("Error sharing:", err));
+    } else {
+      navigator.clipboard
+        .writeText(shareUrl)
+        .then(() => alert("Link berhasil disalin!"));
+    }
+  });
+
+  // Tombol Donasi Sekarang — membuka DonatePanel via custom event
+  const openBtn = document.getElementById("btn-donasi-sekarang");
+  openBtn?.addEventListener("click", () => {
+    const active = openBtn.getAttribute("data-active") === "true";
+    if (!active) return;
+    document.dispatchEvent(new CustomEvent("donate:open"));
+  });
+</script>

@@ -1,0 +1,307 @@
+---
+export const prerender = true;
+
+import Header from "@/components/layouts/Header.astro";
+import Footer from "@/components/layouts/Footer.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const syaratUmum = [
+  "Inisiator Kebaikan menjamin dan menyatakan bahwa semua konten baik tulisan, foto dan video yang dimasukkan ke situs AksiBerbagi.com sesuai dengan fakta dan kebenaran yang dapat dipertanggungjawabkan.",
+  "Jika program berbentuk karya/ide, maka Inisiator Kebaikan menyatakan bahwa ide atau karya tersebut merupakan karya yang orisinil atau dengan izin tertentu jika bersumber dari karya pihak lain sebagaimana yang diatur dalam peraturan perundang-undangan tentang Hak Kekayaan Intelektual yang berlaku.",
+  "Donasi yang diperoleh Inisiator Kebaikan melalui situs dan/atau bentuk penggalangan dana lain yang dilakukan Pengelola AksiBerbagi.com akan dipotong sebesar 0-5% sesuai kesepakatan sebagai infak pengembangan sistem dari total dana yang terhimpun.",
+  "Inisiator Kebaikan melalui tim QC yang telah ditunjuk wajib melakukan kontrol dan monitoring secara rutin terkait progress ajuan yang telah dikirimkan melalui dashboard.",
+  "Inisiator Kebaikan berkewajiban menyalurkan dana yang telah tergalang setelah dana diserahkan kepada pihak Inisiator Kebaikan.",
+  "Inisiator Kebaikan berhak bekerja sama dengan Mitra Penyalur program yang telah terdaftar untuk menyalurkan proyek kebaikan.",
+  "Inisiator Kebaikan dan mitra penyalur program berkewajiban memberikan laporan terkini terkait pelaksanaan proyek kebaikan secara transparan dan kredibel di website/aplikasi AksiBerbagi.com.",
+  "Inisiator Kebaikan dan mitra penyalur program wajib memberikan support kepada AksiBerbagi.com jika ada donatur yang meminta laporan khusus seputar implementasi proyek kebaikan.",
+  "Inisiator Kebaikan wajib menyertakan logo AksiBerbagi.com pada saat implementasi program.",
+  "Apabila terdapat perjanjian kerja sama khusus antara Inisiator Kebaikan dengan Pengelola AksiBerbagi.com, maka seluruh kewajiban dalam perjanjian tersebut wajib dijalankan.",
+];
+
+const syaratKhusus = [
+  "Apabila ada perjanjian kerjasama khusus antara Inisiator Kebaikan dengan Pengelola AksiBerbagi.com, maka Pengelola AksiBerbagi.com akan bertindak sebagaimana yang telah diperjanjikan dalam perjanjian tersebut.",
+  "Tim AksiBerbagi.com berhak menolak/menunda verifikasi akun dan pencairan donasi jika belum mendapatkan data-data yang cukup",
+  "Pengelola AksiBerbagi.com hanya melakukan pencairan dana melalui transfer ke rekening yang sesuai dengan ketentuan pihak AksiBerbagi.com.",
+  "Pengelola AksiBerbagi.com hanya melakukan pencairan dana kepada pihak Inisiator Kebaikan melalui Transfer ke rekening yang sesuai dengan ketentuan pihak AksiBerbagi.com.",
+  {
+    text: "Inisiator Kebaikan bertanggung jawab sepenuhnya terhadap pelaksanaan program, penggunaan dana donasi, dan hal-hal lain yang terkait dengan kampanye miliknya. Oleh karena itu Inisiator Kebaikan menyatakan dan bersedia mengganti segala kerugian yang dialami oleh Pengelola AksiBerbagi.com , termasuk membebaskan Pengelola AksiBerbagi.com dari setiap tuntutan hukum yang timbul dikemudian hari atas hal-hal berikut, namun tidak terbatas pada :",
+    list: [
+      "Pelaksanaan kampanye yang tidak selesai, atau selesai tetapi tidak sesuai dengan apa yang telah disampaikan kepada Pengelola maupun yang telah disampaikan melalui Situs.",
+      "Penggelapan dana dan/atau penyalahgunaan donasi yang sudah ditransfer oleh Pengelola Situs kepada pemilik program",
+      "Segala perbuatan melanggar hukum lainnya yang terjadi baik pada saat proses penggalangan dana dan/atau ketika implementasi program",
+    ],
+  },
+];
+
+const disclaimer = [
+  "Menjamin dan menyatakan bahwa semua konten baik tulisan, foto dan video yang dimasukkan ke AksiBerbagi.com sesuai dengan fakta dan kebenaran yang dapat dipertanggung jawabkan",
+  "Bertanggung jawab sepenuhnya terhadap kampanye program yang diajukan dan menjamin pengelolaan dana hingga tahap implementasi kampanye program kepada penerima manfaat.",
+  "Siap melakukan kontrol dan monitoring terhadap program yang telah diajukan",
+  "Siap memberikan laporan terkini terkait pelaksanaan kampanye program secara transparan dan kredibel di website AksiBerbagi.com",
+  "Siap memberikan keterangan atau laporan melalui website/aplikasi apabila pelaksanaan kampanye program tidak sesuai dengan rencana",
+  "Siap mengikuti segala syarat & ketentuan serta kebijakan yang telah dibuat oleh pengelola situs AksiBerbagi.com",
+  "Siap bertanggung jawab jika terjadi penyalahgunaan dana program yang telah diterima dan atau terjadi perbuatan melanggar hukum lainnya, dan siap menerima tuntutan hukum jika hal itu terjadi",
+  "Siap membebaskan Pihak Pengelola AksiBerbagi.com dari setiap tuntutan hukum yang timbul dikemudian hari akibat kelalaian dalam mengelola kampanye yang telah diajukan.",
+];
+
+const privasi = [
+  {
+    text: "Atas data-data yang diberikan oleh para Pengguna Situs kepada Pengelola Situs sebagai pemenuhan syarat atas pemanfaatan fasilitas, fitur, jasa, dan/atau layanan yang ditawarkan oleh Pengelola Situs, maka Pengelola Situs berkewajiban untuk: ",
+    list: [
+      "Menjaga kerahasiaan data-data para Pengguna yang tidak dapat ditampilkan dalam Situs dan/atau diberikan kepada pihak-pihak tertentu atas penggunaan jasa atau layanan Situs selama tidak ada perjanjian tertulis terlebih dahulu kepada Pengguna.",
+      "Kerahasiaan data Pengguna yang wajib dijaga oleh Pengelola Situs menjadi tidak berlaku apabila Pengelola Situs dipaksa oleh ketentuan hukum yang berlaku, perintah pengadilan, dan/atau perintah dari aparat/instansi yang berwenang, untuk membuka data-data milik Pengguna tersebut",
+    ],
+  },
+  "Pengelola Situs hanya bertanggung jawab atas data yang diberikan Pengguna Situs kepada Pengelola Situs sebagaimana yang telah ditentukan pada ketentuan sebelumnya.",
+  "Pengelola Situs tidak bertanggung jawab atas pemberian atau pertukaran data yang dilakukan sendiri antar Pengguna Situs",
+  "Pengelola berhak untuk mengubah ketentuan menyangkut data-data para Pengguna Situs tanpa pemberitahuan terlebih dahulu dengan tanpa mengabaikan hak para Pengguna Situs untuk dijaga kerahasiaan datanya sebagaimana yang telah ditentukan dalam butir (1).",
+];
+---
+
+<MainLayout
+  title="Syarat & Ketentuan"
+  description="Syarat, ketentuan, dan kebijakan privasi platform AksiBerbagi.com."
+>
+  <Header type="notshare" text="Syarat & Ketentuan" />
+
+  <div class="container mx-auto min-h-screen bg-neutral-50 pt-[65px]">
+    <!-- Tabs -->
+    <div
+      class="sticky top-[65px] z-20 bg-white border-b border-neutral-100 shadow-sm"
+    >
+      <div class="grid grid-cols-2">
+        <button
+          id="tab-syarat"
+          class="py-3 text-sm font-semibold text-primary-600 border-b-2 border-primary-500 transition-all"
+          onclick="switchTab('syarat')"
+        >
+          Syarat & Ketentuan
+        </button>
+
+        <button
+          id="tab-privasi"
+          class="py-3 text-sm font-medium text-neutral-400 border-b-2 border-transparent transition-all"
+          onclick="switchTab('privasi')"
+        >
+          Kebijakan Privasi
+        </button>
+      </div>
+    </div>
+
+    <!-- CONTENT SYARAT -->
+    <div id="content-syarat" class="px-4 py-6 space-y-5">
+      <div class="bg-primary-50 border border-primary-100 rounded-2xl p-4">
+        <h2 class="text-sm font-bold text-primary-700 mb-2">
+          Tentang AksiBerbagi.com
+        </h2>
+
+        <p class="text-xs text-primary-700 leading-relaxed m-0">
+          AksiBerbagi.com merupakan website dan aplikasi donasi serta
+          penggalangan dana online. Melalui AksiBerbagi.com, siapapun dapat
+          berperan untuk mewujudkan kebaikan bersama-sama.
+        </p>
+      </div>
+
+      <!-- Syarat Umum -->
+      <section class="space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-neutral-800">
+            A. Syarat & Ketentuan Umum Inisiator Kebaikan
+          </h3>
+
+          <p class="text-sm text-neutral-500 leading-relaxed mt-2">
+            Ketentuan umum ini dibuat untuk menjaga orisinalitas, validitas
+            konten, serta keamanan setiap kampanye yang diajukan di platform
+            AksiBerbagi.com.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          {
+            syaratUmum.map((item, index) => (
+              <div class="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 flex gap-3">
+                <div class="w-6 h-6 shrink-0 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">
+                  {index + 1}
+                </div>
+
+                <p class="text-sm text-neutral-600 leading-relaxed m-0">
+                  {item}
+                </p>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Syarat Khusus -->
+      <section class="space-y-4">
+        <div>
+          <h3 class="text-base font-bold text-neutral-800">
+            B. Syarat & Ketentuan Khusus Inisiator Kebaikan
+          </h3>
+        </div>
+
+        <div class="space-y-3">
+          {
+            syaratKhusus.map((item, index) => (
+              <div class="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 flex gap-3">
+                <div class="w-6 h-6 shrink-0 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center text-xs font-bold">
+                  {index + 1}
+                </div>
+
+                <div class="flex-1">
+                  {typeof item === "string" ? (
+                    <p class="text-sm text-neutral-600 leading-relaxed m-0">
+                      {item}
+                    </p>
+                  ) : (
+                    <div class="space-y-3">
+                      <p class="text-sm text-neutral-600 leading-relaxed m-0">
+                        {item.text}
+                      </p>
+
+                      <ul class="space-y-2 pl-4 list-disc mt-2">
+                        {item.list.map((listItem) => (
+                          <li class="text-sm text-neutral-600 leading-relaxed">
+                            {listItem}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- Disclaimer -->
+      <section class="space-y-4">
+        <div class="bg-red-50 border border-red-100 rounded-2xl p-4 space-y-2">
+          <h3 class="text-base font-bold text-red-700">
+            Disclaimer Inisiator Kebaikan
+          </h3>
+
+          <p class="text-sm text-red-600 leading-relaxed">
+            Dengan menggunakan layanan AksiBerbagi.com, Inisiator Kebaikan
+            menyatakan siap mematuhi seluruh ketentuan berikut:
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          {
+            disclaimer.map((item) => (
+              <div class="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4">
+                <div class="flex gap-3">
+                  <div class="mt-1 w-2 h-2 rounded-full bg-red-500 shrink-0" />
+
+                  <p class="text-sm text-neutral-600 leading-relaxed m-0">
+                    {item}
+                  </p>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+    </div>
+
+    <!-- CONTENT PRIVASI -->
+    <div id="content-privasi" class="hidden px-4 py-6 space-y-5">
+      <div class="">
+        <p class="text-xs text-primary-700 leading-relaxed m-0">
+          Halaman ini mengatur ketentuan mengenai data pengguna yang diberikan
+          kepada Pengelola Situs dalam rangka penggunaan layanan
+          AksiBerbagi.com.
+        </p>
+      </div>
+
+      <section class="space-y-3">
+        {
+          privasi.map((item, index) => (
+            <div class="bg-white rounded-2xl border border-neutral-100 shadow-sm p-4 flex gap-3">
+              <div class="w-6 h-6 shrink-0 rounded-full bg-primary-100 text-primary-600 flex items-center justify-center text-xs font-bold">
+                {index + 1}
+              </div>
+
+              {typeof item === "string" ? (
+                <p class="text-sm text-neutral-600 leading-relaxed m-0">
+                  {item}
+                </p>
+              ) : (
+                <div class="space-y-3">
+                  <p class="text-sm text-neutral-600 leading-relaxed m-0">
+                    {item.text}
+                  </p>
+
+                  <ul class="space-y-2 pl-4 list-disc mt-2">
+                    {item.list.map((listItem) => (
+                      <li class="text-sm text-neutral-600 leading-relaxed">
+                        {listItem}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          ))
+        }
+      </section>
+    </div>
+
+    <Footer />
+  </div>
+</MainLayout>
+
+<script>
+  function switchTab(tab: string) {
+    const syarat = document.getElementById("content-syarat");
+    const privasi = document.getElementById("content-privasi");
+
+    const tabSyarat = document.getElementById("tab-syarat");
+    const tabPrivasi = document.getElementById("tab-privasi");
+
+    if (tab === "syarat") {
+      syarat?.classList.remove("hidden");
+      privasi?.classList.add("hidden");
+
+      tabSyarat?.classList.add(
+        "text-primary-600",
+        "border-primary-500",
+        "font-semibold",
+      );
+
+      tabSyarat?.classList.remove("text-neutral-400", "border-transparent");
+
+      tabPrivasi?.classList.remove(
+        "text-primary-600",
+        "border-primary-500",
+        "font-semibold",
+      );
+
+      tabPrivasi?.classList.add("text-neutral-400", "border-transparent");
+    } else {
+      privasi?.classList.remove("hidden");
+      syarat?.classList.add("hidden");
+
+      tabPrivasi?.classList.add(
+        "text-primary-600",
+        "border-primary-500",
+        "font-semibold",
+      );
+
+      tabPrivasi?.classList.remove("text-neutral-400", "border-transparent");
+
+      tabSyarat?.classList.remove(
+        "text-primary-600",
+        "border-primary-500",
+        "font-semibold",
+      );
+
+      tabSyarat?.classList.add("text-neutral-400", "border-transparent");
+    }
+  }
+
+  (window as any).switchTab = switchTab;
+</script>
