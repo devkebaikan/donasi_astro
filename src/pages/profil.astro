@@ -20,7 +20,7 @@ type User = {
 
 async function fetchUser(): Promise<User | null> {
   try {
-    const res = await fetch(`${apiUrl}/auth/me`, {
+    const res = await fetch(`${apiUrl}/dashboard/my-account`, {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,

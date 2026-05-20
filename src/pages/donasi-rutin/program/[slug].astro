@@ -24,7 +24,7 @@ const headers = {
 };
 
 const [accountRes, campaign, dataPaymentMethods] = await Promise.all([
-  fetch(`${API_URL}/auth/me`, { headers }),
+  fetch(`${API_URL}/dashboard/my-account`, { headers }),
   getCampaignByLink(slug).catch(() => null),
   getPaymentMethod(slug),
 ]);

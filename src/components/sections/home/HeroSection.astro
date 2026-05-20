@@ -207,7 +207,7 @@ const banners = [
     // Fetch saldo terbaru
     async function fetchSaldo() {
       try {
-        const res = await fetch(`${API_URL}/auth/me`, {
+        const res = await fetch(`${API_URL}/dashboard/my-account`, {
           headers: bearerHeaders(token!),
         });
 

@@ -25,7 +25,9 @@ const [bannerRes, qrRes, pmRes, donorRes, accountRes] = await Promise.all([
   fetch(`${API_URL}/qr-code/infaq`, fetchOpts()),
   fetch(`${API_URL}/payment/payment-method?program_link=infaq`, fetchOpts()),
   fetch(`${API_URL}/program/link/infaq/donors?limit=10&page=1`, fetchOpts()),
-  token ? fetch(`${API_URL}/auth/me`, fetchOpts(true)) : Promise.resolve(null),
+  token
+    ? fetch(`${API_URL}/dashboard/my-account`, fetchOpts(true))
+    : Promise.resolve(null),
 ]);
 
 const banner = bannerRes.ok ? (await bannerRes.json())?.data : null;

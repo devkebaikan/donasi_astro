@@ -395,7 +395,7 @@ const iconPaths: Record<string, string> = {
     // ── Fetch data terbaru dari API ──────────────────────────────────────────
     async function fetchUserData() {
       try {
-        const res = await fetch(`${API_URL}/auth/me`, {
+        const res = await fetch(`${API_URL}/dashboard/my-account`, {
           headers: bearerHeaders(token!),
         });
 
