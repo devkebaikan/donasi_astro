@@ -64,7 +64,7 @@ const banners = [
   <!-- Wallet / Saldo Card -->
   <div
     id="data-wallet"
-    data-api-url={import.meta.env.ASTRO_API_URL}
+    data-api-url={import.meta.env.PUBLIC_API_URL}
     class="relative -mt-5 mx-4 pb-3 z-10"
   >
     <div
@@ -207,7 +207,7 @@ const banners = [
     // Fetch saldo terbaru
     async function fetchSaldo() {
       try {
-        const res = await fetch(`${API_URL}/dashboard/my-account`, {
+        const res = await fetch(`${API_URL}/auth/me`, {
           headers: bearerHeaders(token!),
         });
 

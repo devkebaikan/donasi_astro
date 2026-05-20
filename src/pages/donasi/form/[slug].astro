@@ -15,7 +15,7 @@ const programId = Astro.url.searchParams.get("id");
 if (!programId) return Astro.redirect(`/donasi/${slug}/`);
 
 const token = getServerToken(Astro.cookies);
-const baseUrl = import.meta.env.ASTRO_API_URL;
+const baseUrl = import.meta.env.PUBLIC_API_URL;
 const utm = Astro.cookies.get("utm_params")?.value ?? null;
 
 const [accountRes, dataPaymentMethods] = await Promise.all([

@@ -157,10 +157,7 @@ export async function getIsTokenValid(token: string): Promise<boolean> {
 }
 
 export async function getUserProfile(token: string) {
-  return safe(
-    () => serverApi(token).get("/dashboard/my-account"),
-    "getUserProfile",
-  );
+  return safe(() => serverApi(token).get("/auth/me"), "getUserProfile");
 }
 
 export async function getRutinDetail(

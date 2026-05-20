@@ -227,7 +227,10 @@ import { Image } from "astro:assets";
 
         setLoading(true);
         try {
-          const { data } = await useApi().post("/login", { phone, password });
+          const { data } = await useApi().post("/auth/login", {
+            phone,
+            password,
+          });
           const token = data?.data?.token;
           if (!token) throw new Error("Token tidak ditemukan");
 

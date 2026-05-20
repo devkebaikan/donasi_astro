@@ -10,7 +10,7 @@ import DonaturTab from "@/components/sections/infak/DonaturTab.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getServerToken } from "@/lib/auth";
 
-const API_URL = import.meta.env.ASTRO_API_URL;
+const API_URL = import.meta.env.PUBLIC_API_URL;
 const token = getServerToken(Astro.cookies);
 
 const fetchOpts = (auth = false) => ({
@@ -25,9 +25,7 @@ const [bannerRes, qrRes, pmRes, donorRes, accountRes] = await Promise.all([
   fetch(`${API_URL}/qr-code/infaq`, fetchOpts()),
   fetch(`${API_URL}/payment/payment-method?program_link=infaq`, fetchOpts()),
   fetch(`${API_URL}/program/link/infaq/donors?limit=10&page=1`, fetchOpts()),
-  token
-    ? fetch(`${API_URL}/dashboard/my-account`, fetchOpts(true))
-    : Promise.resolve(null),
+  token ? fetch(`${API_URL}/auth/me`, fetchOpts(true)) : Promise.resolve(null),
 ]);
 
 const banner = bannerRes.ok ? (await bannerRes.json())?.data : null;
@@ -78,7 +76,9 @@ const nominalOptions = [10000, 25000, 50000, 100000];
             />
             <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
             <div class="absolute bottom-4 left-4 right-4">
-              <p class="text-white text-base font-bold drop-shadow-sm">Infaq Online</p>
+              <p class="text-white text-base font-bold drop-shadow-sm">
+                Infaq Online
+              </p>
               <p class="text-white/75 text-xs mt-0.5">Aksiberbagi.com</p>
             </div>
           </div>
@@ -86,7 +86,9 @@ const nominalOptions = [10000, 25000, 50000, 100000];
       }
 
       <!-- Tab Navigation -->
-      <div class="bg-white sticky top-16 z-20 border-b border-gray-100 flex shadow-sm">
+      <div
+        class="bg-white sticky top-16 z-20 border-b border-gray-100 flex shadow-sm"
+      >
         {
           [
             { id: "online", label: "Infaq Online" },
@@ -147,20 +149,36 @@ const nominalOptions = [10000, 25000, 50000, 100000];
   let forOtherPerson = false;
 
   // ── Element refs ──────────────────────────────────────────────────────────
-  const nominalInput = document.getElementById("nominal-input") as HTMLInputElement;
-  const inputName = document.getElementById("input-name") as HTMLInputElement | null;
-  const inputPhone = document.getElementById("input-phone") as HTMLInputElement | null;
-  const hideNameCheck = document.getElementById("hide-name") as HTMLInputElement | null;
+  const nominalInput = document.getElementById(
+    "nominal-input",
+  ) as HTMLInputElement;
+  const inputName = document.getElementById(
+    "input-name",
+  ) as HTMLInputElement | null;
+  const inputPhone = document.getElementById(
+    "input-phone",
+  ) as HTMLInputElement | null;
+  const hideNameCheck = document.getElementById(
+    "hide-name",
+  ) as HTMLInputElement | null;
   const inputDoa = document.getElementById("input-doa") as HTMLTextAreaElement;
   const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
   const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
   const walletInfo = document.getElementById("wallet-info") as HTMLElement;
-  const openModalBtn = document.getElementById("open-payment-modal") as HTMLButtonElement;
+  const openModalBtn = document.getElementById(
+    "open-payment-modal",
+  ) as HTMLButtonElement;
   const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
   const bottomBar = document.getElementById("bottom-bar") as HTMLElement;
-  const toggleOrangLain = document.getElementById("toggle-orang-lain") as HTMLInputElement;
-  const formOrangLain = document.getElementById("form-orang-lain") as HTMLElement;
-  const inputAtasNama = document.getElementById("input-atas-nama") as HTMLInputElement;
+  const toggleOrangLain = document.getElementById(
+    "toggle-orang-lain",
+  ) as HTMLInputElement;
+  const formOrangLain = document.getElementById(
+    "form-orang-lain",
+  ) as HTMLElement;
+  const inputAtasNama = document.getElementById(
+    "input-atas-nama",
+  ) as HTMLInputElement;
 
   // ── localStorage pre-fill ─────────────────────────────────────────────────
   const savedNominal = localStorage.getItem("nominalInfaq");
@@ -202,23 +220,27 @@ const nominalOptions = [10000, 25000, 50000, 100000];
 
   // ── Nominal ───────────────────────────────────────────────────────────────
   function setChipActive(activeBtn: HTMLButtonElement | null) {
-    document.querySelectorAll<HTMLButtonElement>(".nominal-chip").forEach((b) => {
-      const on = b === activeBtn;
-      b.classList.toggle("border-primary-500", on);
-      b.classList.toggle("bg-primary-50", on);
-      b.classList.toggle("text-primary-700", on);
-      b.classList.toggle("border-gray-200", !on);
-      b.classList.toggle("text-gray-500", !on);
-    });
+    document
+      .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+      .forEach((b) => {
+        const on = b === activeBtn;
+        b.classList.toggle("border-primary-500", on);
+        b.classList.toggle("bg-primary-50", on);
+        b.classList.toggle("text-primary-700", on);
+        b.classList.toggle("border-gray-200", !on);
+        b.classList.toggle("text-gray-500", !on);
+      });
   }
 
-  document.querySelectorAll<HTMLButtonElement>(".nominal-chip").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      amount = Number(btn.dataset.value);
-      nominalInput.value = amount.toLocaleString("id-ID");
-      setChipActive(btn);
+  document
+    .querySelectorAll<HTMLButtonElement>(".nominal-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        amount = Number(btn.dataset.value);
+        nominalInput.value = amount.toLocaleString("id-ID");
+        setChipActive(btn);
+      });
     });
-  });
 
   nominalInput.addEventListener("input", () => {
     const raw = nominalInput.value.replace(/[^0-9]/g, "");

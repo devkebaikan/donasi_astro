@@ -4,7 +4,7 @@ export const prerender = false;
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 
-const API_URL = import.meta.env.ASTRO_API_URL;
+const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const [nishabRes, programRes] = await Promise.all([
   fetch(`${API_URL}/zakat/nishab`, { headers: { Accept: "application/json" } }),

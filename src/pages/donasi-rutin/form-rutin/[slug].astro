@@ -19,14 +19,14 @@ if (!slug || !VALID_SLUGS.includes(slug as Slug)) {
 const token = getServerToken(Astro.cookies);
 if (!token) return Astro.redirect(`/auth/login?from=/donasi-rutin/${slug}`);
 
-const API_URL = import.meta.env.ASTRO_API_URL;
+const API_URL = import.meta.env.PUBLIC_API_URL;
 const headers = {
   Accept: "application/json",
   Authorization: `Bearer ${token}`,
 };
 
 const [accountRes, dataPaymentMethods, dataPorgamSetup] = await Promise.all([
-  fetch(`${API_URL}/dashboard/my-account`, { headers }),
+  fetch(`${API_URL}/auth/me`, { headers }),
   getPaymentMethod(slug),
   getCampaignSetUp("rutin"),
 ]);

@@ -6,7 +6,7 @@ import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 
 const { isAuthenticated } = Astro.locals.auth;
-const API_URL = import.meta.env.ASTRO_API_URL;
+const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const personalMenus = [
   { href: "/profil",       label: "Ubah Data Akun",         icon: "user",        color: "primary"    },
@@ -16,7 +16,7 @@ const personalMenus = [
 ];
 
 const generalMenus = [
-  { href: "https://beramalbersama.com/tentang", label: "Tentang Kami",       icon: "info", color: "blue",  external: true  },
+  { href: "/tentang-salur", label: "Tentang Kami",       icon: "info", color: "blue",  external: false  },
   { href: "/syarat-ketentuan",                  label: "Syarat & Ketentuan", icon: "file", color: "slate", external: false },
 ];
 
@@ -105,7 +105,7 @@ const iconPaths: Record<string, string> = {
           <!-- Edit button -->
           <a
             href="/profil"
-            class="absolute top-4 right-4 w-8 h-8 bg-white/15 hover:bg-white/25 active:bg-white/30 rounded-full flex items-center justify-center transition-colors z-10"
+            class="absolute top-20 right-4 w-8 h-8 bg-white/15 hover:bg-white/25 active:bg-white/30 rounded-full flex items-center justify-center transition-colors z-10"
             title="Edit Profil"
           >
             <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
@@ -395,7 +395,7 @@ const iconPaths: Record<string, string> = {
     // ── Fetch data terbaru dari API ──────────────────────────────────────────
     async function fetchUserData() {
       try {
-        const res = await fetch(`${API_URL}/dashboard/my-account`, {
+        const res = await fetch(`${API_URL}/auth/me`, {
           headers: bearerHeaders(token!),
         });
 

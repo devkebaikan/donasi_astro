@@ -22,7 +22,7 @@ const statusTabs = [
 
   <div
     id="riwayat-page"
-    data-api-url={import.meta.env.ASTRO_API_URL}
+    data-api-url={import.meta.env.PUBLIC_API_URL}
     class="container min-h-screen pb-24 pt-16 bg-gray-50"
   >
 
@@ -276,7 +276,6 @@ const statusTabs = [
             <div class="flex justify-between items-end">
               <!-- Nominal -->
               <div>
-                <p class="text-[10px] text-gray-400 mb-0.5 leading-none">Nominal</p>
                 <p class="text-[13px] font-semibold text-primary-600 leading-none">
                   ${formatRupiah(item.nominal_donasi ?? 0)}
                 </p>
