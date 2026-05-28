@@ -340,7 +340,7 @@ const isAuthenticated = getServerToken(Astro.cookies) !== null;
         const headers: Record<string, string> = { Accept: "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const res  = await fetch(`${API_URL}/dashboard/my-rutin?page=${pg}`, { headers });
+        const res  = await fetch(`${API_URL}/dashboard/donatur/my-rutin?page=${pg}`, { headers });
         const json = await res.json();
 
         if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");

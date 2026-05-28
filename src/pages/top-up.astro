@@ -212,7 +212,7 @@ const nominalOptions = [10000, 50000, 100000, 200000, 500000, 1000000];
     btnSubmit.textContent = "Memproses...";
 
     try {
-      const res = await fetch(`${API_URL}/transactions/store`, {
+      const res = await fetch(`${API_URL}/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -220,8 +220,8 @@ const nominalOptions = [10000, 50000, 100000, 200000, 500000, 1000000];
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          total: [amount],
-          payment_method_id: paymentMethodId,
+          total: [Number(amount)],
+          payment_method_id: Number(paymentMethodId),
           type: "dompet_kebaikan",
         }),
       });

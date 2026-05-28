@@ -7,7 +7,13 @@ import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
 import { Image } from "astro:assets";
 import FormRutin from "@/components/sections/rutin/FormRutin.astro";
-import { getCampaignByLink, getPaymentMethod } from "@/lib/FetchData.ts";
+import {
+  getCampaignByLink,
+  getPaymentMethod,
+  getPaymentMethodFilter,
+  getUserProfile,
+} from "@/lib/FetchData.ts";
+import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const { slug } = Astro.params;
 
@@ -18,21 +24,16 @@ if (!token)
   return Astro.redirect(`/auth/login?from=/donasi-rutin/program/${slug}`);
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
-const headers = {
-  Accept: "application/json",
-  Authorization: `Bearer ${token}`,
-};
 
-const [accountRes, campaign, dataPaymentMethods] = await Promise.all([
-  fetch(`${API_URL}/dashboard/my-account`, { headers }),
+const [account, campaign, paymentMethods] = await Promise.all([
+  getUserProfile(token),
   getCampaignByLink(slug).catch(() => null),
-  getPaymentMethod(slug),
+  getPaymentMethodFilter({ status: "true" }),
+  ,
 ]);
 
-const account = accountRes.ok ? await accountRes.json() : null;
-const programId = campaign?.data?.id;
-const walletBalance = (account?.data?.dompet_kebaikan?.saldo ?? 0) as number;
-const paymentMethods = dataPaymentMethods?.data ?? [];
+const programId = campaign?.data.id;
+const walletBalance = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
 const banner = {
   title: (campaign?.data?.title ?? slug) as string,

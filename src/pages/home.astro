@@ -8,11 +8,27 @@ import BottomNav from "@/components/layouts/BottomNav.astro";
 import HeroSection from "@/components/sections/home/HeroSection.astro";
 import MenuSection from "@/components/sections/home/MenuSection.astro";
 import ProgramSection from "@/components/sections/home/ProgramSection.astro";
-import { Image } from "astro:assets";
 import ProgramListSection from "@/components/sections/home/ProgramListSection.astro";
 import ProjectListSection from "@/components/sections/home/ProjectListSection.astro";
 import SliderBanner from "@/components/sections/home/SliderBanner.astro";
-import DonorNotifSection from "@/components/sections/home/DonorNotifSection.astro";
+import { storageImg, bannerHref } from "@/lib/home";
+import { getHomeData } from "@/lib/FetchData";
+
+const homeData = await getHomeData();
+
+const mainBannerSrc = homeData?.main_banner?.image_url
+  ? storageImg(homeData.main_banner.image_url, "home-banner")
+  : null;
+const mainBannerHref = homeData?.main_banner
+  ? bannerHref(homeData.main_banner.link)
+  : "#";
+
+const secondBannerSrc = homeData?.second_banner?.image_url
+  ? storageImg(homeData.second_banner.image_url, "home-banner")
+  : null;
+const secondBannerHref = homeData?.second_banner
+  ? bannerHref(homeData.second_banner.link)
+  : "#";
 ---
 
 <MainLayout
@@ -21,54 +37,52 @@ import DonorNotifSection from "@/components/sections/home/DonorNotifSection.astr
   type="website"
 >
   <Header />
-  <DonorNotifSection />
   <main class="container pb-16">
-    <HeroSection />
+    <HeroSection bannerSlides={homeData?.banner_slides ?? []} />
     <MenuSection />
 
-    <a href="/event-salur">
-      <Image
-        src="/images/banner/home-banner.avif"
-        alt="Aksiberbagi Banner"
-        width={360}
-        height={100}
-        class="w-full h-auto mb-3"
-        loading="lazy"
-        decoding="async"
-      />
-    </a>
+    {
+      mainBannerSrc && (
+        <a href={mainBannerHref}>
+          <img
+            src={mainBannerSrc}
+            alt={homeData?.main_banner?.name ?? "Banner Aksiberbagi"}
+            width="480"
+            height="160"
+            class="w-full h-auto mb-3"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      )
+    }
 
-    <ProgramSection />
+    <ProgramSection programs={homeData?.program_list ?? []} />
 
-    <a href="/">
-      <Image
-        src="/images/banner/bannerForm.webp"
-        alt="Aksiberbagi Banner"
-        width={360}
-        height={100}
-        class="w-full h-auto mb-3"
-        loading="lazy"
-        decoding="async"
-      />
-    </a>
+    {
+      secondBannerSrc && (
+        <a href={secondBannerHref}>
+          <img
+            src={secondBannerSrc}
+            alt={homeData?.second_banner?.name ?? "Banner Aksiberbagi"}
+            width="480"
+            height="160"
+            class="w-full h-auto mb-3"
+            loading="lazy"
+            decoding="async"
+          />
+        </a>
+      )
+    }
 
-    <ProjectListSection />
+    <ProjectListSection projectList={homeData?.project_list ?? []} />
 
-    <!-- <a href="/">
-      <Image
-        src="/images/banner/JadiFundraiser.webp"
-        alt="Aksiberbagi Banner"
-        width={360}
-        height={100}
-        class="w-full h-auto mb-3"
-        loading="lazy"
-        decoding="async"
-      />
-    </a> -->
+    <SliderBanner bannerSlides={homeData?.banner_slides ?? []} />
 
-    <SliderBanner />
-
-    <ProgramListSection />
+    <ProgramListSection
+      programs={homeData?.program_list ?? []}
+      categories={homeData?.program_category ?? []}
+    />
 
     <Footer />
   </main>

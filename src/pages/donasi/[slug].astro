@@ -14,7 +14,6 @@ import {
 } from "@/lib/FetchData";
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
-// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const { slug } = Astro.params;
 
@@ -30,15 +29,14 @@ if (Astro.url.searchParams.has("utm_source")) {
   });
 }
 
-const [dataCampaign, dataDonor, dataNominalOptions] = await Promise.all([
+const [dataDetailCampaign, dataDonors, nominalOptions] = await Promise.all([
   getCampaignByLink(slug),
   getDonorsByLink(slug),
   getNominalOptions(slug),
 ]);
 
-const nominalOptions = dataNominalOptions?.data ?? [];
-const detailCampaign = dataCampaign?.data ?? null;
-const donors = dataDonor?.data ?? null;
+const detailCampaign = dataDetailCampaign?.data ?? {};
+const donors = dataDonors?.data ?? [];
 
 const isRutin = detailCampaign?.is_rutin === true;
 const isActive = detailCampaign?.status === "PUBLISH";

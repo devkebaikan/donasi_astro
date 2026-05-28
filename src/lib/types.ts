@@ -1,0 +1,33 @@
+export interface TransactionPayload {
+  doa?: string;
+  email?: string;
+  group_id?: number;
+  infaq?: number;
+  invoice_date?: string;
+  invoice_time?: string;
+  is_test?: boolean;
+  items?: number[];
+  jurnal_id?: number;
+  leads?: string;
+  name: string;
+  no_code?: boolean;
+  notes?: string;
+  other_detail?: string;
+  panel_admin?: boolean;
+  parameter_detail?: string;
+  password?: string;
+  payment_method_id: number;
+  phone: string;
+  products?: number[];
+  program_type?: "infaq" | "zakat";
+  projects?: number[];
+  qty?: number[];
+  reff_code?: string;
+  rutin_id?: number;
+  source?: string;
+  status?: string;
+  total?: number[];
+  type: "donation" | "zakat" | "dompet_kebaikan" | "dompet_bersama";
+  user_id?: number;
+  zakat_type?: number[];
+}

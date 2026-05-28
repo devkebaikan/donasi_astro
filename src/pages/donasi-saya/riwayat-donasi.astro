@@ -307,7 +307,7 @@ const statusTabs = [
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const isSalur  = SALUR_STATUSES.includes(activeStatus);
-        const endpoint = isSalur ? "/dashboard/my-salur" : "/dashboard/my-donation";
+        const endpoint = isSalur ? "/dashboard/donatur/my-salur" : "/dashboard/donatur/my-donation";
 
         const params = new URLSearchParams({ page: String(pg), limit:  String(5)  });
         if (activeStatus) params.set("status", activeStatus);

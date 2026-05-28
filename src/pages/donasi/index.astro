@@ -12,21 +12,21 @@ const searchQuery = Astro.url.searchParams.get("q") ?? null;
 const categoryId = Astro.url.searchParams.get("category") ?? null;
 
 // Fetch data pertama & kategori secara paralel (server-side)
-const [programRes, categoryRes] = await Promise.all([
+const [programRes, categoryList] = await Promise.all([
   getAllCampaigns({
     limit: 5,
     mode: "pagination",
     page: 1,
-    category: categoryId || undefined,
-    search: searchQuery || undefined,
+    category: categoryId ?? undefined,
+    search: searchQuery ?? undefined,
   }),
   getCampaignCategories(),
 ]);
 
-const programList = programRes?.data?.data ?? [];
-// const programTotal = programRes?.data?.total ?? 0;
-const hasNextPage = Boolean(programRes?.data?.next_page_url);
-const categoryList = categoryRes?.data ?? [];
+const programList = programRes?.data ?? [];
+const hasNextPage = Boolean(
+  programRes?.meta && programRes.meta.current_page < programRes.meta.last_page,
+);
 
 const selectedCategoryName = categoryId
   ? (categoryList.find((c: any) => String(c.id) === categoryId)?.name ?? null)
@@ -434,10 +434,12 @@ const selectedCategoryName = categoryId
         if (currentCategory) params.set("category", currentCategory);
         if (currentSearch) params.set("search", currentSearch);
 
-        const res = await fetch(`${API_URL}/program?${params}`);
+        const res = await fetch(`${API_URL}/programs?${params}`);
         const json = await res.json();
-        const items: any[] = json?.data?.data ?? [];
-        hasMore = Boolean(json?.data?.next_page_url);
+        const payload = json?.data;
+        const items: any[] = payload?.data ?? [];
+        const meta = payload?.meta;
+        hasMore = Boolean(meta && meta.current_page < meta.last_page);
 
         items.forEach((item) => {
           campaignList.insertAdjacentHTML("beforeend", buildCampaignCard(item));
@@ -473,10 +475,12 @@ const selectedCategoryName = categoryId
         if (currentCategory) params.set("category", currentCategory);
         if (currentSearch) params.set("search", currentSearch);
 
-        const res = await fetch(`${API_URL}/program?${params}`);
+        const res = await fetch(`${API_URL}/programs?${params}`);
         const json = await res.json();
-        const items: any[] = json?.data?.data ?? [];
-        hasMore = Boolean(json?.data?.next_page_url);
+        const payload = json?.data;
+        const items: any[] = payload?.data ?? [];
+        const meta = payload?.meta;
+        hasMore = Boolean(meta && meta.current_page < meta.last_page);
 
         campaignSkeleton.classList.add("hidden");
 

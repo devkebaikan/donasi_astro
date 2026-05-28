@@ -91,7 +91,7 @@ const tabs = [
 </div>
 
 <script>
-  import { formatRupiah } from "@/lib/formatter";
+  import { formatRupiah, getInitialName, timeAgoFormat } from "@/lib/formatter";
 
   // Tab system — ARIA-compliant (WCAG 2.1 §4.1.2)
   const tabButtons = Array.from(
@@ -196,32 +196,6 @@ const tabs = [
     });
   }
 
-  function timeAgo(dateStr: string): string {
-    if (!dateStr) return "";
-    const ms = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(ms / 60000);
-    const hours = Math.floor(ms / 3600000);
-    const days = Math.floor(ms / 86400000);
-    if (mins < 1) return "Baru saja";
-    if (mins < 60) return `${mins} menit yang lalu`;
-    if (hours < 24) return `${hours} jam yang lalu`;
-    if (days < 7) return `${days} hari yang lalu`;
-    return new Date(dateStr).toLocaleDateString("id-ID", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  }
-
-  function getInitials(name: string): string {
-    if (!name) return "?";
-    const words = name.trim().split(/\s+/);
-    if (words.length === 1) return words[0].charAt(0).toUpperCase();
-    return (
-      words[0].charAt(0) + words[words.length - 1].charAt(0)
-    ).toUpperCase();
-  }
-
   function errorHtml(): string {
     return `<p class="text-center text-gray-500 py-8">Gagal memuat data. Silakan coba lagi.</p>`;
   }
@@ -235,6 +209,7 @@ const tabs = [
       const res = await fetch(
         `${apiBase}/report?program_link=${programSlug}&limit=1`,
       );
+
       const json = await res.json();
       const reportData = json?.data?.[0] ?? null;
       const reportNews = json?.news?.[0] ?? null;
@@ -309,22 +284,24 @@ const tabs = [
     container.innerHTML = skeletonHtml();
     try {
       const res = await fetch(
-        `${apiBase}/program/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
+        `${apiBase}/programs/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
       );
       const json = await res.json();
-      const total: number = json?.data.total ?? 0;
+      const total: number = json?.data.meta.total ?? 0;
       const donorList: any[] = json?.data.data ?? [];
-      const itemsHtml = donorList
-        .map((d: any) => {
-          const rutinBadge =
-            d.source === "RUTIN"
-              ? `<a href="/donasi-rutin/program/${programSlug}" class="flex-shrink-0 w-7 h-7" title="Donasi Rutin">
+      const itemsHtml =
+        donorList.length > 0
+          ? donorList
+              .map((d: any) => {
+                const rutinBadge =
+                  d.source === "RUTIN"
+                    ? `<a href="/donasi-rutin/program/${programSlug}" class="flex-shrink-0 w-7 h-7" title="Donasi Rutin">
                   <img src="/img/icons/menu/6. Donasi rutin.webp" alt="Donasi Rutin" class="w-full h-full object-contain" width="28" height="28"/>
                 </a>`
-              : "";
-          const likeCount = d.liked ?? 0;
-          const doaSection = d.doa
-            ? `<div class="bg-gray-50 rounded-lg p-4 mt-3">
+                    : "";
+                const likeCount = d.liked ?? 0;
+                const doaSection = d.doa
+                  ? `<div class="bg-gray-50 rounded-lg p-4 mt-3">
                 <p class="text-gray-700 text-sm leading-relaxed mb-3">${d.doa}</p>
                 <div class="flex justify-between items-center pt-3 border-t border-gray-200">
                   <div class="text-sm text-gray-600">
@@ -336,12 +313,12 @@ const tabs = [
                   </button>
                 </div>
               </div>`
-            : "";
-          return `<div class="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100" data-donor-id="${d.id}">
+                  : "";
+                return `<div class="bg-white rounded-lg p-4 mb-3 shadow-sm border border-gray-100" data-donor-id="${d.id}">
             <div class="flex items-start gap-3 mb-3">
             <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
               <span class="text-sm font-bold text-primary-700">
-                ${getInitials(d.name)}
+                ${getInitialName(d.name)}
               </span>
             </div>
               <div class="flex-1 min-w-0">
@@ -349,7 +326,7 @@ const tabs = [
                   <h4 class="font-semibold text-gray-900 text-base truncate">${d.name}</h4>
                   ${rutinBadge}
                 </div>
-                <p class="text-xs text-gray-600">${timeAgo(d.date)} Via ${d.bank_name}</p>
+                <p class="text-xs text-gray-600">${timeAgoFormat(d.date)} Via ${d.bank_name}</p>
               </div>
               <div class="flex-shrink-0">
                 <p class="font-bold text-primary-600">${formatRupiah(d.nominal_donasi)}</p>
@@ -357,8 +334,21 @@ const tabs = [
             </div>
             ${doaSection}
           </div>`;
-        })
-        .join("");
+              })
+              .join("")
+          : `<div class="text-center py-12">
+              <div class="flex flex-col items-center gap-4">
+                <div class="w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center">
+                  <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <h5 class="text-gray-700 mb-1">Belum ada Donatur</h5>
+                  <p class="text-sm text-gray-500">Jadilah donatur pertama untuk program ini</p>
+                </div>
+              </div>
+            </div>`;
       container.innerHTML = `<div class="bg-white rounded-lg shadow-sm p-4 md:p-6">
         <div class="flex items-end justify-between mb-6">${titleBorderHtml("Donatur", total)}</div>
         <div class="donate-body-content pb-0">${itemsHtml}</div>
@@ -377,10 +367,10 @@ const tabs = [
     container.innerHTML = skeletonHtml();
     try {
       const res = await fetch(
-        `${apiBase}/program/link/${programSlug}/fundraisers?limit=6&mode=pagination&page=1`,
+        `${apiBase}/programs/link/${programSlug}/fundraisers?limit=6&mode=pagination&page=1`,
       );
       const json = await res.json();
-      const total: number = json?.data?.total ?? 0;
+      const total: number = json?.data?.meta.total ?? 0;
       const list: any[] = json?.data?.data ?? [];
       const itemsHtml =
         list.length > 0
@@ -390,7 +380,7 @@ const tabs = [
                   `<div class="flex items-start gap-3 p-4 rounded-lg bg-gradient-to-br from-gray-50 to-white border border-gray-100 hover:border-primary-200 transition-all duration-300 hover:shadow-md">
                     <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
                       <span class="text-sm font-bold text-primary-700">
-                        ${getInitials(fr.name)}
+                        ${getInitialName(fr.name)}
                       </span>
                     </div>
                     <div class="flex-1 min-w-0">

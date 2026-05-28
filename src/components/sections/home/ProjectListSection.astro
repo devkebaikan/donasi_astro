@@ -1,80 +1,63 @@
 ---
+import type { ProjectItem } from "@/lib/home";
+import { stripHtml } from "@/lib/home";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
-import { Image } from "astro:assets";
+import { formatDate } from "@/lib/formatter";
 
-const reports = [
-  {
-    title: "Laporan Penyaluran Minggu ke-1: 1.200 Paket Sahur Terdistribusi",
-    tanggal: "7 Maret 2025",
-    status: "Salur",
-    image: "/images/banner/banner-qurban.avif",
-    ringkasan:
-      "Alhamdulillah, 1.200 paket sahur berhasil didistribusikan kepada pengungsi banjir di 5 titik lokasi di Aceh.",
-  },
-  {
-    title: "Update: Pembangunan Masjid At-Taqwa Dimulai",
-    tanggal: "14 Maret 2025",
-    status: "Open",
-    image: "/images/banner/banner-qurban.avif",
-    ringkasan:
-      "Fondasi masjid At-Taqwa telah selesai dikerjakan. Target rampung sebelum akhir Ramadan.",
-  },
-  {
-    title: "Laporan Penyaluran Minggu ke-2: 850 Buka Puasa Bersama",
-    tanggal: "14 Maret 2025",
-    status: "Open",
-    image: "/images/banner/banner-qurban.avif",
-    ringkasan:
-      "850 anak yatim dan dhuafa mendapatkan makan buka puasa dari program Ramadan Berbagi Kebaikan.",
-  },
-  {
-    title: "Testimoni: Ibu Sari, Penerima Manfaat dari Pelosok Aceh",
-    tanggal: "20 Maret 2025",
-    status: "Open",
-    image: "/images/banner/banner-qurban.avif",
-    ringkasan:
-      '"Kami tidak menyangka ada yang peduli sampai ke sini. Terima kasih atas bantuan makanan buka puasanya."',
-  },
-];
+interface Props {
+  projectList: ProjectItem[];
+}
+
+const { projectList } = Astro.props;
+
+function activityLabel(item: ProjectItem): string {
+  if (item.activity === "selesai") return "Selesai";
+  if (item.activity === "berjalan") return "Proses";
+  return item.reason ?? item.status ?? "";
+}
 ---
 
-<!-- Program List -->
 <section class="mb-3 py-4 bg-white space-y-2 px-2">
   <SectionTitle
     title="#BarenganTebarBahagia"
     description="Satu niat baik hari ini, jadi alasan senyum mereka sepanjang hari."
   />
+
   {
-    reports.map((r) => (
-      <div class="flex gap-3 bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 cursor-pointer">
-        <div class="shrink-0 w-36 overflow-hidden bg-gray-100 m-2.5 rounded-lg">
-          <Image
-            src={r.image}
-            alt={r.title}
-            width="90"
-            height="90"
-            class="object-cover w-full"
-            loading="lazy"
-            decoding="async"
-          />
-        </div>
-        <div class="flex-1 py-3 pr-3 min-w-0">
-          <div class="flex items-center gap-1.5 mb-1">
-            <span
-              class={`text-[9px] font-bold px-2 py-0.5 rounded-full leading-none bg-secondary-100 text-secondary-600`}
-            >
-              {r.status}
-            </span>
-            <span class="text-[10px] text-gray-400">{r.tanggal}</span>
+    projectList.map((r) => {
+      const summary = stripHtml(r.description).slice(0, 120);
+      const date = r.excecution_time ? formatDate(r.excecution_time) : "";
+      const label = activityLabel(r);
+
+      return (
+        <div class="flex gap-3 bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 cursor-pointer">
+          <div class="shrink-0 w-36 overflow-hidden bg-gray-100 m-2.5 rounded-lg">
+            <img
+              src={r.image}
+              alt={r.title}
+              width="90"
+              height="90"
+              class="object-cover w-full h-full"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
-          <p class="text-[12px] font-semibold text-gray-800 leading-snug line-clamp-2 mb-1">
-            {r.title}
-          </p>
-          <p class="text-[11px] text-gray-400 truncate leading-relaxed">
-            {r.ringkasan}
-          </p>
+          <div class="flex-1 py-3 pr-3 min-w-0">
+            <div class="flex items-center gap-1.5 mb-1">
+              <span class="text-[9px] font-bold px-2 py-0.5 rounded-full leading-none bg-secondary-100 text-secondary-600">
+                {label}
+              </span>
+              <span class="text-[10px] text-gray-400">{date}</span>
+            </div>
+            <p class="text-[12px] font-semibold text-gray-800 leading-snug line-clamp-2 mb-1">
+              {r.title}
+            </p>
+            <p class="text-[11px] text-gray-400 truncate leading-relaxed">
+              {summary}
+            </p>
+          </div>
         </div>
-      </div>
-    ))
+      );
+    })
   }
 </section>

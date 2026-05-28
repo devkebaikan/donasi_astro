@@ -21,15 +21,15 @@ if (!slug) {
 
 const invoice = await getInvoice(slug);
 
-const payment = invoice?.data?.payment_method ?? {};
-const donationAmount = invoice?.data?.nominal ?? 0;
-const isPaid = invoice?.data?.status === "Paid";
-const payment_url = invoice?.data?.payment_url;
-// const idProgram = invoice?.data.items[0].program.id ?? 0;
+const payment = invoice?.payment_method ?? {};
+const donationAmount = invoice?.nominal ?? 0;
+const isPaid = invoice?.status === "Paid";
+const payment_url = invoice?.payment_url;
+// const idProgram = invoice?.items[0].program.id ?? 0;
 
 const qrPayload =
   payment?.name === "Qris"
-    ? invoice?.data?.third_party_detail?.qr_string ?? ""
+    ? invoice?.third_party_detail?.qr_string ?? ""
     : null;
 
 ---
@@ -48,9 +48,9 @@ const qrPayload =
     data-paid={isPaid}
     data-payment-url={payment_url} 
     data-qr-code={qrPayload}
-    class="min-h-screen bg-gray-50"
+    class="min-h-screen "
   >
-    <div class="container bg-white">
+    <div class="container bg-neutral-50 min-h-screen">
       <div class="space-y-4">
         <!-- Payment Deadline Section -->
         {
@@ -60,7 +60,7 @@ const qrPayload =
               <h6 class="text-sm font-semibold mb-2">Batas waktu pembayaran</h6>
               <div class="flex justify-between items-center text-sm">
                 <p class="font-medium">
-                  {formatDateTime(invoice?.data.last_payment_time)}
+                  {formatDateTime(invoice?.last_payment_time)}
                 </p>
                 <div class="flex items-center gap-2">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -212,8 +212,8 @@ const qrPayload =
           <!-- Action Buttons -->
           <div class="p-4 space-y-3">
             {
-              invoice?.data.items[0].program?.link !== "infaq" &&
-                invoice?.data.items[0].program != null && (
+              invoice?.items[0].program?.link !== "infaq" &&
+                invoice?.items[0].program != null && (
                   <a
                     id="btn-tracking-donasi"
                     href={`/track-donation/${slug}`}

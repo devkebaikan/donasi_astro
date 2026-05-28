@@ -23,15 +23,14 @@ const [accountRes, dataPaymentMethods] = await Promise.all([
   getPaymentMethod(slug),
 ]);
 
-const account = accountRes?.data ?? null;
+const account = accountRes ?? null;
 const isAuth = !!account;
 const userName = (account?.name ?? "") as string;
 const userPhone = (account?.phone ?? "") as string;
 const walletBal = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
-const rawPm: any[] = dataPaymentMethods?.data ?? [];
-const paymentMethods = rawPm.filter((m: any) => {
-  if (m.type === "wallet") return isAuth;
+const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
+  if (m.type === "e_wallet") return isAuth;
   return ["VA", "bank", "e_wallet"].includes(m.type);
 });
 ---
@@ -387,6 +386,7 @@ const paymentMethods = rawPm.filter((m: any) => {
 <script>
   import { showToast } from "@/lib/toast";
   import { getToken } from "@/lib/auth";
+  import type { TransactionPayload } from "@/lib/types";
 
   const page = document.getElementById("donation-page") as HTMLElement;
   const programId = page?.dataset.programId ?? "";
@@ -400,7 +400,7 @@ const paymentMethods = rawPm.filter((m: any) => {
 
   // ── State ─────────────────────────────────────────────────────────────────
   let amount = 0;
-  let paymentMethodId: string | number = "";
+  let paymentMethodId: number | null = null;
   let paymentType = "";
   let paymentSelected = false;
   let isProcessing = false;
@@ -574,7 +574,7 @@ const paymentMethods = rawPm.filter((m: any) => {
 
   window.addEventListener("payment:selected", (e: Event) => {
     const { id, name, image, type } = (e as CustomEvent).detail;
-    paymentMethodId = id;
+    paymentMethodId = Number(id);
     paymentType = type ?? "";
     paymentSelected = true;
 
@@ -587,16 +587,16 @@ const paymentMethods = rawPm.filter((m: any) => {
   });
 
   // ── Helpers ───────────────────────────────────────────────────────────────
-  function cleanPayload(obj: Record<string, unknown>) {
+  function cleanPayload<T extends object>(obj: T): Partial<T> {
     return Object.fromEntries(
       Object.entries(obj).filter(
         ([, v]) =>
           v !== "" &&
           v !== null &&
           v !== undefined &&
-          !(Array.isArray(v) && (v as unknown[]).length === 0),
+          !(Array.isArray(v) && v.length === 0),
       ),
-    );
+    ) as Partial<T>;
   }
 
   // ── Submit ────────────────────────────────────────────────────────────────
@@ -648,13 +648,21 @@ const paymentMethods = rawPm.filter((m: any) => {
     btnSubmit.disabled = true;
     btnSubmit.textContent = "Memproses...";
 
-    const payload: Record<string, unknown> =
+    if (paymentMethodId === null) {
+      showToast("Pilih metode pembayaran terlebih dahulu", "error");
+      isProcessing = false;
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = isZakat ? "Bayar Zakat" : "Konfirmasi";
+      return;
+    }
+
+    const payload: TransactionPayload =
       isZakat && zakatData
         ? {
-            type: zakatData.type,
-            program_type: zakatData.program_type,
-            items: zakatData.items,
-            zakat_type: zakatData.zakat_type,
+            type: zakatData.type as "zakat",
+            program_type: zakatData.program_type as "zakat",
+            items: zakatData.items as number[],
+            zakat_type: zakatData.zakat_type as number[],
             total: [amount],
             payment_method_id: paymentMethodId,
             name,
@@ -666,19 +674,19 @@ const paymentMethods = rawPm.filter((m: any) => {
         : {
             type: "donation",
             program_type: "infaq",
-            items: [programId],
+            items: [Number(programId)],
             total: [amount],
             payment_method_id: paymentMethodId,
             name,
             phone,
             status: "Pending",
             ...(doa ? { doa } : {}),
-            ...(atasNama ? { atas_nama: atasNama } : {}),
+            ...(atasNama ? { other_detail: atasNama } : {}),
             ...(utmParams ? { parameter_detail: utmParams } : {}),
           };
 
     try {
-      const res = await fetch(`${baseUrl}/transactions/store`, {
+      const res = await fetch(`${baseUrl}/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -11,8 +11,8 @@ const { slug } = Astro.params;
 
 if (!slug) return Astro.redirect("/");
 
-const invoiceRes = await getInvoice(slug);
-const invoice = invoiceRes?.data;
+const invoice = await getInvoice(slug);
+// const invoice = invoiceRes?.data;
 
 if (!invoice) return Astro.redirect("/");
 

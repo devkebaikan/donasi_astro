@@ -3,24 +3,19 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
+import { getNishabZakat, getCampaignSetUp } from "@/lib/FetchData";
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
-const [nishabRes, programRes] = await Promise.all([
-  fetch(`${API_URL}/zakat/nishab`, { headers: { Accept: "application/json" } }),
-  fetch(`${API_URL}/program-setup/zakat`, {
-    headers: { Accept: "application/json" },
-  }),
+const [nishabData, programRaw] = await Promise.all([
+  getNishabZakat(),
+  getCampaignSetUp("zakat"),
 ]);
 
-const nishabData = nishabRes.ok ? await nishabRes.json() : null;
-const programData = programRes.ok ? await programRes.json() : null;
-
-const nishabEmas = Number(nishabData?.data?.[1]?.value) || 0;
+const nishabEmas = Number(nishabData[1]?.value) || 0;
 const nishabYearly = nishabEmas * 85;
 const updatedAt = nishabData?.data?.[1]?.updated_at ?? null;
 
-const programRaw = programData?.data?.[0];
 const parsedProg = programRaw?.value ? JSON.parse(programRaw.value) : null;
 const zakatId = parsedProg?.id ?? 0;
 const zakatLink = parsedProg?.link ?? "";
@@ -330,9 +325,9 @@ function formatRupiah(n: number) {
 
   <!-- Fixed Bottom Bar -->
   <div
-    class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-4 pt-3 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
+    class="fixed container bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 px-4 pt-3 pb-5 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]"
   >
-    <div class="container flex items-center gap-3">
+    <div class="flex items-center gap-3">
       <div class="flex-1 min-w-0">
         <p
           id="bottom-label"

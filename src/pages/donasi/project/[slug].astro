@@ -14,16 +14,13 @@ import { Image } from "astro:assets";
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const [dataProjectSummary, dataMitraSalur, dataProject] = await Promise.all([
+const [projectSummary, mitraList, projects] = await Promise.all([
   getProjectSummaryByLink(slug),
   getMitraSalurByLink(slug),
   getProjectByLink(slug),
 ]);
 
-const projects = dataProject?.data || [];
-const projectSummary = dataProjectSummary?.data || null;
-const mitraList: any[] = dataMitraSalur?.data || [];
-const mitra = mitraList[0] || null;
+// const projects = dataProject?.data || [];
 
 
 function progressPercent(achieved: number, target: number): number {
@@ -78,19 +75,20 @@ function activityBadgeClass(activity: string): string {
       </section>
     )}
     <!-- Mitra Salur -->
-    {mitra && (
+    {mitraList.length > 0 && (
+      mitraList.map((m:any) => (
       <section class="mx-4 mt-3 bg-white rounded-xl border border-gray-100 px-4 py-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full border border-gray-100 overflow-hidden flex-shrink-0 bg-primary-50 flex items-center justify-center">
-            {mitra.image_url
-              ? <img src={mitra.image_url} alt={mitra.name} class="w-full h-full object-contain" />
-              : <span class="text-primary-600 font-bold text-base">{mitra.name?.charAt(0)}</span>
+            {m.image_url
+              ? <img src={m.image_url} alt={m.name} class="w-full h-full object-contain" />
+              : <span class="text-primary-600 font-bold text-base">{m.name?.charAt(0)}</span>
             }
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-gray-800 truncate">{mitra.name}</p>
-            {mitra.address && (
-              <p class="text-xs text-gray-400 truncate mt-0.5">{mitra.address}</p>
+            <p class="text-sm font-semibold text-gray-800 truncate">{m.name}</p>
+            {m.address && (
+              <p class="text-xs text-gray-400 truncate mt-0.5">{m.address}</p>
             )}
           </div>
           <div class="flex items-center gap-1 bg-gray-100 border border-gray-200 rounded-full px-3 py-1.5 flex-shrink-0">
@@ -101,6 +99,8 @@ function activityBadgeClass(activity: string): string {
           </div>
         </div>
       </section>
+      ))
+      
     )}
 
     <!-- Proyek Terbaru -->
@@ -138,9 +138,9 @@ function activityBadgeClass(activity: string): string {
                   <!-- Banner -->
                   {project.image && (
                     <div class="w-full overflow-hidden">
-                      <Image
-                      width={120}
-                      height={180}
+                      <img
+                        width={120}
+                        height={180}
                         src={project.image}
                         alt={project.title}
                         class="w-full h-full object-cover"

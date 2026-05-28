@@ -1,161 +1,69 @@
 ---
+import type { Program, ProgramCategory } from "@/lib/home";
+import { storageImg } from "@/lib/home";
 import CampaignList from "@/components/ui/CampaignList.astro";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
-import { Image } from "astro:assets";
 
-const campaign = [
-  {
-    link: "/campaign/1",
-    title: "Bantu Renovasi Masjid Al-Ikhlas",
-    image: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Al-Ikhlas",
-    },
-    category: {
-      name: "Renovasi",
-    },
-    progress_achieved: 75,
-    nominal_achieved: 7500000,
-    time_target: 10,
-  },
-  {
-    link: "/campaign/2",
-    title: "Dukung Pendidikan Anak Yatim Piatu",
-    image: "/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Peduli Anak",
-    },
-    category: {
-      name: "Pendidikan",
-    },
-    progress_achieved: 60,
-    nominal_achieved: 6000000,
-    time_target: 20,
-  },
-  {
-    link: "/campaign/3",
-    title: "Bantu Pembangunan Sumur Wakaf",
-    image: "/images/thumbnail/Artboard22-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Air Bersih",
-    },
-    category: {
-      name: "Wakaf",
-    },
-    progress_achieved: 90,
-    nominal_achieved: 9000000,
-    time_target: 5,
-  },
-  {
-    link: "/campaign/1",
-    title: "Bantu Renovasi Masjid Al-Ikhlas",
-    image: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Al-Ikhlas",
-    },
-    category: {
-      name: "Renovasi",
-    },
-    progress_achieved: 75,
-    nominal_achieved: 7500000,
-    time_target: 10,
-  },
-  {
-    link: "/campaign/2",
-    title: "Dukung Pendidikan Anak Yatim Piatu",
-    image: "/images/thumbnail/Artboard21-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Peduli Anak",
-    },
-    category: {
-      name: "Pendidikan",
-    },
-    progress_achieved: 60,
-    nominal_achieved: 6000000,
-    time_target: 20,
-  },
-  {
-    link: "/campaign/3",
-    title: "Bantu Pembangunan Sumur Wakaf",
-    image: "/images/thumbnail/Artboard22-ezgif.com-jpg-to-webp-converter.webp",
-    mitra: {
-      name: "Yayasan Air Bersih",
-    },
-    category: {
-      name: "Wakaf",
-    },
-    progress_achieved: 90,
-    nominal_achieved: 9000000,
-    time_target: 5,
-  },
-];
+interface Props {
+  programs: Program[];
+  categories: ProgramCategory[];
+}
 
-const kategori = [
-  {
-    name: "Renovasi",
-    image: "/images/icons/kategori/1. Masjid & pondok.png",
-  },
-  {
-    name: "Pendidikan",
-    image: "/images/icons/kategori/2. Kesehatan.png",
-  },
-  {
-    name: "Pendidikan",
-    image: "/images/icons/kategori/2. Kesehatan.png",
-  },
-  {
-    name: "Pendidikan",
-    image: "/images/icons/kategori/2. Kesehatan.png",
-  },
-  {
-    name: "Pendidikan",
-    image: "/images/icons/kategori/2. Kesehatan.png",
-  },
-  {
-    name: "Pendidikan",
-    image: "/images/icons/kategori/2. Kesehatan.png",
-  },
-  {
-    name: "Pendidikan",
-    image: "/images/icons/kategori/2. Kesehatan.png",
-  },
-];
+const { programs, categories } = Astro.props;
+
+const activeCategories = categories.filter((c) => c.is_active === "1");
 ---
 
-<!-- Program List -->
 <section class="pt-4 pb-8 bg-white space-y-2 px-2">
   <SectionTitle title="Pilih Program Favoritmu" />
 
-  <div class="h-32 flex gap-2.5 space-x-4 overflow-x-auto py-2">
-    {
-      kategori.map((kategori) => (
-        <div class="flex flex-col items-center gap-1 w-18">
-          <div class="flex-shrink-0 w-18 h-18 rounded-full border border-gray-300 hover:border-secondary-500 transition-colors duration-200">
-            <Image
-              src={kategori.image}
-              alt={kategori.name}
-              width={80}
-              height={60}
-              class="w-full h-full object-cover"
-            />
-          </div>
-          <p class="text-xs md:text-sm text-neutral-500">{kategori.name}</p>
-        </div>
-      ))
-    }
-  </div>
-
+  <!-- Category icons -->
   {
-    campaign.map((campaign) => (
+    activeCategories.length > 0 && (
+      <div class="h-32 flex gap-2.5 overflow-x-auto py-2 scrollbar-none">
+        {activeCategories.map((cat) => {
+          const imgSrc =
+            cat.image_url && /^https?:\/\//.test(cat.image_url)
+              ? cat.image_url
+              : storageImg(cat.image || cat.image_url, "kategori");
+          return (
+            <a
+              href={`/donasi?kategori=${cat.slug}`}
+              class="flex flex-col items-center gap-1 w-18 shrink-0"
+            >
+              <div class="w-18 h-18 rounded-full border border-gray-300 hover:border-secondary-500 transition-colors duration-200 overflow-hidden">
+                <img
+                  src={imgSrc}
+                  alt={cat.name}
+                  width="72"
+                  height="72"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <p class="text-xs text-neutral-500 text-center leading-tight line-clamp-2 w-full">
+                {cat.name}
+              </p>
+            </a>
+          );
+        })}
+      </div>
+    )
+  }
+
+  <!-- Campaign list -->
+  {
+    programs.map((p) => (
       <CampaignList
-        link={`/donasi/${campaign.link}`}
-        title={campaign.title}
-        image={campaign.image}
-        mitra={campaign.mitra.name}
-        category={campaign.category.name}
-        progress_achieved={campaign.progress_achieved}
-        collected_amount={campaign.nominal_achieved}
-        days_left={campaign.time_target}
+        link={`/donasi/${p.link}`}
+        title={p.title}
+        image={p.image}
+        mitra={p.mitra?.name ?? ""}
+        category={p.category?.name ?? ""}
+        progress_achieved={Number(p.progress_achieved) || 0}
+        collected_amount={Number(p.nominal_achieved) || 0}
+        days_left={p.time_target}
       />
     ))
   }
@@ -164,6 +72,6 @@ const kategori = [
     href="/donasi"
     class="mx-auto px-4 py-2 text-xs md:text-sm bg-linear-to-b rounded-md from-secondary-400 to-secondary-500 text-white font-medium hover:from-secondary-500 hover:to-secondary-600 transition-colors duration-200 block w-max"
   >
-    Lihat program lainnya</a
-  >
+    Lihat program lainnya
+  </a>
 </section>

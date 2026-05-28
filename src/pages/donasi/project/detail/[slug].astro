@@ -2,39 +2,21 @@
 export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
-
 import MainLayout from "@/layouts/MainLayout.astro";
 import {
   getProjectByLink,
 } from "@/lib/FetchData";
-import { formatRupiah } from "@/lib/formatter";
-import { Image } from "astro:assets";
+import { formatDate, formatRupiah, progressPercent } from "@/lib/formatter";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
 const [  dataProject] = await Promise.all([
-
   getProjectByLink(slug),
 ]);
 
-const project = dataProject?.data[0] || [];
+const project = dataProject[0] || [];
 const pct = progressPercent(project.nominal_achieved, project.nominal_target);
-
-
-function progressPercent(achieved: number, target: number): number {
-  if (!target) return 0;
-  return Math.min(100, Math.round((achieved / target) * 100));
-}
-
-function formatDate(dateStr: string): string {
-  if (!dateStr) return "-";
-  return new Date(dateStr).toLocaleDateString("id-ID", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
-}
 
 function activityLabel(activity: string): string {
   const map: Record<string, string> = {
@@ -95,7 +77,7 @@ function activityBadgeClass(activity: string): string {
                   <!-- Banner -->
                   {project.image && (
                     <div class="w-full overflow-hidden">
-                      <Image
+                      <img
                       width={120}
                       height={180}
                         src={project.image}

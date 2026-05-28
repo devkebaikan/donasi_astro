@@ -1,40 +1,17 @@
 ---
+export const prerender = false;
+
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
 import { getServerToken } from "@/lib/auth";
 import { getInitialName } from "@/lib/formatter";
-
-export const prerender = false;
+import { getUserProfile } from "@/lib/FetchData";
 
 const token = getServerToken(Astro.cookies);
 if (!token) return Astro.redirect("/login");
 
 const apiUrl = import.meta.env.PUBLIC_API_URL;
-
-type User = {
-  name: string;
-  phone: string;
-  email: string;
-  reff_code: string;
-};
-
-async function fetchUser(): Promise<User | null> {
-  try {
-    const res = await fetch(`${apiUrl}/dashboard/my-account`, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json?.data ?? null;
-  } catch {
-    return null;
-  }
-}
-
-const user = await fetchUser();
+const user = await getUserProfile(token);
 ---
 
 <MainLayout title="Ubah Profil" description="Ubah profil akun Anda">
@@ -333,7 +310,7 @@ const user = await fetchUser();
 
           try {
             const res = await fetch(
-              `${apiUrl}/dashboard/change-personal-data`,
+              `${apiUrl}/dashboard/donatur/change-personal-data`,
               {
                 method: "POST",
                 headers: {
@@ -397,15 +374,18 @@ const user = await fetchUser();
           btnPassword.textContent = "Processing...";
 
           try {
-            const res = await fetch(`${apiUrl}/dashboard/change-password`, {
-              method: "POST",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+            const res = await fetch(
+              `${apiUrl}/dashboard/donatur/change-password`,
+              {
+                method: "POST",
+                headers: {
+                  Accept: "application/json",
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ password, password_confirmation }),
               },
-              body: JSON.stringify({ password, password_confirmation }),
-            });
+            );
             if (!res.ok) throw new Error("failed");
             showToast("Password berhasil diubah!", "success");
             formPassword.reset();

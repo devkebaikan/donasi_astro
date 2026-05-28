@@ -1,18 +1,35 @@
 ---
-import { Image } from "astro:assets";
+import type { BannerSlide } from "@/lib/home";
+import { storageImg, bannerHref } from "@/lib/home";
 
-const banners = [
-  {
-    src: "/images/banner/banner-qurban.avif",
-    alt: "Qurban Pelosok Nusantara",
-    href: "/donasi/qurban",
-  },
-  {
-    src: "/images/ramadhan/ramadhan-1.webp",
-    alt: "Program Sedekah Rutin",
-    href: "/donasi-rutin",
-  },
-];
+interface Props {
+  bannerSlides: BannerSlide[];
+}
+
+const { bannerSlides } = Astro.props;
+
+const slides =
+  bannerSlides.length > 0
+    ? bannerSlides.map((b) => ({
+        src: storageImg(b.image_url, "banner"),
+        alt: "Banner Aksiberbagi",
+        href: bannerHref(b.link),
+        newTab: b.is_new_tab,
+      }))
+    : [
+        {
+          src: "/images/banner/banner-qurban.avif",
+          alt: "Qurban Pelosok Nusantara",
+          href: "/donasi/qurban",
+          newTab: false,
+        },
+        {
+          src: "/images/ramadhan/ramadhan-1.webp",
+          alt: "Program Sedekah Rutin",
+          href: "/donasi-rutin",
+          newTab: false,
+        },
+      ];
 ---
 
 <section class="bg-white">
@@ -24,11 +41,16 @@ const banners = [
       style="transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);"
     >
       {
-        banners.map((banner, i) => (
-          <a href={banner.href} class="w-full shrink-0 block">
-            <Image
-              src={banner.src}
-              alt={banner.alt}
+        slides.map((slide, i) => (
+          <a
+            href={slide.href}
+            class="w-full shrink-0 block"
+            target={slide.newTab ? "_blank" : undefined}
+            rel={slide.newTab ? "noopener noreferrer" : undefined}
+          >
+            <img
+              src={slide.src}
+              alt={slide.alt}
               width="480"
               height="240"
               class="w-full h-auto block"
@@ -46,7 +68,7 @@ const banners = [
       class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none"
     >
       {
-        banners.map((_, i) => (
+        slides.map((_, i) => (
           <span
             class="banner-dot block h-1.5 rounded-full bg-white transition-all duration-300"
             data-index={i}
@@ -88,7 +110,6 @@ const banners = [
         </svg>
       </div>
 
-      <!-- Saldo info: ditampilkan/disembunyikan oleh script -->
       <div class="flex-1 min-w-0">
         <p class="text-[11px] text-neutral-400 leading-none mb-0.5">
           Saldo Kebaikan
@@ -101,13 +122,11 @@ const banners = [
         </p>
       </div>
 
-      <!-- Tombol: skeleton dulu, diganti script setelah tahu status login -->
       <div id="wallet-action" class="shrink-0">
         <div class="w-16 h-8 bg-neutral-100 rounded-lg animate-pulse"></div>
       </div>
     </div>
   </div>
-  <!-- <ShowJsonData data={donors} /> -->
 </section>
 
 <script>
@@ -180,7 +199,6 @@ const banners = [
     const loggedIn = isLoggedIn();
     const token = getToken();
 
-    // Render tombol yang tepat
     if (walletAction) {
       walletAction.innerHTML = loggedIn
         ? `<a href="/top-up" class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Top Up</a>`
@@ -188,26 +206,22 @@ const banners = [
     }
 
     if (!loggedIn || !token) {
-      // Tampilkan teks guest, sembunyikan saldo
       saldoGuest?.classList.remove("hidden");
       saldoWrapper?.classList.add("hidden");
       return;
     }
 
-    // User login: tampilkan saldo
     saldoGuest?.classList.add("hidden");
     saldoWrapper?.classList.remove("hidden");
 
-    // Tampilkan cache dulu agar tidak blank
     const cached = localStorage.getItem("saldo");
     if (saldoDisplay && cached) {
       saldoDisplay.textContent = Number(cached).toLocaleString("id-ID");
     }
 
-    // Fetch saldo terbaru
     async function fetchSaldo() {
       try {
-        const res = await fetch(`${API_URL}/dashboard/my-account`, {
+        const res = await fetch(`${API_URL}/dashboard/donatur/my-account`, {
           headers: bearerHeaders(token!),
         });
 

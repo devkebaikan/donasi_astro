@@ -1,12 +1,16 @@
 ---
+import type { Program } from "@/lib/home";
 import SectionTitle from "@/components/ui/SectionTitle.astro";
+import { fmt } from "@/lib/formatter";
+
+interface Props {
+  programs: Program[];
+}
+
+const { programs } = Astro.props;
 ---
 
-<section
-  id="program-section"
-  class="mb-3 py-4 bg-white"
-  data-api-url={import.meta.env.PUBLIC_API_URL}
->
+<section class="mb-3 py-4 bg-white">
   <SectionTitle
     title="#BarenganJadiRingan"
     description="Pilih program yang sesuai dengan niat baikmu, dan mari wujudkan perubahan bersama."
@@ -17,131 +21,73 @@ import SectionTitle from "@/components/ui/SectionTitle.astro";
     class="flex gap-3 items-center overflow-x-auto px-4 h-70 md:h-80 snap-x"
     style="background-image: url('/images/jumat-berkah.jpg'); background-size: cover; background-position: center;"
   >
-    <!-- spacer kiri -->
+    <!-- spacer kiri agar slide pertama tidak menempel ke tepi -->
     <div class="shrink-0 w-32 md:w-48"></div>
 
-    <!-- Skeleton cards -->
     {
-      Array.from({ length: 4 }).map(() => (
-        <div class="program-skeleton shrink-0 w-47.5 h-fit snap-start bg-white rounded-xl overflow-hidden border border-neutral-100 shadow-sm flex flex-col animate-pulse">
-          <div class="w-full h-26.25 bg-neutral-200" />
-          <div class="p-3 flex flex-col gap-2">
-            <div class="h-3 bg-neutral-200 rounded w-full" />
-            <div class="h-3 bg-neutral-200 rounded w-2/3" />
-            <div class="h-1.5 bg-neutral-200 rounded-full w-full mt-1" />
-            <div class="flex justify-between">
-              <div class="h-3 bg-neutral-200 rounded w-1/3" />
-              <div class="h-3 bg-neutral-200 rounded w-1/4" />
+      programs.map((p, i) => {
+        const pct = Math.min(
+          Math.round(Number(p.progress_achieved) || 0),
+          100,
+        );
+        return (
+          <a
+            href={`/donasi/${p.link}`}
+            class="shrink-0 w-47.5 h-fit snap-start bg-white rounded-xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
+          >
+            <div class="relative">
+              <img
+                src={p.image}
+                alt={p.title}
+                width="190"
+                height="110"
+                class="w-full h-26.25 object-cover"
+                loading={i < 2 ? "eager" : "lazy"}
+                decoding="async"
+              />
+              {p.category?.name && (
+                <span class="absolute top-2 right-2 text-[9px] font-bold bg-secondary-500 text-white px-2 py-0.5 rounded-full leading-none">
+                  {p.category.name}
+                </span>
+              )}
             </div>
-          </div>
-        </div>
-      ))
+            <div class="p-3 flex flex-col flex-1">
+              <p class="text-[11px] font-semibold text-neutral-700 line-clamp-2 min-h-9 leading-relaxed mb-2 flex-1">
+                {p.title}
+              </p>
+              <div class="w-full h-1 bg-neutral-100 rounded-full overflow-hidden mb-1.5">
+                <div
+                  class="h-full bg-linear-to-r from-primary-400 to-primary-600 rounded-full"
+                  style={`width:${pct}%`}
+                />
+              </div>
+              <div class="flex items-center justify-between mb-2.5">
+                <span class="text-[10px] font-bold text-primary-600">
+                  Rp {fmt(Number(p.nominal_achieved))}
+                </span>
+                <span class="text-[10px] text-neutral-400">
+                  {pct}% · {p.remaining_days ?? "∞"}
+                </span>
+              </div>
+            </div>
+          </a>
+        );
+      })
     }
-
-    <!-- Cards di-inject oleh script -->
-    <div id="program-cards" class="contents"></div>
   </div>
 </section>
 
 <script>
-  import { fmt } from "@/lib/formatter";
-
   (() => {
-    const section = document.getElementById(
-      "program-section",
-    ) as HTMLElement | null;
     const scrollEl = document.getElementById(
       "program-scroll",
     ) as HTMLElement | null;
-    const cardsContainer = document.getElementById(
-      "program-cards",
-    ) as HTMLElement | null;
-    const skeletons =
-      document.querySelectorAll<HTMLElement>(".program-skeleton");
+    if (!scrollEl) return;
 
-    if (!section || !scrollEl || !cardsContainer) return;
-
-    const API_URL = section.dataset.apiUrl ?? "";
-
-    // Scroll opacity effect
     scrollEl.addEventListener("scroll", () => {
       const opacity = Math.max(0, 1.5 - scrollEl.scrollLeft / 100);
       scrollEl.style.backgroundColor = `rgba(255,255,255,${1 - opacity})`;
       scrollEl.style.backgroundBlendMode = "lighten";
     });
-
-    function buildCard(p: any, i: number): string {
-      const pct = Math.min(Math.round(p.progress_achieved ?? 0), 100);
-      const badge = p.tipe?.name
-        ? `<span class="absolute top-2 right-2 text-[9px] font-bold bg-secondary-500 text-white px-2 py-0.5 rounded-full leading-none">${p.category?.name ?? ""}</span>`
-        : "";
-
-      return `
-        <a
-          href="/donasi/${p.link}"
-          class="shrink-0 w-[190px] h-fit snap-start bg-white rounded-xl overflow-hidden border border-neutral-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
-        >
-          <div class="relative">
-            <img
-              src="${p.image}"
-              alt="${p.title}"
-              width="190"
-              height="110"
-              class="w-full h-[105px] object-cover"
-              loading="${i < 2 ? "eager" : "lazy"}"
-              decoding="async"
-            />
-            ${badge}
-          </div>
-          <div class="p-3 flex flex-col flex-1">
-            <p class="text-[11px] font-semibold text-neutral-700 line-clamp-2 min-h-[36px] leading-relaxed mb-2 flex-1">
-              ${p.title}
-            </p>
-            <div class="w-full h-1 bg-neutral-100 rounded-full overflow-hidden mb-1.5">
-              <div class="h-full bg-linear-to-r from-primary-400 to-primary-600 rounded-full" style="width:${pct}%"></div>
-            </div>
-            <div class="flex items-center justify-between mb-2.5">
-              <span class="text-[10px] font-bold text-primary-600">Rp ${fmt(p.nominal_achieved)}</span>
-              <span class="text-[10px] text-neutral-400">${pct}% · ${p.remaining_days}</span>
-            </div>
-            <button
-              class="hidden md:inline w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-[11px] font-semibold py-1.5 rounded-lg transition-all duration-150"
-              aria-label="Donasi untuk ${p.title}"
-            >
-              Donasi Sekarang
-            </button>
-          </div>
-        </a>`;
-    }
-
-    async function loadPrograms() {
-      try {
-        const res = await fetch(`${API_URL}/program-show/ramadhan`, {
-          headers: { Accept: "application/json" },
-        });
-
-        if (!res.ok) throw new Error("fetch failed");
-
-        const data = await res.json();
-        const campaigns: any[] = data?.data ?? [];
-
-        skeletons.forEach((s) => s.remove());
-
-        if (campaigns.length === 0 || !cardsContainer) return;
-
-        cardsContainer.innerHTML = campaigns
-          .map((p, i) => buildCard(p, i))
-          .join("");
-      } catch {
-        skeletons.forEach((s) => s.remove());
-      }
-    }
-
-    // Gunakan requestIdleCallback agar tidak blok main thread
-    if ("requestIdleCallback" in window) {
-      requestIdleCallback(() => loadPrograms(), { timeout: 2000 });
-    } else {
-      setTimeout(loadPrograms, 0);
-    }
   })();
 </script>

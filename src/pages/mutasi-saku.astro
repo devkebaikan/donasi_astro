@@ -4,6 +4,8 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
 import { formatRupiah, timeAgoFormat } from "@/lib/formatter";
 import { getServerToken } from "@/lib/auth";
+import { getMyWallet } from "@/lib/FetchData";
+import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 export const prerender = false;
 
@@ -24,23 +26,7 @@ if (!token) return Astro.redirect("/login");
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
-const fetchWallet = async (): Promise<Wallet | null> => {
-  try {
-    const res = await fetch(`${API_URL}/dashboard/my-wallet`, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json?.data ?? null;
-  } catch {
-    return null;
-  }
-};
-
-const wallet = await fetchWallet();
+const wallet = await getMyWallet(token);
 const saldo = Number(wallet?.saldo ?? 0);
 const history = wallet?.history ?? [];
 
@@ -110,7 +96,7 @@ const getLabel = (type: string) => (type === "top_up" ? "Isi Saldo" : "Donasi");
             </p>
             <div class="bg-white rounded-lg border border-gray-100 shadow-sm overflow-hidden">
               <ul class="divide-y divide-gray-100">
-                {history.map((item) => {
+                {history.map((item: any) => {
                   const isTopUp = item.type === "top_up";
                   const amountNum = Number(item.amount) || 0;
                   return (

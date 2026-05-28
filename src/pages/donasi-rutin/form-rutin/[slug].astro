@@ -6,7 +6,11 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import { getServerToken } from "@/lib/auth";
 import { Image } from "astro:assets";
 import FormRutin from "@/components/sections/rutin/FormRutin.astro";
-import { getCampaignSetUp, getPaymentMethod } from "@/lib/FetchData.ts";
+import {
+  getCampaignSetUp,
+  getPaymentMethodFilter,
+  getUserProfile,
+} from "@/lib/FetchData.ts";
 
 const { slug } = Astro.params;
 const VALID_SLUGS = ["dipilihkan", "subuh", "jumat"] as const;
@@ -20,21 +24,15 @@ const token = getServerToken(Astro.cookies);
 if (!token) return Astro.redirect(`/auth/login?from=/donasi-rutin/${slug}`);
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
-const headers = {
-  Accept: "application/json",
-  Authorization: `Bearer ${token}`,
-};
 
-const [accountRes, dataPaymentMethods, dataPorgamSetup] = await Promise.all([
-  fetch(`${API_URL}/dashboard/my-account`, { headers }),
-  getPaymentMethod(slug),
+const [account, paymentMethods, dataPorgamSetup] = await Promise.all([
+  getUserProfile(token),
+  getPaymentMethodFilter({ status: "true" }),
   getCampaignSetUp("rutin"),
 ]);
 
-const account = accountRes.ok ? await accountRes.json() : null;
-const programId = (dataPorgamSetup?.data?.[0]?.value ?? "") as string;
-const walletBalance = (account?.data?.dompet_kebaikan?.saldo ?? 0) as number;
-const paymentMethods = dataPaymentMethods?.data ?? [];
+const programId = (dataPorgamSetup?.id ?? "") as string;
+const walletBalance = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
 const BANNER: Record<
   Slug,

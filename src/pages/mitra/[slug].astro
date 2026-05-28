@@ -30,8 +30,10 @@ interface Campaign {
 
 interface ProgramPage {
   data: Campaign[];
-  current_page: number;
-  next_page_url: string | null;
+  meta: {
+    current_page: number;
+    last_page: number;
+  };
 }
 
 const id = Astro.params.slug;
@@ -48,13 +50,13 @@ const headers = {
 
 const buildProgramUrl = (page: number) => {
   const params = new URLSearchParams({
-    limit: "4",
+    limit: "6",
     mode: "pagination",
     page: String(page),
     mitra_id: id,
   });
   if (search) params.set("search", search);
-  return `${API_URL}/program?${params.toString()}`;
+  return `${API_URL}/programs?${params.toString()}`;
 };
 
 const fetchMitra = async (): Promise<Mitra | null> => {
@@ -83,8 +85,11 @@ const [mitra, programData] = await Promise.all([fetchMitra(), fetchPrograms()]);
 if (!mitra) return Astro.redirect("/404");
 
 const initialCampaigns = programData?.data ?? [];
-const hasNextInitial = !!programData?.next_page_url;
-const initialPage = programData?.current_page ?? 1;
+const hasNextInitial = Boolean(
+  programData?.meta &&
+  programData.meta.current_page < programData.meta.last_page,
+);
+const initialPage = programData?.meta.current_page ?? 1;
 ---
 
 <MainLayout
@@ -92,7 +97,6 @@ const initialPage = programData?.current_page ?? 1;
   description={mitra.description || mitra.name}
 >
   <Header type="title" text={`Profil ${mitra.name}`} link="/" />
-
   <main class="min-h-screen pb-8">
     <div class="container py-4 pt-16 space-y-4 bg-white">
       <!-- Profile Card -->
@@ -407,7 +411,7 @@ const initialPage = programData?.current_page ?? 1;
         });
         if (search) params.set("search", search);
 
-        const res = await fetch(`${apiUrl}/program?${params.toString()}`, {
+        const res = await fetch(`${apiUrl}/programs?${params.toString()}`, {
           headers: { Accept: "application/json" },
         });
         if (!res.ok) throw new Error("fetch failed");
@@ -421,7 +425,9 @@ const initialPage = programData?.current_page ?? 1;
         programList.insertAdjacentHTML("beforeend", html);
 
         currentPage = pageData.current_page;
-        hasNext = !!pageData.next_page_url;
+        hasNext = Boolean(
+          pageData.meta && pageData.meta.current_page < pageData.meta.last_page,
+        );
 
         if (!hasNext && endMessage) {
           endMessage.classList.remove("hidden");

@@ -1,5 +1,6 @@
 ---
-import SectionTitle from "../ui/SectionTitle.astro";
+import { Image } from "astro:assets";
+
 
 const socials = [
   {
@@ -27,14 +28,14 @@ const report = [
     title: "Laporan Keuangan",
     description:
       "Lihat transparansi keuangan kami untuk memastikan setiap donasi Anda digunakan dengan baik.",
-    href: "/laporan-keuangan",
+    href: "/",
     image: "/images/banner/Tentang-Aksiberbagi.webp",
   },
   {
     title: "Laporan Kegiatan",
     description:
       "Ikuti perkembangan kegiatan kami dan lihat dampak positif yang telah kita capai bersama.",
-    href: "/laporan-kegiatan",
+    href: "/",
     image: "/images/banner/banner-qurban.avif",
   },
 ];
@@ -56,7 +57,7 @@ const report = [
               Baca selengkapnya >
             </p>
           </div>
-          <img
+          <Image
             src={r.image}
             alt={r.title}
             width={180}

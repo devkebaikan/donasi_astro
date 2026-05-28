@@ -188,3 +188,11 @@ export function getRemainingDays(targetDateStr?: string | null): number | "∞" 
 
   return diffDays;
 }
+
+/* =======================
+ * FORMAT PROGRESS PERCENT
+ * ======================= */
+export function progressPercent(achieved: number, target: number): number {
+  if (!target) return 0;
+  return Math.min(100, Math.round((achieved / target) * 100));
+}

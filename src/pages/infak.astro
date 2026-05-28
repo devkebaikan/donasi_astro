@@ -9,6 +9,11 @@ import QrTab from "@/components/sections/infak/QrTab.astro";
 import DonaturTab from "@/components/sections/infak/DonaturTab.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getServerToken } from "@/lib/auth";
+import {
+  getUserProfile,
+  getCampaignDonorInfak,
+  getPaymentMethodFilter,
+} from "@/lib/FetchData";
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 const token = getServerToken(Astro.cookies);
@@ -20,21 +25,14 @@ const fetchOpts = (auth = false) => ({
   },
 });
 
-const [bannerRes, qrRes, pmRes, donorRes, accountRes] = await Promise.all([
-  fetch(`${API_URL}/image/home-banner`, fetchOpts()),
+const [qrRes, pmData, donors, account] = await Promise.all([
   fetch(`${API_URL}/qr-code/infaq`, fetchOpts()),
-  fetch(`${API_URL}/payment/payment-method?program_link=infaq`, fetchOpts()),
-  fetch(`${API_URL}/program/link/infaq/donors?limit=10&page=1`, fetchOpts()),
-  token
-    ? fetch(`${API_URL}/dashboard/my-account`, fetchOpts(true))
-    : Promise.resolve(null),
+  getPaymentMethodFilter({ status: "true", program_link: "infaq" }),
+  getCampaignDonorInfak({ limit: 10 }),
+  token ? getUserProfile(token) : Promise.resolve(null),
 ]);
 
-const banner = bannerRes.ok ? (await bannerRes.json())?.data : null;
 const qr = qrRes.ok ? (await qrRes.json())?.data : null;
-const pmData = pmRes.ok ? ((await pmRes.json())?.data ?? []) : [];
-const donors = donorRes.ok ? ((await donorRes.json())?.data ?? []) : [];
-const account = accountRes?.ok ? (await accountRes.json())?.data : null;
 
 const isAuth = !!account;
 const userName = account?.name ?? "";
@@ -45,6 +43,11 @@ const paymentMethods: any[] = (pmData as any[]).filter((m: any) => {
   if (m.type === "wallet") return isAuth;
   return ["VA", "bank", "e_wallet"].includes(m.type);
 });
+
+const banner = {
+  name: "Infak Online",
+  image_url: "/images/banner-bio.webp",
+};
 
 const nominalOptions = [10000, 25000, 50000, 100000];
 ---
@@ -310,13 +313,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
         : (inputName?.value.trim() ?? "");
 
     const rawPhone = inputPhone?.value.trim() ?? "";
-    const phone = isAuth
-      ? userPhone
-      : rawPhone.startsWith("0")
-        ? rawPhone
-        : rawPhone
-          ? `0${rawPhone}`
-          : "";
+    const phone = isAuth ? userPhone : rawPhone;
 
     const doa = inputDoa?.value.trim() ?? "";
     const atasNama = forOtherPerson ? (inputAtasNama?.value.trim() ?? "") : "";
@@ -360,7 +357,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     };
 
     try {
-      const res = await fetch(`${API_URL}/transactions/store`, {
+      const res = await fetch(`${API_URL}/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

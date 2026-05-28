@@ -9,7 +9,7 @@ import { getCampaignShow } from "@/lib/FetchData";
 
 const dataCampaign = await getCampaignShow("rutin");
 
-const campaign = dataCampaign?.data ?? [];
+const campaign = dataCampaign ?? [];
 ---
 
 <MainLayout
