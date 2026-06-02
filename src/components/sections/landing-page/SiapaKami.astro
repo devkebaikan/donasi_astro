@@ -1,0 +1,106 @@
+---
+// Siapa Kami — Beramalbersama
+---
+
+<section id="about" class="py-14">
+  <div class="container-custom">
+    <div
+      class="relative rounded-3xl overflow-hidden h-[480px] md:h-[680px]"
+      data-reveal="scale"
+    >
+      <!-- Background Image -->
+      <img
+        src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=1400&h=900&fit=crop"
+        alt="Penerima manfaat Beramalbersama"
+        class="absolute inset-0 w-full h-full object-cover"
+      />
+      <!-- Overlay gradient -->
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-primary-900/20 via-primary-900/40 to-primary-900/80"
+      >
+      </div>
+
+      <!-- Content -->
+      <div
+        class="relative h-full flex flex-col items-center justify-between py-12 md:py-16 px-6 text-center text-white"
+      >
+        <!-- Top Content -->
+        <div class="max-w-4xl" data-reveal>
+          <span
+            class="inline-block font-medium underline underline-offset-4 decoration-white/60 mb-4 text-sm"
+          >
+            Siapa Kami
+          </span>
+          <h2
+            class="font-display text-2xl md:text-4xl lg:text-5xl font-semibold leading-tight"
+          >
+            Keikhlasan, Amanah, Transparansi,
+            <br />
+            Empati & <span
+              class="underline underline-offset-8 decoration-2 decoration-white/80"
+              >Keberdayaan</span
+            >
+          </h2>
+          <p
+            class="mt-4 text-white/80 text-sm md:text-base hidden md:inline-block leading-relaxed max-w-2xl mx-auto"
+          >
+            Kami hadir sebagai jembatan antara para dermawan dan mereka yang
+            membutuhkan — memastikan setiap donasi tersalurkan dengan tepat,
+            cepat, dan transparan.
+          </p>
+        </div>
+
+        <!-- Bottom Content -->
+        <div class="flex flex-col items-center gap-4" data-reveal>
+          <span class="font-medium text-white/70 text-sm">Kami Adalah</span>
+          <h3
+            class="font-display text-xl md:text-5xl lg:text-6xl font-bold text-primary-300"
+          >
+            Beramalbersama.com
+          </h3>
+          <a
+            href="/tentang"
+            class="inline-flex items-center gap-2 px-6 py-3 bg-white text-primary-800 rounded-full font-medium hover:bg-primary-50 transition-colors mt-2 group"
+          >
+            <span>Selengkapnya</span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-4 h-4 transition-transform group-hover:translate-x-1"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 8l4 4m0 0l-4 4m4-4H3"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  if (!window.__revealObserver) {
+    window.__revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("revealed");
+            window.__revealObserver!.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.1 },
+    );
+  }
+  document.querySelectorAll("[data-reveal]:not(.revealed)").forEach((el, i) => {
+    if (!(el as HTMLElement).style.transitionDelay) {
+      (el as HTMLElement).style.transitionDelay = `${i * 0.08}s`;
+    }
+    window.__revealObserver!.observe(el);
+  });
+</script>

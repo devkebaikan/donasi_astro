@@ -1,0 +1,176 @@
+---
+import { getAllCampaigns } from "@/lib/FetchData";
+import { storageImg, type Program } from "@/lib/home";
+import { fmt } from "@/lib/formatter";
+
+const raw = await getAllCampaigns({ limit: 6 });
+const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw) : [];
+---
+
+<section id="programs" class="py-20 bg-cream">
+  <div class="container-custom">
+    <!-- Heading -->
+    <div class="text-center mb-12" data-reveal>
+      <span class="section-label">Program Kami</span>
+      <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-primary-900 mt-2">
+        Bersama Kita Wujudkan
+        <br class="hidden md:block" />
+        Perubahan Nyata
+      </h2>
+      <p class="mt-3 text-primary-700/80 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
+        Pilih program yang paling dekat dengan hatimu — setiap donasi akan
+        disalurkan langsung kepada yang membutuhkan.
+      </p>
+    </div>
+
+    <!-- Program Cards -->
+    {programs.length > 0 ? (
+      <>
+        <div
+          id="initiative-carousel"
+          class="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4 scroll-smooth"
+          data-reveal
+        >
+          {programs.map((item, i) => {
+            const pct = Math.min(Math.round(Number(item.progress_achieved) || 0), 100);
+            const imgSrc = item.image?.startsWith("http") ? item.image : storageImg(item.image, "programs");
+            return (
+              <article
+                class="flex-shrink-0 w-[270px] md:w-[320px] snap-start bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                style={`animation-delay:${i * 0.07}s`}
+              >
+                <!-- Image -->
+                <div class="relative aspect-[4/3] overflow-hidden">
+                  <img
+                    src={imgSrc || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=400&fit=crop"}
+                    alt={item.title}
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                    loading={i < 2 ? "eager" : "lazy"}
+                  />
+                  {item.category?.name && (
+                    <span class="absolute top-3 left-3 text-[10px] font-bold bg-primary-600 text-white px-2.5 py-1 rounded-full">
+                      {item.category.name}
+                    </span>
+                  )}
+                  {item.remaining_days !== null && (
+                    <span class="absolute top-3 right-3 text-[10px] font-semibold bg-white/90 text-primary-700 px-2.5 py-1 rounded-full">
+                      {item.remaining_days} hari lagi
+                    </span>
+                  )}
+                </div>
+
+                <!-- Content -->
+                <div class="p-5">
+                  <h3 class="font-display text-base font-semibold text-primary-900 mb-3 line-clamp-2 leading-snug min-h-[2.8rem]">
+                    {item.title}
+                  </h3>
+
+                  <!-- Progress bar -->
+                  <div class="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden mb-2">
+                    <div
+                      class="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-700"
+                      style={`width:${pct}%`}
+                    />
+                  </div>
+                  <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold text-primary-600">
+                      Rp {fmt(Number(item.nominal_achieved))}
+                    </span>
+                    <span class="text-xs text-neutral-400">{pct}% terkumpul</span>
+                  </div>
+
+                  <a
+                    href={`/donasi/${item.link}`}
+                    class="w-full inline-flex items-center justify-center gap-1.5 text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors py-2.5 rounded-full group"
+                  >
+                    <span>Donasi Sekarang</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                  </a>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+
+        <!-- Pagination Dots -->
+        <div id="carousel-dots" class="flex justify-center gap-2 mt-6">
+          {programs.map((_, i) => (
+            <button
+              class={`h-2 rounded-full transition-all duration-300 ${i === 0 ? "bg-primary-700 w-6" : "bg-primary-200 w-2"}`}
+              data-slide={i}
+              aria-label={`Program ${i + 1}`}
+            ></button>
+          ))}
+        </div>
+
+        <!-- View all -->
+        <div class="text-center mt-8" data-reveal>
+          <a href="/donasi" class="btn-outline group">
+            <span>Lihat Semua Program</span>
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+          </a>
+        </div>
+      </>
+    ) : (
+      <!-- Fallback when API unavailable -->
+      <div class="text-center py-12 text-primary-600">
+        <p class="text-sm">Program sedang dimuat...</p>
+        <a href="/donasi" class="mt-4 inline-block btn-primary text-sm">Lihat Semua Program</a>
+      </div>
+    )}
+  </div>
+</section>
+
+<script>
+  const carousel = document.getElementById("initiative-carousel");
+  const dots = document.querySelectorAll("[data-slide]");
+
+  if (carousel && dots.length) {
+    const updateDots = (activeIdx: number) => {
+      dots.forEach((d, i) => {
+        d.classList.toggle("bg-primary-700", i === activeIdx);
+        d.classList.toggle("w-6", i === activeIdx);
+        d.classList.toggle("bg-primary-200", i !== activeIdx);
+        d.classList.toggle("w-2", i !== activeIdx);
+      });
+    };
+
+    dots.forEach((dot) => {
+      dot.addEventListener("click", () => {
+        const idx = Number((dot as HTMLElement).dataset.slide);
+        const card = carousel.children[idx] as HTMLElement;
+        if (card) carousel.scrollTo({ left: card.offsetLeft - 16, behavior: "smooth" });
+        updateDots(idx);
+      });
+    });
+
+    // Update dots on scroll
+    carousel.addEventListener("scroll", () => {
+      const cardWidth = (carousel.children[0] as HTMLElement)?.offsetWidth ?? 300;
+      const idx = Math.round(carousel.scrollLeft / (cardWidth + 20));
+      updateDots(Math.min(idx, dots.length - 1));
+    });
+  }
+
+  // Scroll reveal
+  if (!window.__revealObserver) {
+    window.__revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((e) => {
+          if (e.isIntersecting) {
+            e.target.classList.add("revealed");
+            window.__revealObserver!.unobserve(e.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+  }
+  document.querySelectorAll("[data-reveal]:not(.revealed)").forEach((el) => {
+    window.__revealObserver!.observe(el);
+  });
+</script>

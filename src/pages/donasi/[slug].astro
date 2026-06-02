@@ -21,6 +21,8 @@ if (!slug) {
   return Astro.redirect("/");
 }
 
+const projectId = Astro.url.searchParams.get("project");
+
 const utm = Astro.url.searchParams.toString();
 if (Astro.url.searchParams.has("utm_source")) {
   Astro.cookies.set("utm_params", utm, {
@@ -120,6 +122,7 @@ const campaignJsonLd = JSON.stringify({
       nominalOptions={nominalOptions}
       programId={detailCampaign?.id}
       programLink={detailCampaign?.link}
+      projectId={projectId ? Number(projectId) : null}
     />
   </div>
 </MainLayout>

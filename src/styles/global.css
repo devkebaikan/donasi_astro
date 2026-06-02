@@ -103,3 +103,170 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+@layer components {
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-700 text-white rounded-full font-medium hover:bg-primary-800 transition-all duration-300 shadow-sm;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-primary-700 text-primary-700 rounded-full font-medium hover:bg-primary-700 hover:text-white transition-all duration-300;
+  }
+
+  .section-label {
+    @apply inline-block text-lg font-medium text-primary-700 underline underline-offset-4 decoration-primary-300 mb-3;
+  }
+
+  .quote-bubble {
+    @apply bg-white rounded-2xl px-5 py-3 shadow-sm text-sm;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f0f9f1;
+}
+::-webkit-scrollbar-thumb {
+  background: #2a7540;
+  border-radius: 4px;
+}
+
+/* Hide default carousel scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ── Colour tokens ──────────────────────────────────────────────── */
+@theme {
+  --color-cream: #fdf8f0;
+  --shadow-card: 0 2px 12px 0 rgb(0 0 0 / 0.08), 0 1px 4px 0 rgb(0 0 0 / 0.04);
+}
+
+/* ── Utility shortcuts ──────────────────────────────────────────── */
+@layer utilities {
+  .bg-cream {
+    background-color: var(--color-cream);
+  }
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+}
+
+/* ── Keyframes ──────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes floatAnim {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── Named animation classes ────────────────────────────────────── */
+.animate-fade-up {
+  animation: fadeUp 0.7s ease-out forwards;
+}
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+.animate-float {
+  animation: floatAnim 3.5s ease-in-out infinite;
+}
+.animate-slide-left {
+  animation: slideInLeft 0.7s ease-out forwards;
+}
+.animate-slide-right {
+  animation: slideInRight 0.7s ease-out forwards;
+}
+.animate-scale-in {
+  animation: scaleIn 0.6s ease-out forwards;
+}
+
+/* ── Scroll reveal — elements start hidden, JS adds .revealed ──── */
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.4s ease-out,
+    transform 0.4s ease-out;
+}
+[data-reveal="left"] {
+  transform: translateX(-28px);
+}
+[data-reveal="right"] {
+  transform: translateX(28px);
+}
+[data-reveal="scale"] {
+  transform: scale(0.92);
+  opacity: 0;
+}
+[data-reveal].revealed {
+  opacity: 1;
+  transform: translate(0) scale(1);
+}

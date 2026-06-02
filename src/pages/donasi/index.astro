@@ -310,7 +310,7 @@ const selectedCategoryName = categoryId
 </MainLayout>
 
 <script>
-  import { formatRupiah } from "@/lib/formatter";
+  import { formatRupiah, getRemainingDays } from "@/lib/formatter";
 
   document.addEventListener("DOMContentLoaded", () => {
     const page = document.getElementById("campaign-page") as HTMLElement;
@@ -398,7 +398,7 @@ const selectedCategoryName = categoryId
               </div>
               <div class="text-right">
                 <p class="text-[10px] text-gray-400 mb-0.5 leading-none">Sisa hari</p>
-                <p class="text-[12px] font-semibold text-gray-700 leading-none">${daysLeft}</p>
+                <p class="text-[12px] font-semibold text-gray-700 leading-none">${getRemainingDays(daysLeft)}</p>
               </div>
             </div>
           </div>

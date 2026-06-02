@@ -1,0 +1,266 @@
+---
+import Header from "@/components/sections/landing-page/Header.astro";
+import Footer from "@/components/sections/landing-page/Footer.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const values = [
+  {
+    title: "Amanah",
+    desc: "Setiap dana yang dipercayakan kepada kami dikelola dengan penuh tanggung jawab, kehati-hatian, dan kepatuhan terhadap syariat.",
+    icon: "🤲",
+  },
+  {
+    title: "Transparan",
+    desc: "Laporan penyaluran dibuka kepada publik. Donatur bisa memantau penggunaan dana secara real-time.",
+    icon: "📊",
+  },
+  {
+    title: "Profesional",
+    desc: "Tim kami terdiri dari para ahli di bidang keuangan sosial, teknologi, dan pemberdayaan masyarakat.",
+    icon: "💼",
+  },
+  {
+    title: "Berdampak",
+    desc: "Setiap program dirancang untuk menciptakan perubahan yang terukur, berkelanjutan, dan dirasakan langsung oleh penerima manfaat.",
+    icon: "🌱",
+  },
+];
+
+const milestones = [
+  { year: "2019", event: "Beramalbersama didirikan oleh sekelompok anak muda yang peduli akan ketimpangan sosial di Indonesia." },
+  { year: "2020", event: "Meluncurkan platform digital pertama. Berhasil menghimpun Rp 500 juta untuk korban bencana di akhir tahun." },
+  { year: "2021", event: "Mendapat akreditasi resmi dari Kementerian Sosial RI dan mulai bermitra dengan BAZNAS." },
+  { year: "2022", event: "Memperluas jangkauan ke 20 provinsi. Total dana tersalurkan melampaui Rp 5 miliar." },
+  { year: "2023", event: "Meluncurkan fitur donasi rutin dan laporan transparansi otomatis. Jumlah donatur aktif mencapai 30.000+." },
+  { year: "2024", event: "Mencapai 50.000+ donatur aktif. Dana tersalurkan total melampaui Rp 10 miliar untuk 200+ program." },
+];
+
+const team = [
+  {
+    name: "Ahmad Fauzan",
+    role: "Founder & CEO",
+    bio: "Mantan aktivis sosial dengan 10 tahun pengalaman di bidang filantropi Islam.",
+    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face",
+  },
+  {
+    name: "Siti Rahmawati",
+    role: "Direktur Program",
+    bio: "Pakar pemberdayaan komunitas yang telah menangani 100+ program sosial di seluruh Indonesia.",
+    image: "https://images.unsplash.com/photo-1494790108755-2616b87c7f84?w=300&h=300&fit=crop&crop=face",
+  },
+  {
+    name: "Rizky Pratama",
+    role: "CTO",
+    bio: "Engineer berpengalaman yang membangun infrastruktur digital aman untuk ribuan transaksi donasi.",
+    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face",
+  },
+];
+---
+
+<MainLayout
+  title="Tentang Kami — Beramalbersama"
+  description="Beramalbersama adalah platform donasi online yang lahir dari kepedulian terhadap ketimpangan sosial. Kami hadir untuk menjadi jembatan antara dermawan dan mereka yang membutuhkan."
+>
+  <Header />
+  <main>
+    <!-- Hero -->
+    <section class="pt-14 pb-16 bg-white relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-0">
+        <div class="absolute -top-16 -right-16 w-80 h-80 rounded-full bg-primary-100/50 blur-3xl"></div>
+        <div class="absolute top-40 -left-20 w-64 h-64 rounded-full bg-primary-50/60 blur-3xl"></div>
+      </div>
+      <div class="container-custom relative text-center max-w-3xl mx-auto" data-reveal>
+        <span class="section-label">Tentang Kami</span>
+        <h1 class="font-display text-4xl md:text-5xl font-semibold text-primary-900 leading-tight mt-3 mb-5">
+          Lahir dari Kepedulian,
+          <br />
+          Tumbuh dari <span class="text-primary-600">Kepercayaan</span>
+        </h1>
+        <p class="text-primary-700/80 text-base md:text-lg leading-relaxed">
+          Beramalbersama hadir karena kami percaya bahwa setiap orang memiliki
+          kapasitas untuk berbuat baik — dan kami menyediakan jalan yang mudah,
+          aman, dan transparan untuk mewujudkannya.
+        </p>
+      </div>
+    </section>
+
+    <!-- Foto & Misi -->
+    <section class="py-16 bg-cream">
+      <div class="container-custom">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+          <!-- Image -->
+          <div class="relative" data-reveal="left">
+            <div class="rounded-2xl overflow-hidden shadow-card aspect-[4/3]">
+              <img
+                src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=700&h=500&fit=crop"
+                alt="Tim Beramalbersama"
+                class="w-full h-full object-cover"
+              />
+            </div>
+            <!-- Floating badge -->
+            <div class="absolute -bottom-5 -right-3 bg-white rounded-2xl px-5 py-4 shadow-card border border-primary-100 animate-float">
+              <p class="font-display text-2xl font-bold text-primary-700">2019</p>
+              <p class="text-xs text-primary-600">Tahun Berdiri</p>
+            </div>
+          </div>
+
+          <!-- Text -->
+          <div data-reveal="right">
+            <span class="section-label">Misi Kami</span>
+            <h2 class="font-display text-2xl md:text-3xl font-semibold text-primary-900 mt-2 mb-5">
+              Menjadi Jembatan Kebaikan yang Terpercaya
+            </h2>
+            <div class="space-y-4 text-sm text-primary-700/85 leading-relaxed">
+              <p>
+                Beramalbersama lahir pada 2019 dari kegelisahan sekelompok anak
+                muda yang menyaksikan betapa banyaknya niat baik yang gagal
+                tersalurkan karena minimnya kepercayaan dan infrastruktur.
+              </p>
+              <p>
+                Kami membangun platform yang menempatkan <strong class="text-primary-800">transparansi</strong> sebagai fondasi —
+                bukan sekadar janji, melainkan sistem yang bisa diverifikasi oleh
+                siapapun, kapanpun.
+              </p>
+              <p>
+                Visi kami sederhana: tidak ada niat baik yang tersia-siakan
+                karena ketidakpercayaan. Setiap rupiah yang dipercayakan kepada
+                kami adalah amanah yang kami jaga sepenuh hati.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Nilai-nilai -->
+    <section class="py-20 bg-white">
+      <div class="container-custom">
+        <div class="text-center mb-12" data-reveal>
+          <span class="section-label">Nilai-Nilai Kami</span>
+          <h2 class="font-display text-3xl md:text-4xl font-semibold text-primary-900 mt-2">
+            Prinsip yang Menopang Setiap Langkah
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {values.map((v, i) => (
+            <div
+              class="bg-cream rounded-2xl p-6 border border-primary-100 hover:border-primary-300 hover:shadow-card transition-all duration-300 text-center"
+              data-reveal
+              style={`transition-delay:${i * 0.08}s`}
+            >
+              <div class="text-4xl mb-4">{v.icon}</div>
+              <h3 class="font-display text-lg font-semibold text-primary-900 mb-2">{v.title}</h3>
+              <p class="text-sm text-primary-700/80 leading-relaxed">{v.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Timeline Perjalanan -->
+    <section class="py-20 bg-cream">
+      <div class="container-custom">
+        <div class="text-center mb-14" data-reveal>
+          <span class="section-label">Perjalanan Kami</span>
+          <h2 class="font-display text-3xl md:text-4xl font-semibold text-primary-900 mt-2">
+            Lima Tahun Melayani Kebaikan
+          </h2>
+        </div>
+
+        <div class="max-w-3xl mx-auto relative">
+          <!-- Vertical line -->
+          <div class="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-primary-200 -translate-x-1/2"></div>
+
+          <div class="space-y-10">
+            {milestones.map((m, i) => (
+              <div
+                class={`flex gap-6 md:gap-0 items-start ${i % 2 === 0 ? "md:flex-row" : "md:flex-row-reverse"}`}
+                data-reveal={i % 2 === 0 ? "left" : "right"}
+                style={`transition-delay:${i * 0.1}s`}
+              >
+                <!-- Content -->
+                <div class={`md:w-[46%] bg-white rounded-2xl p-5 shadow-card border border-primary-100 ${i % 2 === 0 ? "md:text-right" : "md:text-left"}`}>
+                  <p class="font-display text-2xl font-bold text-primary-700">{m.year}</p>
+                  <p class="text-sm text-primary-700/85 leading-relaxed mt-1">{m.event}</p>
+                </div>
+                <!-- Dot -->
+                <div class="md:w-[8%] flex items-center justify-center shrink-0">
+                  <div class="w-4 h-4 rounded-full bg-primary-500 border-4 border-white shadow-sm z-10"></div>
+                </div>
+                <!-- Spacer -->
+                <div class="hidden md:block md:w-[46%]"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tim -->
+    <section class="py-20 bg-white">
+      <div class="container-custom">
+        <div class="text-center mb-12" data-reveal>
+          <span class="section-label">Tim Kami</span>
+          <h2 class="font-display text-3xl md:text-4xl font-semibold text-primary-900 mt-2">
+            Orang-Orang di Balik Beramalbersama
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {team.map((t, i) => (
+            <div
+              class="text-center"
+              data-reveal
+              style={`transition-delay:${i * 0.1}s`}
+            >
+              <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 shadow-card ring-4 ring-primary-100">
+                <img src={t.image} alt={t.name} class="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <h3 class="font-display text-lg font-semibold text-primary-900">{t.name}</h3>
+              <p class="text-xs font-semibold text-primary-600 uppercase tracking-wider mt-0.5 mb-3">{t.role}</p>
+              <p class="text-sm text-primary-700/80 leading-relaxed">{t.bio}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 bg-primary-700">
+      <div class="container-custom text-center max-w-2xl mx-auto text-white" data-reveal>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold mb-4">
+          Bersama Wujudkan Indonesia yang Lebih Baik
+        </h2>
+        <p class="text-primary-200/80 text-sm md:text-base leading-relaxed mb-8">
+          Bergabunglah bersama puluhan ribu donatur yang telah mempercayakan
+          niat baiknya kepada Beramalbersama.
+        </p>
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <a href="/donasi" class="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white text-primary-800 rounded-full font-semibold hover:bg-primary-50 transition-colors shadow-sm">
+            Mulai Berdonasi
+          </a>
+          <a href="/mitra" class="inline-flex items-center justify-center gap-2 px-8 py-4 border-2 border-white/40 text-white rounded-full font-medium hover:bg-white/10 transition-colors">
+            Jadi Mitra
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</MainLayout>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("revealed");
+          observer.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll("[data-reveal]").forEach((el) => observer.observe(el));
+</script>

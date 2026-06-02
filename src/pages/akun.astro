@@ -9,7 +9,7 @@ const { isAuthenticated } = Astro.locals.auth;
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const personalMenus = [
-  { href: "/profil",       label: "Ubah Data Akun",         icon: "user",        color: "primary"    },
+  { href: "/me",       label: "Ubah Data Akun",         icon: "user",        color: "primary"    },
   { href: "/donasi-saya",  label: "Donasi Saya",            icon: "archive",     color: "emerald" },
   { href: "/donasi-rutin", label: "Rutin Saya",             icon: "calendar",    color: "violet"  },
   { href: "/mutasi-saku",  label: "Aktivitas Saku Berbagi", icon: "transaction", color: "amber"   },
@@ -104,7 +104,7 @@ const iconPaths: Record<string, string> = {
 
           <!-- Edit button -->
           <a
-            href="/profil"
+            href="/me"
             class="absolute top-20 right-4 w-8 h-8 bg-white/15 hover:bg-white/25 active:bg-white/30 rounded-full flex items-center justify-center transition-colors z-10"
             title="Edit Profil"
           >

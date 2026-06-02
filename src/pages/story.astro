@@ -1,0 +1,193 @@
+---
+import Header from "@/components/sections/landing-page/Header.astro";
+import Footer from "@/components/sections/landing-page/Footer.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const stories = [
+  {
+    name: "Ibu Sari",
+    location: "Garut, Jawa Barat",
+    category: "Kesehatan",
+    quote:
+      "Berkat bantuan operasi yang terkumpul lewat Beramalbersama, suami saya bisa pulih dan kembali bekerja. Kami tidak akan pernah melupakan kebaikan para donatur.",
+    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&h=500&fit=crop",
+    impact: "Biaya operasi Rp 18 juta terkumpul dalam 12 hari",
+  },
+  {
+    name: "Ahmad, 12 tahun",
+    location: "Lombok, NTB",
+    category: "Pendidikan",
+    quote:
+      "Sekarang saya bisa sekolah lagi. Tas, buku, dan seragam sudah ada. Saya mau jadi dokter supaya bisa bantu orang lain juga.",
+    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop",
+    impact: "Beasiswa setahun untuk 50 anak di daerah terpencil",
+  },
+  {
+    name: "Keluarga Pak Hendra",
+    location: "Cianjur, Jawa Barat",
+    category: "Kemanusiaan",
+    quote:
+      "Pasca gempa, kami kehilangan segalanya. Bantuan logistik dan bahan bangunan yang datang memberi kami harapan untuk memulai lagi.",
+    image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&h=500&fit=crop",
+    impact: "300+ keluarga terdampak gempa mendapat bantuan darurat",
+  },
+  {
+    name: "Ustazah Fatimah",
+    location: "Aceh",
+    category: "Pendidikan",
+    quote:
+      "Mushaf Al-Quran yang dikirimkan sampai ke pelosok kampung. Anak-anak kini bisa belajar mengaji dengan kitab yang layak.",
+    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&h=500&fit=crop",
+    impact: "1.200 Mushaf Al-Quran tersalurkan ke pesantren terpencil",
+  },
+  {
+    name: "Bapak Sukardi",
+    location: "Brebes, Jawa Tengah",
+    category: "Pemberdayaan",
+    quote:
+      "Modal usaha kecil yang saya terima memungkinkan saya membuka warung. Sekarang anak-anak sudah bisa makan tiga kali sehari.",
+    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop",
+    impact: "80 pelaku UMKM mikro mendapat modal usaha bergulir",
+  },
+  {
+    name: "Komunitas Petani Desa Makmur",
+    location: "Sulawesi Selatan",
+    category: "Pemberdayaan",
+    quote:
+      "Program sumur bor yang didanai donatur mengubah hidup kami. Sawah tidak lagi kekeringan dan panen meningkat dua kali lipat.",
+    image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&h=500&fit=crop",
+    impact: "3 sumur bor baru melayani 240 KK",
+  },
+];
+
+const categoryColors: Record<string, string> = {
+  Kesehatan: "bg-rose-100 text-rose-700",
+  Pendidikan: "bg-blue-100 text-blue-700",
+  Kemanusiaan: "bg-orange-100 text-orange-700",
+  Pemberdayaan: "bg-green-100 text-green-700",
+};
+---
+
+<MainLayout
+  title="Cerita Inspirasi — Beramalbersama"
+  description="Kisah nyata para penerima manfaat Beramalbersama. Setiap donasi yang kamu berikan meninggalkan jejak perubahan yang berarti."
+>
+  <Header />
+  <main>
+    <!-- Hero -->
+    <section class="pt-14 pb-16 bg-white relative overflow-hidden">
+      <div class="pointer-events-none absolute inset-0">
+        <div class="absolute -top-16 -right-16 w-80 h-80 rounded-full bg-primary-100/50 blur-3xl"></div>
+        <div class="absolute top-32 -left-16 w-64 h-64 rounded-full bg-primary-50/70 blur-3xl"></div>
+      </div>
+      <div class="container-custom relative text-center max-w-3xl mx-auto" data-reveal>
+        <span class="section-label">Cerita Inspirasi</span>
+        <h1 class="font-display text-4xl md:text-5xl font-semibold text-primary-900 leading-tight mt-3 mb-5">
+          Setiap Donasi adalah
+          <span class="text-primary-600">Cerita Nyata</span>
+        </h1>
+        <p class="text-primary-700/80 text-base md:text-lg leading-relaxed">
+          Di balik setiap angka ada wajah, ada harapan, ada kehidupan yang
+          berubah. Inilah kisah-kisah yang menjadi alasan kami terus bergerak.
+        </p>
+      </div>
+    </section>
+
+    <!-- Stats bar -->
+    <section class="bg-primary-700 py-8">
+      <div class="container-custom">
+        <div class="grid grid-cols-3 gap-4 text-center text-white" data-reveal>
+          {[
+            { num: "50.000+", label: "Donatur Aktif" },
+            { num: "200+", label: "Program Selesai" },
+            { num: "10M+ Jiwa", label: "Penerima Manfaat" },
+          ].map((s) => (
+            <div>
+              <p class="font-display text-2xl md:text-3xl font-bold">{s.num}</p>
+              <p class="text-primary-200 text-xs mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Stories Grid -->
+    <section class="py-20 bg-cream">
+      <div class="container-custom">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {stories.map((story, i) => (
+            <article
+              class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 flex flex-col"
+              data-reveal
+              style={`transition-delay:${i * 0.08}s`}
+            >
+              <!-- Image -->
+              <div class="relative aspect-square overflow-hidden">
+                <img
+                  src={story.image}
+                  alt={story.name}
+                  class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  loading={i < 3 ? "eager" : "lazy"}
+                />
+                <div class="absolute inset-0 bg-linear-to-t from-primary-900/50 to-transparent"></div>
+                <span
+                  class={`absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full ${categoryColors[story.category] ?? "bg-primary-100 text-primary-700"}`}
+                >
+                  {story.category}
+                </span>
+                <div class="absolute bottom-3 left-3 right-3">
+                  <p class="text-white font-semibold text-sm">{story.name}</p>
+                  <p class="text-white/70 text-xs">{story.location}</p>
+                </div>
+              </div>
+
+              <!-- Content -->
+              <div class="p-5 flex flex-col flex-1">
+                <blockquote class="text-sm text-primary-800 italic leading-relaxed flex-1 mb-4">
+                  <span class="text-primary-400 text-2xl leading-none font-display not-italic">"</span>
+                  {story.quote}
+                </blockquote>
+                <div class="bg-primary-50 rounded-xl px-4 py-2.5 border border-primary-100">
+                  <p class="text-xs font-semibold text-primary-700">Dampak Program</p>
+                  <p class="text-xs text-primary-600 mt-0.5">{story.impact}</p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-16 bg-white">
+      <div class="container-custom text-center max-w-2xl mx-auto" data-reveal>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold text-primary-900 mb-4">
+          Jadilah Bagian dari Cerita Kebaikan
+        </h2>
+        <p class="text-primary-700/80 text-sm md:text-base leading-relaxed mb-8">
+          Cerita-cerita di atas hanya bisa ada karena ada hati yang tergerak untuk
+          berbagi. Giliran kamu untuk menulis cerita kebaikanmu.
+        </p>
+        <a href="/donasi" class="btn-primary">
+          Mulai Berdonasi Sekarang
+        </a>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</MainLayout>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("revealed");
+          observer.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll("[data-reveal]").forEach((el) => observer.observe(el));
+</script>

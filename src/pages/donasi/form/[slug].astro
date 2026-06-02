@@ -212,7 +212,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
                 <p class="text-xs text-gray-400 mt-0.5">{userPhone}</p>
               </div>
               <a
-                href="/profil"
+                href="/me"
                 class="text-[11px] text-primary-600 font-semibold border border-primary-200 bg-primary-50 rounded-lg px-2.5 py-1.5 shrink-0 hover:bg-primary-100 transition-colors"
               >
                 Edit
@@ -406,6 +406,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   let isProcessing = false;
   let hideName = false;
   let forOtherPerson = false;
+  let projectId = [];
 
   // Zakat context
   let zakatData: Record<string, unknown> | null = null;
@@ -475,6 +476,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       try {
         const parsed = JSON.parse(nominalRaw);
         amount = parsed.amount ?? 0;
+        projectId = parsed.projectId ?? null;
         localStorage.removeItem("nominal_donation");
       } catch {
         localStorage.removeItem("nominal_donation");
@@ -676,6 +678,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             program_type: "infaq",
             items: [Number(programId)],
             total: [amount],
+            projects: projectId ? [Number(projectId)] : undefined,
             payment_method_id: paymentMethodId,
             name,
             phone,
