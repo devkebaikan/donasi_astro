@@ -26,31 +26,32 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
 
       <div class="grid grid-cols-2 gap-2">
         {
-          nominalOptions.map((amount: any, index: number) => (
-            <button
-              type="button"
-              data-value={amount.nominal}
-              class="preset-btn group relative border-2 border-primary-200
+          nominalOptions &&
+            nominalOptions.map((amount: any, index: number) => (
+              <button
+                type="button"
+                data-value={amount.nominal}
+                class="preset-btn group relative border-2 border-primary-200
                      hover:border-primary-500 rounded-md p-3 sm:p-4
                      transition-all duration-300 hover:shadow-md"
-            >
-              {index === 1 && (
-                <span
-                  class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
+              >
+                {index === 1 && (
+                  <span
+                    class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
                          bg-linear-to-r from-secondary-400 to-secondary-500
                          text-white text-[10px] text-xs font-semibold px-2 py-1
                          rounded-t-full rounded-br-full"
-                >
-                  Nominal Favorit
-                </span>
-              )}
-              <div class="flex flex-col items-center gap-1">
-                <span class="text-sm font-bold text-amount">
-                  {formatRupiah(amount.nominal)}
-                </span>
-              </div>
-            </button>
-          ))
+                  >
+                    Nominal Favorit
+                  </span>
+                )}
+                <div class="flex flex-col items-center gap-1">
+                  <span class="text-sm font-bold text-amount">
+                    {formatRupiah(amount.nominal)}
+                  </span>
+                </div>
+              </button>
+            ))
         }
       </div>
 
