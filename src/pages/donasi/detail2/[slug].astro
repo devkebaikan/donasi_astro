@@ -1,0 +1,132 @@
+---
+export const prerender = false;
+
+import Banner from "@/components/sections/donasi/Banner.astro";
+import BoxGuaratee from "@/components/sections/donasi/BoxGuaratee.astro";
+import ProfileMitra from "@/components/sections/donasi/ProfileMitra.astro";
+import TabSection from "@/components/sections/donasi/TabSection.astro";
+import StickyDonateBar from "@/components/sections/donasi/StickyDonateBar.astro";
+import {
+  getCampaignByLink,
+  getDonorsByLink,
+  getNominalOptions,
+} from "@/lib/FetchData";
+import MainLayout from "@/layouts/MainLayout.astro";
+import Header from "@/components/layouts/Header.astro";
+import NominalInput from "@/components/sections/donasi/NominalInput.astro";
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/");
+}
+
+const projectId = Astro.url.searchParams.get("project");
+
+const utm = Astro.url.searchParams.toString();
+if (Astro.url.searchParams.has("utm_source")) {
+  Astro.cookies.set("utm_params", utm, {
+    path: "/",
+    maxAge: 60 * 60 * 24,
+  });
+}
+
+const [dataDetailCampaign, dataDonors, nominalOptions] = await Promise.all([
+  getCampaignByLink(slug),
+  getDonorsByLink(slug),
+  getNominalOptions(slug),
+]);
+
+const detailCampaign = dataDetailCampaign?.data ?? {};
+const donors = dataDonors?.data ?? [];
+
+const isRutin = detailCampaign?.is_rutin === true;
+const isActive = detailCampaign?.status === "PUBLISH";
+
+// SEO
+const campaignTitle = detailCampaign?.title ?? "Detail Donasi";
+const campaignImage = detailCampaign?.image ?? null;
+
+const campaignJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Beranda",
+          item: Astro.url.origin + "/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Donasi",
+          item: Astro.url.origin + "/donasi",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: campaignTitle,
+          item: Astro.url.href,
+        },
+      ],
+    },
+    {
+      "@type": "DonateAction",
+      name: `Donasi — ${campaignTitle}`,
+      url: Astro.url.href,
+      recipient: {
+        "@type": "Organization",
+        name: detailCampaign?.mitra?.name ?? "Aksiberbagi.com",
+      },
+    },
+  ],
+});
+---
+
+<MainLayout
+  title={campaignTitle}
+  description={detailCampaign?.short_description ??
+    "Detail kampanye donasi di Aksiberbagi.com"}
+  image={campaignImage ?? undefined}
+  imageAlt={campaignTitle}
+  type="article"
+  publishedTime={detailCampaign?.created_at}
+  modifiedTime={detailCampaign?.updated_at}
+  robots={isActive ? "index, follow" : "noindex, follow"}
+>
+  <Header
+    type="title"
+    text={detailCampaign ? detailCampaign.title : "Detail Donasi"}
+    link="/home"
+  />
+
+  <script is:inline type="application/ld+json" set:html={campaignJsonLd} />
+
+  <div class="bg-white min-h-screen container">
+    <div class="mx-auto mb-24 max-w-120">
+      <Banner link={slug} detailCampaign={detailCampaign} donors={donors} />
+      <NominalInput
+        nominalOptions={nominalOptions}
+        programId={detailCampaign?.id}
+        programLink={detailCampaign?.link}
+        projectId={projectId ? Number(projectId) : null}
+        isPaket={Boolean(detailCampaign?.is_paket)}
+        paketPrice={detailCampaign?.nominal_per_paket ?? 0}
+        paketCollected={detailCampaign?.paket_terkumpul ?? 0}
+        totalCollected={detailCampaign?.nominal_achieved ?? 0}
+        totalDonors={detailCampaign?.total_donors ?? 0}
+      />
+      <ProfileMitra
+        programLink={detailCampaign?.link}
+        programId={detailCampaign?.id}
+        projekSalur={detailCampaign?.last_two_projects}
+      />
+      <TabSection slug={slug} detailCampaign={detailCampaign} />
+    </div>
+
+    <StickyDonateBar isRutin={isRutin} link={slug} isActive={isActive} />
+  </div>
+</MainLayout>

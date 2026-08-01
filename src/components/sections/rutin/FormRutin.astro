@@ -88,14 +88,14 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     <button
       id="btn-langsung"
       type="button"
-      class="py-2.5 rounded-lg border-2 border-primary-500 bg-primary-50 text-primary-700 text-xs font-semibold transition-all duration-150"
+      class="py-2.5 rounded-lg bg-primary-100 text-primary-700 text-xs font-semibold transition-all duration-150"
     >
       Bayar Langsung
     </button>
     <button
       id="btn-saku"
       type="button"
-      class="py-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-400 text-xs font-semibold transition-all duration-150"
+      class="py-2.5 rounded-lg bg-white text-gray-400 text-xs font-semibold transition-all duration-150"
     >
       Saku Berbagi
     </button>
@@ -140,13 +140,13 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
 
   <p
     id="note-saku"
-    class="text-xs text-start rounded-lg px-4 py-2.5 bg-blue-50 text-blue-600 mt-3"
+    class="text-xs text-start rounded-lg px-4 py-2.5 bg-primary-50 text-primary-600 mt-3"
   >
     Donasi akan otomatis diproses menggunakan saldo Saku Berbagi Anda
   </p>
   <p
     id="note-commitment"
-    class="text-xs text-start rounded-lg px-4 py-2.5 bg-blue-50 text-blue-600 mt-3 hidden"
+    class="text-xs text-start rounded-lg px-4 py-2.5 bg-primary-50 text-primary-600 mt-3 hidden"
   >
     Bayar sekali sekarang dan nikmati donasi rutin yang berjalan otomatis
   </p>
@@ -496,14 +496,14 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     isCommitment = commitment;
 
     btnSaku.classList.toggle("border-primary-500", !commitment);
-    btnSaku.classList.toggle("bg-primary-50", !commitment);
+    btnSaku.classList.toggle("bg-primary-100", !commitment);
     btnSaku.classList.toggle("text-primary-700", !commitment);
     btnSaku.classList.toggle("border-gray-200", commitment);
     btnSaku.classList.toggle("bg-white", commitment);
     btnSaku.classList.toggle("text-gray-400", commitment);
 
     btnLangsung.classList.toggle("border-primary-500", commitment);
-    btnLangsung.classList.toggle("bg-primary-50", commitment);
+    btnLangsung.classList.toggle("bg-primary-100", commitment);
     btnLangsung.classList.toggle("text-primary-700", commitment);
     btnLangsung.classList.toggle("border-gray-200", !commitment);
     btnLangsung.classList.toggle("bg-white", !commitment);

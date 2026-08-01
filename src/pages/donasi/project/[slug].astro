@@ -2,6 +2,7 @@
 export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
+import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import {
   getProjectSummaryByLink,
@@ -102,9 +103,10 @@ function activityBadgeClass(activity: string): string {
       ))
       
     )}
+    <ShowJsonData data={projects} />
 
     <!-- Proyek Terbaru -->
-    {projects.length > 0 && (
+    {projects > 0 && (
       <section class="mx-4 mt-5">
         <h2 class="text-sm font-bold text-gray-700 mb-3">Proyek Salur Terbaru</h2>
 

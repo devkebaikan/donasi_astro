@@ -42,7 +42,7 @@ const iconPaths: Record<string, string> = {
     <!-- ── Belum login ──────────────────────────────────────────────────────── -->
     {!isAuthenticated && (
       <div class="px-4 pt-5 space-y-3">
-        <div class="bg-white rounded-2xl shadow-sm p-8 flex flex-col items-center text-center">
+        <div class="bg-white rounded-lg shadow-sm p-8 flex flex-col items-center text-center">
           <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center mb-5 shadow-lg shadow-primary-200">
             <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -65,7 +65,7 @@ const iconPaths: Record<string, string> = {
         </div>
 
         <!-- General menu untuk guest -->
-        <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
           <div class="px-4 py-3 border-b border-gray-50">
             <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Umum</span>
           </div>
@@ -148,7 +148,7 @@ const iconPaths: Record<string, string> = {
         <div class="-mt-9 px-4 space-y-3 relative">
 
           <!-- Wallet Card -->
-          <div class="bg-white rounded-2xl shadow-lg overflow-hidden z-50">
+          <div class="bg-white rounded-lg shadow-lg overflow-hidden z-50">
             <div class="flex items-center gap-3 px-4 py-4">
               <div class="w-10 h-10 bg-secondary-50 rounded-xl flex items-center justify-center shrink-0">
                 <svg class="w-5 h-5 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -179,7 +179,7 @@ const iconPaths: Record<string, string> = {
           </div>
 
           <!-- Personal Menu -->
-          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-50">
               <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Menu Pribadi</span>
             </div>
@@ -204,7 +204,7 @@ const iconPaths: Record<string, string> = {
           </div>
 
           <!-- General Menu -->
-          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-50">
               <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Umum</span>
             </div>
@@ -234,7 +234,7 @@ const iconPaths: Record<string, string> = {
           <button
             id="btn-logout"
             type="button"
-            class="w-full flex items-center gap-3 px-4 py-3.5 bg-white rounded-2xl shadow-sm hover:bg-red-50 active:bg-red-100 transition-colors group"
+            class="w-full flex items-center gap-3 px-4 py-3.5 bg-white rounded-lg shadow-sm hover:bg-red-50 active:bg-red-100 transition-colors group"
           >
             <div class="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
               <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
@@ -255,9 +255,9 @@ const iconPaths: Record<string, string> = {
   <!-- ── Logout Confirmation Modal ───────────────────────────────────────── -->
   <div id="logout-modal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
     <div id="logout-backdrop" class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
-    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-[380px] overflow-hidden">
+    <div class="relative bg-white rounded-lg shadow-2xl w-full max-w-[380px] overflow-hidden">
       <div class="flex flex-col items-center px-6 pt-8 pb-2 text-center">
-        <div class="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mb-4">
+        <div class="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center mb-4">
           <svg class="w-7 h-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
           </svg>

@@ -57,10 +57,10 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       <!-- Zakat context banner (shown client-side via JS) -->
       <div
         id="zakat-banner"
-        class="hidden bg-secondary-50 border border-secondary-200 rounded-xl px-4 py-3 flex items-center gap-3"
+        class="hidden bg-secondary-50 border border-secondary-200 rounded-lg px-4 py-3 flex items-center gap-3"
       >
         <div
-          class="w-8 h-8 rounded-xl bg-secondary-100 flex items-center justify-center shrink-0"
+          class="w-8 h-8 rounded-lg bg-secondary-100 flex items-center justify-center shrink-0"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +94,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       <!-- Nominal -->
       <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
         <div class="flex items-center gap-2.5 mb-4">
-          <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
           <p class="text-sm font-bold text-gray-800">Nominal Donasi</p>
         </div>
 
@@ -109,7 +108,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             type="text"
             inputmode="numeric"
             placeholder="0"
-            class="w-full pl-10 pr-4 py-3.5 rounded-xl border border-gray-200 text-base font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            class="w-full pl-10 pr-4 py-3.5 rounded-lg border border-gray-200 text-base font-bold text-gray-900 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
           />
         </div>
 
@@ -139,7 +138,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
         <button
           id="open-payment-modal"
           type="button"
-          class="w-full flex items-center justify-between border border-gray-200 rounded-xl px-4 py-3.5 hover:border-primary-400 hover:bg-primary-50/50 transition-all duration-150 group"
+          class="w-full flex items-center justify-between border border-gray-200 rounded-lg px-4 py-3.5 hover:border-primary-400 hover:bg-primary-50/50 transition-all duration-150 group"
         >
           <div class="flex items-center gap-3 min-w-0">
             <img
@@ -155,7 +154,8 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             </span>
           </div>
           <span
-            class="text-xs text-primary-600 font-semibold border border-primary-200 bg-primary-50 group-hover:bg-primary-100 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
+            id="choose-payment"
+            class="text-xs text-white font-semibold border border-primary-200 bg-primary-400 group-hover:bg-primary-600 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
           >
             Pilih
           </span>
@@ -163,7 +163,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 
         <div
           id="wallet-info"
-          class="hidden mt-3 flex items-center justify-between bg-primary-50 rounded-xl px-4 py-3 border border-primary-100"
+          class="hidden mt-3 flex items-center justify-between bg-primary-50 rounded-lg px-4 py-3 border border-primary-100"
         >
           <div class="flex items-center gap-2">
             <svg
@@ -193,13 +193,12 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       <!-- Data Donatur -->
       <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
         <div class="flex items-center gap-2.5 mb-4">
-          <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
           <p class="text-sm font-bold text-gray-800">Data Donatur</p>
         </div>
 
         {
           isAuth ? (
-            <div class="flex items-center gap-3 bg-slate-50 rounded-xl p-3.5 border border-slate-100">
+            <div class="flex items-center gap-3 bg-slate-50 rounded-lg p-3.5 border border-slate-100">
               <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center shrink-0">
                 <span class="text-sm font-bold text-primary-700">
                   {userName.charAt(0).toUpperCase()}
@@ -240,7 +239,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
                   id="input-name"
                   type="text"
                   placeholder="Masukkan nama lengkap"
-                  class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                  class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
                 />
                 <label class="flex items-center gap-2 mt-2 cursor-pointer w-fit">
                   <input
@@ -262,15 +261,15 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
                   Nomor WhatsApp
                 </label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
+                  {/* <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm select-none">
                     +62
-                  </span>
+                  </span> */}
                   <input
                     id="input-phone"
                     type="tel"
                     inputmode="numeric"
-                    placeholder="8xx-xxxx-xxxx"
-                    class="w-full border border-gray-200 rounded-xl py-3 pl-12 pr-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                    placeholder="08xx-xxxx-xxxx"
+                    class="w-full border border-gray-200 rounded-lg py-3  px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -288,7 +287,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             id="input-doa"
             rows={3}
             placeholder="Tuliskan doa atau pesan Anda..."
-            class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+            class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 resize-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
           ></textarea>
         </div>
       </div>
@@ -301,7 +300,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
         <div class="flex items-center justify-between">
           <div class="flex-1 pr-4">
             <div class="flex items-center gap-2.5">
-              <div class="w-1 h-5 bg-amber-400 rounded-full shrink-0"></div>
               <p class="text-sm font-bold text-gray-800">
                 Donasi untuk Orang Lain
               </p>
@@ -338,11 +336,11 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
               id="input-atas-nama"
               type="text"
               placeholder="cth. Almarhum Bapak Ahmad, Ibu Siti..."
-              class="w-full border border-gray-200 rounded-xl py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+              class="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
             />
           </div>
           <div
-            class="flex items-start gap-2.5 bg-amber-50 rounded-xl px-3.5 py-3 border border-amber-100"
+            class="flex items-start gap-2.5 bg-amber-50 rounded-lg px-3.5 py-3 border border-amber-100"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -428,6 +426,9 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   const inputDoa = document.getElementById("input-doa") as HTMLTextAreaElement;
   const paymentImg = document.getElementById("payment-img") as HTMLImageElement;
   const paymentNameEl = document.getElementById("payment-name") as HTMLElement;
+  const choosePayment = document.getElementById(
+    "choose-payment",
+  ) as HTMLElement;
   const walletInfo = document.getElementById("wallet-info") as HTMLElement;
   const openModalBtn = document.getElementById(
     "open-payment-modal",
@@ -584,6 +585,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     paymentImg.src = image ?? "";
     paymentImg.classList.toggle("hidden", !image);
     paymentNameEl.textContent = name ?? "Pilih metode pembayaran";
+    choosePayment.textContent = name ? "Ganti" : "Pilih";
     paymentNameEl.classList.remove("text-gray-400");
     paymentNameEl.classList.add("text-gray-800");
   });

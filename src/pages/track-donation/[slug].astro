@@ -140,7 +140,7 @@ function connectorBg(s: {
           return (
             <div class="space-y-3">
               {/* ── Stepper Card ── */}
-              <div class="bg-white rounded-2xl shadow-sm px-4 pt-20 pb-4 space-y-3">
+              <div class="bg-white rounded-md shadow-sm px-4 pt-20 pb-4 space-y-3">
                 <div>
                   <h3 class="text-sm font-bold text-primary-600 leading-tight mb-3">
                     {item.program.title}
@@ -217,10 +217,10 @@ function connectorBg(s: {
               </div>
 
               {/* ── Program Card ── */}
-              <div class="bg-white rounded-2xl shadow-sm px-4 py-4">
+              <div class="bg-white rounded-md shadow-sm px-4 py-4">
                 <a
                   href={`/donasi/${item.program.link}`}
-                  class="flex flex-col gap-3 rounded-xl border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
+                  class="flex flex-col gap-3 rounded-lg border border-gray-100 overflow-hidden hover:shadow-md transition-shadow"
                 >
                   <img
                     src={item.program.image}
@@ -255,7 +255,7 @@ function connectorBg(s: {
 
               {/* ── Detail Projek (jika ada) ── */}
               {item.project && (
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-white rounded-md shadow-sm overflow-hidden">
                   <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
                     <div class="w-1 h-5 bg-purple-400 rounded-full" />
                     <h2 class="text-sm font-semibold text-gray-800">
@@ -305,7 +305,7 @@ function connectorBg(s: {
 
               {/* ── Update Salur (jika ada report) ── */}
               {report && (
-                <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+                <div class="bg-white rounded-md shadow-sm overflow-hidden">
                   <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
                     <div class="w-1 h-5 bg-blue-400 rounded-full" />
                     <h2 class="text-sm font-semibold text-gray-800">
@@ -366,9 +366,8 @@ function connectorBg(s: {
       }
 
       {/* ── Detail Pembayaran ── */}
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+      <div class="bg-white rounded-md shadow-sm overflow-hidden">
         <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
-          <div class="w-1 h-5 bg-primary-500 rounded-full"></div>
           <h2 class="text-sm font-semibold text-gray-800">Detail Pembayaran</h2>
         </div>
         <div class="px-4 py-3 divide-y divide-gray-50">
@@ -405,7 +404,7 @@ function connectorBg(s: {
       {/* ── Instruksi Pembayaran (Pending only) ── */}
       {
         isPending && (
-          <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+          <div class="bg-white rounded-md shadow-sm overflow-hidden">
             <button
               id="btn-instruksi"
               class="w-full flex items-center justify-between px-4 py-3 text-left"
@@ -454,7 +453,7 @@ function connectorBg(s: {
       }
 
       {/* ── CTA Bawah ── */}
-      <div class="bg-white rounded-2xl shadow-sm px-4 py-4 space-y-3">
+      <div class="bg-white rounded-md shadow-sm px-4 py-4 space-y-3">
         <!-- <p class="text-sm font-semibold text-gray-800">
           Pembayaran belum terverifikasi?
         </p>

@@ -118,6 +118,23 @@ html {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-700 text-white rounded-full font-medium hover:bg-primary-800 transition-all duration-300 shadow-sm;
   }
 
+  /* PWA */
+  .btn-primary-mobile {
+    @apply inline-flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary-700 text-white rounded-full font-medium hover:bg-primary-800 transition-all duration-300 shadow-sm;
+  }
+
+  .btn-white-mobile {
+    @apply inline-flex items-center justify-center gap-2
+    px-4 py-2
+    text-sm font-medium
+    bg-white text-primary-700
+    rounded-full
+    shadow-sm
+    border border-primary-200
+    hover:bg-primary-50 hover:border-primary-300
+    transition-all duration-300;
+  }
+
   .btn-outline {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 border-2 border-primary-700 text-primary-700 rounded-full font-medium hover:bg-primary-700 hover:text-white transition-all duration-300;
   }

@@ -27,6 +27,11 @@ const isPaid = invoice?.status === "Paid";
 const payment_url = invoice?.payment_url;
 // const idProgram = invoice?.items[0].program.id ?? 0;
 
+ const formatted = formatRupiah(donationAmount); // Rp 50.354
+
+const lastThree = formatted.slice(-3); // 354
+const firstPart = formatted.slice(0, -3); // Rp 50.
+
 const qrPayload =
   payment?.name === "Qris"
     ? invoice?.third_party_detail?.qr_string ?? ""
@@ -75,7 +80,7 @@ const qrPayload =
             </div>
           )
         }
-
+        
         <!-- Payment Details Card -->
         <div class="bg-white rounded-md shadow-md overflow-hidden">
           <!-- qris payment  -->
@@ -109,7 +114,7 @@ const qrPayload =
                       <div class="flex justify-between items-center">
                         <div class="flex-1">
                           <h6 class="text-xs text-gray-500 mb-1">Nama Rekening</h6>
-                          <p class="text-base font-semibold text-gray-900">
+                          <p class="text-sm font-semibold text-gray-900">
                             {payment.account_behalf}
                           </p>
                           <p class="text-lg font-mono font-bold text-gray-800 mt-1">
@@ -117,18 +122,11 @@ const qrPayload =
                           </p>
                         </div>
                         <button
-                          class="ml-4 shrink-0 p-3 text-primary-600 border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-100 rounded-md transition-all duration-200 copy-btn group"
+                          class="ml-4 shrink-0 py-1 px-3 text-sm font-medium text-primary-600 border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-100 rounded-full transition-all duration-200 copy-btn group"
                           data-copy={payment.account_number}
                           aria-label="Copy account number"
                         >
-                          <svg
-                            class="w-5 h-5 group-hover:scale-110 transition-transform"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                          </svg>
+                        Salin
                         </button>
                       </div>
                     </div>
@@ -142,23 +140,17 @@ const qrPayload =
                       <div class="flex justify-between items-center">
                         <div class="flex-1">
                           <h6 class="text-xs text-gray-500 mb-1">Jumlah Donasi</h6>
-                          <p class="text-2xl font-bold text-primary-600">
-                            {formatRupiah(donationAmount)}
+                          <p class="text-xl font-bold ">
+                            {firstPart}
+                            <span class="text-primary-600">{lastThree}</span>
                           </p>
                         </div>
                         <button
-                          class="ml-4 shrink-0 p-3 text-primary-600 border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-100 rounded-md transition-all duration-200 copy-btn group"
+                          class="ml-4 shrink-0 py-1 px-3 text-sm font-medium text-primary-600 border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-100 rounded-full transition-all duration-200 copy-btn group"
                           data-copy={donationAmount}
                           aria-label="Copy donation amount"
                         >
-                          <svg
-                            class="w-5 h-5 group-hover:scale-110 transition-transform"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z" />
-                            <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z" />
-                          </svg>
+                         Salin
                         </button>
                       </div>
                     </div>
@@ -172,7 +164,7 @@ const qrPayload =
                   >
                     <div class="flex gap-3">
                       <svg
-                        class="text-amber-500 shrink-0 mt-0.5 w-5 h-5"
+                        class="text-amber-500 shrink-0 mt-0.5 w-4 h-4"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >
@@ -182,7 +174,7 @@ const qrPayload =
                           clip-rule="evenodd"></path>
                       </svg>
                       <div class="flex-1">
-                        <p class="text-sm text-amber-900 leading-relaxed">
+                        <p class="text-[12px] text-amber-900 leading-relaxed">
                           {
                             payment.name !== "OVO" ? (
                               <span>
@@ -201,9 +193,6 @@ const qrPayload =
                       </div>
                     </div>
                   </div>
-                  <p class="text-xs text-gray-500 mt-3 text-center italic">
-                    *Jumlah akan didonasikan hingga 3 digit terakhir
-                  </p>
                 </div>
               </Fragment>
             )
@@ -219,7 +208,7 @@ const qrPayload =
                     href={`/track-donation/${slug}`}
                     class="block w-full text-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 shadow-md hover:shadow-lg"
                   >
-                    Tracking Donasi
+                    Tracking Donasimu
                   </a>
                 )
             }
@@ -241,7 +230,7 @@ const qrPayload =
 
         <!-- Help Section -->
         <div class="bg-white rounded-md shadow-md p-4">
-          <h3 class="text-lg font-semibold text-gray-900 text-center mb-4">
+          <h3 class="font-semibold text-gray-900 text-center mb-4">
             Ada yang ingin ditanyakan?
           </h3>
           <div class="space-y-3">
@@ -269,6 +258,7 @@ import { showToast } from "@/lib/toast";
 
 import { sendInitialCheckoutEvent } from "@/lib/pixels";
 import { trackBeginCheckout } from "@/lib/tracking";
+import { formatRupiah } from "@/lib/formatter";
 
 document.addEventListener("DOMContentLoaded", () => {
   const el = document.getElementById("invoice-page");
@@ -283,6 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // const idProgram = el.dataset.idProgram;
   
   // console.log(idProgram)
+ 
  
   sendInitialCheckoutEvent(slug, donationAmount);
   trackBeginCheckout({

@@ -1,0 +1,275 @@
+---
+import Header from "@/components/sections/landing-page/Header.astro";
+import Footer from "@/components/sections/landing-page/Footer.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+
+const highlights = [
+  {
+    icon: "🔒",
+    title: "Aman & Terverifikasi",
+    desc: "Setiap transaksi dilindungi sistem keamanan berlapis dan tercatat resmi di sistem kami.",
+  },
+  {
+    icon: "⚡",
+    title: "Cepat & Praktis",
+    desc: "Berdonasi hanya dalam hitungan detik, kapan saja dan di mana saja tanpa perlu antre.",
+  },
+  {
+    icon: "📊",
+    title: "Transparan",
+    desc: "Pantau status pembayaran dan lacak penyaluran donasimu secara real-time.",
+  },
+  {
+    icon: "🕌",
+    title: "Teman Ibadah Harian",
+    desc: "Dilengkapi jadwal salat, Al-Quran, dan kalkulator zakat dalam satu aplikasi.",
+  },
+];
+
+const features = [
+  {
+    label: "Beranda Personal",
+    title: "Pantau Semua Donasimu di Satu Layar",
+    desc: "Lihat total donasi, status pembayaran, hingga cerita penerima manfaat langsung dari halaman utama. Semua rangkuman kebaikanmu tersaji rapi.",
+    points: [
+      "Ringkasan total donasi & riwayat secara real-time",
+      "Status pembayaran dan lacak penyaluran dalam satu tempat",
+      "Cerita “Donasimu, Bahagia Mereka” dari penerima manfaat",
+    ],
+    image: "/images/app/home-rumah-zakat-app.png",
+    badgeValue: "Real-time",
+    badgeCaption: "Update Donasi",
+  },
+  {
+    label: "Donasi Lengkap",
+    title: "Ragam Program dalam Genggaman",
+    desc: "Dari zakat, infak, sedekah, hingga qurban — pilih program yang sesuai niat baikmu, lengkap dengan kalkulasi dan pembayaran otomatis.",
+    points: [
+      "Zakat, Infak & Sedekah, hingga Qurban dalam satu tempat",
+      "Program mitra & kolaborasi yang terverifikasi",
+      "Metode pembayaran fleksibel: bank, e-wallet, dan lainnya",
+    ],
+    image: "/images/app/donasi-rumah-zakat-app.png",
+    badgeValue: "8+",
+    badgeCaption: "Program Donasi",
+  },
+  {
+    label: "Donasi Rutin",
+    title: "Jangan Pernah Putus Berbuat Baik",
+    desc: "Jadwalkan donasi rutin harian, mingguan, atau bulanan. Aplikasi akan mengingatkanmu agar kebiasaan baik tetap terjaga tanpa terlewat.",
+    points: [
+      "Kalender & pengingat donasi otomatis",
+      "Catat rangkaian hari donasi tanpa putus",
+      "Atur ulang jadwal kapan saja sesuai kebutuhan",
+    ],
+    image: "/images/app/donasi-rutin.png",
+    badgeValue: "Tanpa Putus",
+    badgeCaption: "Streak Harian",
+  },
+  // {
+  //   label: "AmaLIn",
+  //   title: "AmaLIn, Teman Ibadah Harianmu",
+  //   desc: "Fitur AmaLIn menghadirkan jadwal salat, Al-Quran, kumpulan doa, hingga kalkulator zakat — menemani ibadahmu setiap hari.",
+  //   points: [
+  //     "Jadwal salat otomatis sesuai lokasimu",
+  //     "Baca Al-Quran & kumpulan doa harian",
+  //     "Kalkulator zakat dan artikel keislaman pilihan",
+  //   ],
+  //   image: "/images/app/AmaLIn.png",
+  //   badgeValue: "4 Fitur",
+  //   badgeCaption: "Ibadah Harian",
+  // },
+];
+
+const stats = [
+  { value: "50.000+", label: "Donatur Aktif" },
+  { value: "Rp 10 M+", label: "Dana Tersalurkan" },
+  { value: "200+", label: "Program Berjalan" },
+  { value: "4.9/5", label: "Rating Pengguna" },
+];
+---
+
+<MainLayout
+  title="Aplikasi Beramalbersama — Donasi Lebih Mudah dalam Genggaman"
+  description="Unduh aplikasi Beramalbersama untuk berdonasi, memantau penyaluran, dan menjaga ibadah harianmu — semua dalam satu aplikasi yang aman, cepat, dan transparan."
+>
+  <Header />
+  <main>
+    <!-- Hero -->
+    <section class="relative pt-10 pb-16 overflow-hidden bg-white">
+      <div class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div class="absolute -top-20 -right-20 w-96 h-96 rounded-full bg-primary-100/60 blur-3xl"></div>
+        <div class="absolute top-40 -left-24 w-72 h-72 rounded-full bg-primary-50/80 blur-3xl"></div>
+      </div>
+
+      <div class="container-custom relative">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+          <!-- Text -->
+          <div class="text-center md:text-left" data-reveal="left">
+            <h1 class="font-display text-4xl md:text-5xl font-semibold text-primary-900 leading-tight mt-2 mb-5">
+              Kebaikan yang Selalu
+              <span class="relative inline-block">
+                <span class="relative z-10 text-primary-600">Dalam Genggaman</span>
+                <span class="absolute bottom-1 left-0 w-full h-3 bg-primary-100 rounded-full -z-0"></span>
+              </span>
+            </h1>
+            <p class="text-primary-700/80 text-base md:text-lg leading-relaxed mb-8">
+              Unduh aplikasi Beramalbersama dan nikmati kemudahan berdonasi,
+              memantau penyaluran, hingga menjaga ibadah harian — semua dalam
+              satu aplikasi.
+            </p>
+            <div class="flex flex-wrap items-center justify-center md:justify-start gap-4">
+              <a href="#">
+                <img src="/images/app/googleplay.jpg" alt="Unduh di Google Play" class="h-12 md:h-14" />
+              </a>
+              <a href="#" >
+                 <img src="/images/app/appstore.jpg" alt="Unduh di app store" class="h-12 md:h-14" />
+              </a>
+            </div>
+          </div>
+
+          <!-- Phone mockup -->
+          <div class="relative flex justify-center" data-reveal="scale">
+            <img
+              src="/images/app/home-rumah-zakat-app.png"
+              alt="Tampilan beranda aplikasi Beramalbersama"
+              class="w-56 md:w-72 h-auto drop-shadow-2xl"
+              loading="eager"
+            />
+            <!-- Floating badge: rating -->
+            <div class="absolute top-6 -left-2 md:-left-6 bg-white rounded-2xl px-4 py-3 shadow-card border border-primary-100 animate-float">
+              <p class="text-xs md:text-sm font-semibold text-primary-900 leading-snug">⭐ 4.9/5 Rating Pengguna</p>
+            </div>
+            <!-- Floating badge: downloads -->
+            <div class="absolute bottom-10 -right-2 md:-right-6 bg-primary-50 rounded-2xl px-4 py-3 shadow-card border border-primary-100 animate-float" style="animation-delay: 1.2s;">
+              <p class="text-xs font-semibold text-primary-700">Sudah diunduh</p>
+              <p class="font-display text-lg font-bold text-primary-900">500rb+ Pengguna</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Kenapa unduh -->
+    <section class="py-20 bg-cream">
+      <div class="container-custom">
+        <div class="text-center mb-12" data-reveal>
+          <span class="section-label">Kenapa Unduh Aplikasinya?</span>
+          <h2 class="font-display text-3xl md:text-4xl font-semibold text-primary-900 mt-2">
+            Semua Kebaikan, Satu Genggaman
+          </h2>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
+          {highlights.map((h, i) => (
+            <div
+              class="bg-white rounded-2xl p-6 border border-primary-100 hover:border-primary-300 hover:shadow-card transition-all duration-300 text-center"
+              data-reveal
+              style={`transition-delay:${i * 0.08}s`}
+            >
+              <div class="text-4xl mb-4">{h.icon}</div>
+              <h3 class="font-display text-lg font-semibold text-primary-900 mb-2">{h.title}</h3>
+              <p class="text-sm text-primary-700/80 leading-relaxed">{h.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Fitur unggulan -->
+    {features.map((f, i) => (
+      <section class={`py-16 md:py-20 ${i % 2 === 0 ? "bg-white" : "bg-cream"}`}>
+        <div class="container-custom">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center max-w-5xl mx-auto">
+            <!-- Image -->
+            <div
+              class={`relative flex justify-center ${i % 2 === 0 ? "md:order-1" : "md:order-2"}`}
+              data-reveal={i % 2 === 0 ? "left" : "right"}
+            >
+              <img
+                src={f.image}
+                alt={f.title}
+                class="w-52 md:w-64 h-auto drop-shadow-2xl"
+                loading="lazy"
+              />
+              <div class="absolute -bottom-4 -right-2 md:-right-6 bg-white rounded-2xl px-5 py-4 shadow-card border border-primary-100 animate-float" style={`animation-delay:${i * 0.4}s;`}>
+                <p class="font-display text-xl font-bold text-primary-700">{f.badgeValue}</p>
+                <p class="text-xs text-primary-600">{f.badgeCaption}</p>
+              </div>
+            </div>
+
+            <!-- Text -->
+            <div class={i % 2 === 0 ? "md:order-2" : "md:order-1"} data-reveal={i % 2 === 0 ? "right" : "left"}>
+              <span class="section-label">{f.label}</span>
+              <h2 class="font-display text-2xl md:text-3xl font-semibold text-primary-900 mt-2 mb-4">
+                {f.title}
+              </h2>
+              <p class="text-sm md:text-base text-primary-700/85 leading-relaxed mb-5">
+                {f.desc}
+              </p>
+              <ul class="space-y-3">
+                {f.points.map((p) => (
+                  <li class="flex items-start gap-3 text-sm text-primary-700/85">
+                    <span class="mt-0.5 w-5 h-5 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center shrink-0 text-xs">✓</span>
+                    <span>{p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    ))}
+
+    <!-- Stats strip -->
+    <!-- <section class="py-14 bg-primary-900">
+      <div class="container-custom">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
+          {stats.map((s, i) => (
+            <div data-reveal style={`transition-delay:${i * 0.08}s`}>
+              <p class="font-display text-2xl md:text-3xl font-bold text-white">{s.value}</p>
+              <p class="text-xs md:text-sm text-primary-200/70 mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section> -->
+
+    <!-- CTA -->
+    <section class="py-16 bg-cream">
+      <div class="container-custom text-center max-w-2xl mx-auto text-primary-700" data-reveal>
+        <h2 class="font-display text-3xl md:text-4xl font-semibold mb-4">
+          Unduh Sekarang, Mulai Kebaikanmu Hari Ini
+        </h2>
+        <p class="text-primary-400 text-sm md:text-base leading-relaxed mb-8">
+          Bergabunglah bersama puluhan ribu pengguna yang menjadikan
+          Beramalbersama teman setia dalam berbagi kebaikan setiap hari.
+        </p>
+        <div class="flex flex-wrap gap-4 justify-center">
+          <a href="#" >
+            <img src="/images/app/googleplay.jpg" alt="Unduh di Google Play" class="h-12 md:h-14" />
+          </a>
+          <a href="#" >
+           <img src="/images/app/appstore.jpg" alt="Unduh di app store" class="h-12 md:h-14" />
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</MainLayout>
+
+<script>
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) {
+          e.target.classList.add("revealed");
+          observer.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.1 }
+  );
+  document.querySelectorAll("[data-reveal]").forEach((el) => observer.observe(el));
+</script>

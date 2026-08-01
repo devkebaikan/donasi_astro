@@ -1,0 +1,319 @@
+---
+import { formatCompactNumber, formatRupiah } from "@/lib/formatter";
+
+interface Props {
+  nominalOptions: any[];
+  programId: string | number | undefined;
+  programLink: string | undefined;
+  projectId?: number | null;
+  title?: string;
+  isPaket?: boolean;
+  paketPrice?: number;
+  paketCollected?: number;
+  totalCollected?: number;
+  totalDonors?: number;
+  minAmount?: number;
+}
+
+const {
+  nominalOptions,
+  programId,
+  programLink,
+  projectId,
+  title,
+  isPaket = false,
+  paketPrice = 100000,
+  paketCollected = 0,
+  totalCollected = 0,
+  totalDonors = 0,
+  minAmount = 10000,
+} = Astro.props;
+---
+
+<section
+  id="nominal-input"
+  data-program-id={programId}
+  data-program-link={programLink}
+  data-project-id={projectId}
+  data-min-amount={minAmount}
+  data-paket-price={paketPrice}
+  class="bg-white shadow-sm p-4 md:p-6 my-4 md:my-6"
+>
+  <div class="border p-3 rounded-lg border-neutral-300 relative pt-12">
+    {
+      title && (
+        <h2 class="text-lg md:text-xl font-bold text-gray-900 mb-4">{title}</h2>
+      )
+    }
+
+    {
+      !isPaket && (
+        <div
+          class="flex bg-neutral-200 rounded-lg mb-4 absolute -top-4 left-1/2 -translate-x-1/2 w-full max-w-sm
+"
+        >
+          <button
+            type="button"
+            data-tab="paket"
+            data-active="true"
+            class="ni-tab-btn flex-1 py-2.5 rounded-l-lg text-sm font-semibold transition-colors cursor-pointer"
+          >
+            Sedekah Per Paket
+          </button>
+          <button
+            type="button"
+            data-tab="patungan"
+            data-active="false"
+            class="ni-tab-btn flex-1 py-2.5 rounded-r-lg text-sm font-semibold transition-colors cursor-pointer"
+          >
+            Sedekah Patungan
+          </button>
+        </div>
+      )
+    }
+
+    <!-- Panel: Per Paket -->
+    <div id="ni-panel-paket" class:list={["space-y-4", { hidden: isPaket }]}>
+      <p class="text-gray-800 text-sm">
+        <span class="text-primary-500 font-bold text-lg">{paketCollected}</span>
+        {" "}paket sedekah terkumpul dari{" "}
+        <span class="font-bold text-lg">{totalDonors}</span> donatur
+      </p>
+
+      <div>
+        <label class="block text-gray-900 mb-2 text-sm">
+          Masukan Nominal Transaksi <span class="text-red-500">*</span>
+        </label>
+        <div class="flex rounded-lg border border-neutral-300 overflow-hidden">
+          <div class="flex items-center px-4 font-bold text-gray-900">Rp</div>
+          <div
+            id="ni-paket-amount"
+            class="flex-1 bg-neutral-200 text-right px-4 py-2 font-bold text-lg text-neutral-500"
+          >
+            {formatRupiah(paketPrice, { withSymbol: false })}
+          </div>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-2">
+          Minimal transaksi {formatRupiah(paketPrice)}
+        </p>
+      </div>
+
+      <div
+        class="flex items-center justify-between rounded-xl border border-neutral-300 overflow-hidden"
+      >
+        <div class="px-4 py-2 flex items-center gap-2">
+          <span class="text-gray-700">Jumlah Paket :</span>
+          <span id="ni-paket-qty" class="font-bold text-lg text-gray-900"
+            >1</span
+          >
+        </div>
+        <div class="flex">
+          <button
+            type="button"
+            id="ni-paket-minus"
+            disabled
+            class="w-14 h-14 flex items-center justify-center bg-neutral-200 text-orange-500 text-2xl font-bold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          >
+            −
+          </button>
+          <button
+            type="button"
+            id="ni-paket-plus"
+            class="w-14 h-14 flex items-center justify-center bg-orange-500 text-white text-2xl font-bold cursor-pointer"
+          >
+            +
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel: Patungan / default nominal input -->
+    <div
+      id="ni-panel-patungan"
+      class:list={["space-y-4", { hidden: !isPaket }]}
+    >
+      <p class="text-gray-800 text-sm">
+        <span class="text-primary-500 font-bold text-lg">
+          {formatRupiah(totalCollected)}
+        </span>
+        {" "}terkumpul dari{" "}
+        <span class="font-bold text-lg">{totalDonors}</span> donatur
+      </p>
+
+      <div>
+        <label class="block text-sm text-gray-900 mb-2">
+          Masukan Nominal Transaksi <span class="text-red-500">*</span>
+        </label>
+
+        {
+          nominalOptions && nominalOptions.length > 0 && (
+            <div class="grid grid-cols-3 gap-2 mb-3">
+              {nominalOptions.map((amount: any, index: number) => (
+                <button
+                  type="button"
+                  data-value={amount.nominal}
+                  class="ni-preset-btn group relative border-2 border-primary-200
+                     hover:border-primary-500 rounded-md p-2
+                     transition-all duration-300 hover:shadow-md"
+                >
+                  {index === 1 && (
+                    <span
+                      class="absolute -top-2 -right-2
+                         bg-linear-to-r from-secondary-400 to-secondary-500
+                         text-white text-[8px] font-semibold px-2 py-1
+                         rounded-t-full rounded-br-full"
+                    >
+                      Favorit
+                    </span>
+                  )}
+                  <span class="block text-sm font-bold text-amount">
+                    {formatCompactNumber(amount.nominal)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )
+        }
+
+        <div class="flex rounded-lg border border-neutral-300 overflow-hidden">
+          <div class="flex items-center px-4 font-bold text-lg text-gray-900">
+            Rp
+          </div>
+          <input
+            id="ni-donation-amount"
+            type="text"
+            inputmode="numeric"
+            placeholder="0"
+            class="flex-1 min-w-0 px-4 py-2 text-right font-bold text-xl text-neutral-700 focus:outline-none"
+          />
+        </div>
+        <p class="text-center text-xs text-gray-500 mt-2">
+          Minimal transaksi {formatRupiah(minAmount)}
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .ni-tab-btn[data-active="true"] {
+    background-color: var(--color-orange-500, #f97316);
+    color: white;
+  }
+  .ni-tab-btn[data-active="false"] {
+    color: #6b7280;
+  }
+</style>
+
+<script>
+  import { formatRupiah } from "@/lib/formatter";
+  import { showToast } from "@/lib/toast";
+
+  const section = document.getElementById("nominal-input");
+  if (section) {
+    const tabBtns = section.querySelectorAll<HTMLButtonElement>(".ni-tab-btn");
+    const panelPaket = document.getElementById("ni-panel-paket");
+    const panelPatungan = document.getElementById("ni-panel-patungan");
+    const paketAmountEl = document.getElementById("ni-paket-amount");
+    const qtyEl = document.getElementById("ni-paket-qty");
+    const minusBtn = document.getElementById(
+      "ni-paket-minus",
+    ) as HTMLButtonElement | null;
+    const plusBtn = document.getElementById("ni-paket-plus");
+    const input = document.getElementById(
+      "ni-donation-amount",
+    ) as HTMLInputElement | null;
+    const presetBtns =
+      section.querySelectorAll<HTMLButtonElement>(".ni-preset-btn");
+
+    const paketPrice = Number(section.getAttribute("data-paket-price") ?? 0);
+    const minAmount = Number(section.getAttribute("data-min-amount") ?? 0);
+
+    let activeTab: "paket" | "patungan" = tabBtns.length ? "paket" : "patungan";
+    let qty = 1;
+
+    function parseNumber(value: string) {
+      return Number(value.replace(/\D/g, "")) || 0;
+    }
+
+    function setActiveTab(tab: "paket" | "patungan") {
+      activeTab = tab;
+      tabBtns.forEach((btn) => {
+        btn.setAttribute(
+          "data-active",
+          btn.getAttribute("data-tab") === tab ? "true" : "false",
+        );
+      });
+      panelPaket?.classList.toggle("hidden", tab !== "paket");
+      panelPatungan?.classList.toggle("hidden", tab !== "patungan");
+    }
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const tab = btn.getAttribute("data-tab") as "paket" | "patungan";
+        setActiveTab(tab);
+      });
+    });
+
+    function updatePaketAmount() {
+      if (qtyEl) qtyEl.textContent = String(qty);
+      if (minusBtn) minusBtn.disabled = qty <= 1;
+      if (paketAmountEl) {
+        paketAmountEl.textContent = formatRupiah(paketPrice * qty, {
+          withSymbol: false,
+        });
+      }
+    }
+
+    minusBtn?.addEventListener("click", () => {
+      if (qty <= 1) return;
+      qty -= 1;
+      updatePaketAmount();
+    });
+
+    plusBtn?.addEventListener("click", () => {
+      qty += 1;
+      updatePaketAmount();
+    });
+
+    presetBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const value = btn.getAttribute("data-value");
+        if (!value || !input) return;
+        input.value = formatRupiah(Number(value), { withSymbol: false });
+      });
+    });
+
+    input?.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      const raw = parseNumber(target.value);
+      target.value = raw ? formatRupiah(raw, { withSymbol: false }) : "";
+    });
+
+    document.addEventListener("donate:open", () => {
+      let amount = 0;
+
+      if (activeTab === "paket") {
+        amount = paketPrice * qty;
+      } else {
+        amount = input ? parseNumber(input.value) : 0;
+        if (!amount || amount < minAmount) {
+          showToast(`Minimal donasi ${formatRupiah(minAmount)}`, "error");
+          return;
+        }
+      }
+
+      const projectId = section.getAttribute("data-project-id");
+
+      localStorage.setItem(
+        "nominal_donation",
+        JSON.stringify({ amount, updatedAt: Date.now(), projectId }),
+      );
+
+      const programId = section.getAttribute("data-program-id");
+      const programLink = section.getAttribute("data-program-link");
+
+      window.location.assign(`/donasi/form/${programLink}/?id=${programId}`);
+    });
+  }
+</script>
