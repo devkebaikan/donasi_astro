@@ -7,6 +7,7 @@ import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
 import { getPaymentMethod, getUserProfile } from "@/lib/FetchData.ts";
 import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
+// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/");
@@ -30,7 +31,7 @@ const userPhone = (account?.phone ?? "") as string;
 const walletBal = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
 const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
-  if (m.type === "e_wallet") return isAuth;
+  // if (m.type === "e_wallet") return isAuth;
   return ["VA", "bank", "e_wallet"].includes(m.type);
 });
 ---
@@ -53,6 +54,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     data-wallet={walletBal}
     class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-16 pb-28"
   >
+    <!-- <ShowJsonData data={paymentMethods} /> -->
     <div class="container py-3 space-y-3">
       <!-- Zakat context banner (shown client-side via JS) -->
       <div
@@ -372,7 +374,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     <button
       id="btn-submit"
       type="button"
-      class="bg-primary-500 w-full hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
+      class="bg-secondary-500 w-full hover:bg-secondary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed shrink-0"
     >
       Konfirmasi
     </button>
