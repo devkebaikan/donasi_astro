@@ -7,15 +7,14 @@
     <!-- Heading -->
     <div class="text-center max-w-3xl mx-auto mb-14" data-reveal>
       <span class="section-label">Mengapa Kami Hadir</span>
-      <h2
-        class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-primary-900 leading-tight mt-2 mb-4"
+      <h3
+        class="font-display text-2xl md:text-3xl lg:text-4xl font-semibold text-primary-900 leading-tight mt-2 mb-4"
       >
-        Setiap Cerita Mendorong Kami untuk
-        <br class="hidden md:block" />
-        Terus Bergerak & Berbuat Lebih
-      </h2>
+        Setiap Cerita Mendorong Kami untuk Terus Bergerak & Berbuat Lebih
+      </h3>
       <p class="text-primary-700/80 text-sm md:text-base leading-relaxed">
-        Dari piring kosong hingga rumah yang aman, dari ketidakpastian menuju harapan —
+        Dari piring kosong hingga rumah yang aman, dari ketidakpastian menuju
+        harapan —
         <br class="hidden md:block" />
         setiap penderitaan manusia menjadi bahan bakar semangat kami.
       </p>
@@ -33,13 +32,21 @@
             alt="Anak yatim"
             class="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"></div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"
+          >
+          </div>
         </div>
         <div
-          class="absolute -bottom-5 -left-2 md:-left-5 bg-white rounded-2xl px-4 py-3 shadow-card border border-primary-100"
+          class="absolute -bottom-5 -left-2 md:-left-5 rounded-2xl px-4 py-3 shadow-card border border-white/40 bg-white/65 backdrop-blur-lg"
         >
-          <p class="font-display text-2xl md:text-3xl font-bold text-primary-800">4,5 Juta</p>
-          <p class="text-xs text-primary-600 mt-0.5">Anak Yatim di Indonesia</p>
+          <p
+            class="font-display text-2xl md:text-3xl font-bold leading-none text-primary-800"
+          >
+            4,5 Juta
+          </p>
+
+          <p class="mt-1 text-xs text-primary-600">Anak Yatim di Indonesia</p>
         </div>
       </div>
 
@@ -51,19 +58,30 @@
             alt="Keluarga tidak mampu"
             class="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"></div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"
+          >
+          </div>
         </div>
         <div
-          class="absolute -top-5 left-1/2 -translate-x-1/2 bg-primary-600 text-white rounded-2xl px-4 py-3 shadow-card whitespace-nowrap"
+          class="absolute -top-5 left-1/2 -translate-x-1/2 border border-white/40 bg-primary-600/85 backdrop-blur-lg text-white rounded-2xl px-4 py-3 shadow-card whitespace-nowrap"
         >
           <p class="font-display text-2xl md:text-3xl font-bold">25 Juta</p>
-          <p class="text-xs text-primary-100 text-center mt-0.5">Warga Miskin Ekstrem</p>
+          <p class="text-xs text-primary-100 text-center mt-0.5">
+            Warga Miskin Ekstrem
+          </p>
         </div>
         <div
-          class="absolute -bottom-5 left-1/2 -translate-x-1/2 bg-white rounded-2xl px-4 py-3 shadow-card border border-primary-100 whitespace-nowrap"
+          class="absolute -bottom-5 left-1/2 -translate-x-1/2 rounded-2xl px-4 py-3 shadow-card border border-white/40 bg-white/65 backdrop-blur-lg whitespace-nowrap"
         >
-          <p class="font-display text-2xl md:text-3xl font-bold text-primary-800">8,5 Juta</p>
-          <p class="text-xs text-primary-600 text-center mt-0.5">Anak Kurang Gizi</p>
+          <p
+            class="font-display text-2xl md:text-3xl font-bold text-primary-800"
+          >
+            8,5 Juta
+          </p>
+          <p class="text-xs text-primary-600 text-center mt-0.5">
+            Anak Kurang Gizi
+          </p>
         </div>
       </div>
 
@@ -75,12 +93,19 @@
             alt="Keluarga dhuafa"
             class="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
           />
-          <div class="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"></div>
+          <div
+            class="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent"
+          >
+          </div>
         </div>
         <div
-          class="absolute -top-5 -right-2 md:-right-5 bg-white rounded-2xl px-4 py-3 shadow-card border border-primary-100"
+          class="absolute -top-5 -right-2 md:-right-5 rounded-2xl px-4 py-3 shadow-card border border-white/40 bg-white/65 backdrop-blur-lg"
         >
-          <p class="font-display text-2xl md:text-3xl font-bold text-primary-800">12 Juta</p>
+          <p
+            class="font-display text-2xl md:text-3xl font-bold text-primary-800"
+          >
+            12 Juta
+          </p>
           <p class="text-xs text-primary-600 mt-0.5">Keluarga Dhuafa</p>
         </div>
       </div>
@@ -99,7 +124,7 @@
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
   }
   document.querySelectorAll("[data-reveal]:not(.revealed)").forEach((el) => {
