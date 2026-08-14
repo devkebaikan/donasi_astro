@@ -43,13 +43,11 @@ const focusAreas = [
       <h2
         class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-primary-900 leading-tight mt-2 mb-4"
       >
-        Di Sinilah Kebaikanmu
-        <br class="hidden md:block" />
-        Menemukan Tujuannya
+        Bagaimana Kami Bekerja untuk Membantu Masyarakat
       </h2>
       <p class="text-primary-700/80 text-sm md:text-base leading-relaxed">
-        Dari anak-anak hingga keluarga, dari komunitas hingga masa depan bangsa —
-        kami fokus pada area yang membawa perubahan nyata dan bermartabat.
+        Dari anak-anak hingga keluarga, dari komunitas hingga masa depan bangsa
+        — kami fokus pada area yang membawa perubahan nyata dan bermartabat.
       </p>
     </div>
 
@@ -68,7 +66,7 @@ const focusAreas = [
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 loading="lazy"
               />
-              <div class="absolute inset-0 bg-linear-to-t from-primary-900/30 to-transparent"></div>
+              <div class="absolute inset-0 bg-linear-to-t from-primary-900/30 to-transparent" />
               <span class="absolute bottom-3 left-4 text-3xl">{area.icon}</span>
             </div>
             <div class="p-6">
@@ -97,7 +95,7 @@ const focusAreas = [
           }
         });
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
   }
   document.querySelectorAll("[data-reveal]:not(.revealed)").forEach((el) => {

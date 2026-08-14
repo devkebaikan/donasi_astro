@@ -3,7 +3,7 @@ import { getAllCampaigns } from "@/lib/FetchData";
 import { storageImg, type Program } from "@/lib/home";
 import { fmt } from "@/lib/formatter";
 
-const raw = await getAllCampaigns({ limit: 6 });
+const raw = await getAllCampaigns({ limit: 3, mode:"pagination" });
 const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw) : [];
 ---
 
