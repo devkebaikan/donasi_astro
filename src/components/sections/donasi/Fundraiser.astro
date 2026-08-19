@@ -103,7 +103,7 @@ const hasFundraisers = fundraiser?.data && fundraiser.data.length > 0;
 
   <!-- Banner Jadi Fundraiser -->
   <a 
-    href="https://aksiberbagi.com/login" 
+    href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`} 
     class="block rounded-lg shadow-md overflow-hidden "
   >
     <Image

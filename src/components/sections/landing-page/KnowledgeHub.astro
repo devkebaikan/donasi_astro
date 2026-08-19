@@ -1,26 +1,26 @@
 ---
 const hubItems = [
   {
-    title: "Cerita",
-    subtitle: "Inspirasi",
-    description: "Kisah nyata penerima manfaat yang mengubah sudut pandangmu",
+    title: "Testimoni",
+    subtitle: "Donatur",
+    description: "Suara donatur tentang pengalaman berbagi dan dampak yang dirasakan",
     image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=600&fit=crop",
     href: "/story",
   },
   {
-    title: "Program",
-    subtitle: "Pilihan",
-    description: "Temukan program donasi yang paling sesuai dengan niatmu",
+    title: "Dibalik",
+    subtitle: "Tim",
+    description: "Kenali tim, relawan, dan penggerak kebaikan yang bekerja setiap hari",
     image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&h=600&fit=crop",
-    href: "/donasi",
+    href: "/tentang-salur",
     illustration: "paper-planes",
   },
   {
-    title: "Laporan",
-    subtitle: "Transparansi",
-    description: "Pantau bagaimana donasimu dikelola secara terbuka",
+    title: "Project",
+    subtitle: "Kemanfaatan",
+    description: "Lihat cerita manfaat, laporan dampak, dan perkembangan aksi kebaikan",
     image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&h=600&fit=crop",
-    href: "/tentang",
+    href: "/event-salur",
     illustration: "book",
   },
 ];
@@ -30,17 +30,15 @@ const hubItems = [
   <div class="container-custom">
     <!-- Heading -->
     <div class="text-center max-w-3xl mx-auto mb-12" data-reveal>
-      <span class="section-label">Lebih Dekat dengan Kami</span>
+      <span class="section-label">Story Impact · News · Event</span>
       <h2
         class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-primary-900 leading-tight mt-2 mb-4"
       >
-        Ilmu & Inspirasi untuk
-        <br class="hidden md:block" />
-        Mendorong Aksi Nyata
+        Ruang Cerita & Kolaborasi
       </h2>
       <p class="text-primary-700/80 text-sm md:text-base leading-relaxed">
-        Data, kisah, dan pengalaman komunitas yang menginspirasimu untuk
-        berbuat lebih — karena kebaikan dimulai dari pemahaman.
+        Dari story impact, kabar terbaru, hingga agenda event — semua dirancang
+        untuk mengajak lebih banyak orang bergerak bersama.
       </p>
     </div>
 
@@ -49,7 +47,7 @@ const hubItems = [
       {hubItems.map((item, i) => (
         <a
           href={item.href}
-          class="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-card hover:shadow-xl transition-all duration-200 hover:-translate-y-1.5 group bg-primary-100"
+          class="relative aspect-3/4 rounded-3xl overflow-hidden shadow-card hover:shadow-xl transition-all duration-200 hover:-translate-y-1.5 group bg-primary-100"
           data-reveal
           style={`transition-delay:${i * 0.1}s`}
         >

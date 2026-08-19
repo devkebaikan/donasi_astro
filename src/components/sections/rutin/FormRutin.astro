@@ -5,6 +5,7 @@ import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
 interface Props {
   paymentMethods: any[];
   walletBalance: number;
+  isAuthenticated?: boolean;
   isLocked?: boolean;
   defaultHour?: string;
   defaultMinute?: string;
@@ -15,6 +16,7 @@ interface Props {
 const {
   paymentMethods,
   walletBalance,
+  isAuthenticated = true,
   isLocked = false,
   defaultHour = "08",
   defaultMinute = "00",
@@ -67,7 +69,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
       nominalOptions.map((n) => (
         <button
           type="button"
-          class="nominal-chip text-sm py-2 px-1 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
+          class="nominal-chip text-sm py-2 px-1 rounded-lg border border-gray-200 text-gray-500 font-semibold transition-all duration-150"
           data-value={n}
         >
           {formatRupiah(n)}
@@ -84,7 +86,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     Donasi rutin dipotong otomatis dari Saku Berbagi setiap periodenya
   </p>
 
-  <div class="grid grid-cols-2 gap-2 mb-3">
+  <div class={`grid grid-cols-2 gap-2 mb-3`}>
     <button
       id="btn-langsung"
       type="button"
@@ -92,6 +94,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     >
       Bayar Langsung
     </button>
+
     <button
       id="btn-saku"
       type="button"
@@ -101,15 +104,38 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     </button>
   </div>
 
-  <div
-    id="saku-info"
-    class="flex items-center justify-between bg-gray-50 rounded-lg px-4 py-3 hidden"
-  >
-    <span class="text-sm text-gray-500">Saldo Saku Berbagi</span>
-    <span id="wallet-display" class="text-sm font-bold text-primary-600">
-      {formatRupiah(walletBalance)}
-    </span>
-  </div>
+  {
+    isAuthenticated ? (
+      <div
+        id="saku-info"
+        class="items-center justify-between bg-gray-50 rounded-lg px-4 py-3 hidden"
+      >
+        <span class="text-sm text-gray-500">Saldo Saku Berbagi</span>
+        <span id="wallet-display" class="text-sm font-bold text-primary-600">
+          {formatRupiah(walletBalance)}
+        </span>
+      </div>
+    ) : (
+      <div
+        id="guest-saku-login-note"
+        class="text-xs text-start rounded-lg px-4 py-2.5 bg-red-50 mt-3 h-auto flex-col hidden"
+      >
+        <p class="text-sm font-semibold text-gray-800 ">
+          Login untuk menggunakan Saku Kebaikan
+        </p>
+
+        <p class="text-xs text-gray-600">
+          Silakan login terlebih dahulu untuk melanjutkan.
+        </p>
+        <a
+          href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
+          class="px-4 py-2.5 rounded-lg bg-secondary-500 text-white font-semibold mt-4 w-fit"
+        >
+          Login sekarang
+        </a>
+      </div>
+    )
+  }
 
   <div id="payment-picker" class="">
     <button
@@ -131,7 +157,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
         </span>
       </div>
       <span
-        class="text-sm text-primary-600 font-semibold border border-primary-200 rounded-lg px-3 py-1 shrink-0"
+        class="text-xs text-white font-semibold border bg-primary-400 rounded-lg px-3 py-1 shrink-0"
       >
         Pilih
       </span>
@@ -152,7 +178,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   </p>
   <div
     id="note-insufficient"
-    class="text-xs text-start rounded-lg px-4 py-2.5 bg-red-50 mt-3 h-auto flex flex-col hidden"
+    class="text-xs text-start rounded-lg px-4 py-2.5 bg-red-50 mt-3 h-auto flex-col hidden"
   >
     <p class="text-sm font-semibold">Saldo Saku Berbagi tidak mencukupi</p>
     <p>Silakan top up terlebih dahulu</p>
@@ -164,22 +190,101 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   </div>
 </div>
 
+{
+  !isAuthenticated && (
+    <div class="bg-white rounded border border-gray-100 shadow-sm p-4 space-y-3">
+      <p class="text-sm font-semibold text-gray-500">Data donatur</p>
+
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight">
+          Nama lengkap
+        </span>
+        <input
+          id="guest-name-input"
+          type="text"
+          placeholder="Masukkan nama lengkap"
+          class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+        />
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight">
+          Nomor telepon
+        </span>
+        <input
+          id="guest-phone-input"
+          type="tel"
+          inputmode="numeric"
+          placeholder="08xxxxxxxxxx"
+          class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+        />
+      </div>
+    </div>
+  )
+}
+
 <!-- Jadwal -->
 <div class="bg-white rounded border border-gray-100 shadow-sm p-4 space-y-3">
   <p class="text-sm font-semibold text-gray-500">Jadwal donasi</p>
 
   <!-- Lama donasi — commitment only -->
   <div id="commitment-row" class="">
-    <div class="flex items-center gap-3">
-      <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight">
+    <div class="flex items-start gap-3">
+      <span class="text-sm text-gray-500 w-2/5 shrink-0 leading-tight pt-2">
         Lama donasi
       </span>
-      <select
-        id="commitment-select"
-        class="flex-1 border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-      >
-        {dayOptions.map((d) => <option value={d}>{d} kali</option>)}
-      </select>
+      <div class="flex-1 space-y-2">
+        <div class="grid grid-cols-4 gap-2">
+          <button
+            type="button"
+            class="commitment-chip text-xs py-2 px-1 rounded-lg border border-primary-500 bg-primary-500 text-white font-semibold transition-all duration-150"
+            data-value="3"
+          >
+            3x
+          </button>
+          <button
+            type="button"
+            class="commitment-chip text-xs py-2 px-1 rounded-lg border border-gray-200 text-gray-600 font-semibold transition-all duration-150"
+            data-value="5"
+          >
+            5x
+          </button>
+          <button
+            type="button"
+            class="commitment-chip text-xs py-2 px-1 rounded-lg border border-gray-200 text-gray-600 font-semibold transition-all duration-150"
+            data-value="10"
+          >
+            10x
+          </button>
+          <button
+            type="button"
+            id="commitment-custom-trigger"
+            class="text-xs py-2 px-1 rounded-lg border border-gray-200 text-gray-600 font-semibold transition-all duration-150"
+          >
+            Lainnya
+          </button>
+        </div>
+
+        <div id="commitment-custom-row" class="hidden">
+          <input
+            id="commitment-custom-input"
+            type="number"
+            min="1"
+            max="100"
+            placeholder="Tulis sendiri (mis. 12 kali)"
+            class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+          />
+        </div>
+
+        <select
+          id="commitment-select"
+          class="hidden"
+          aria-hidden="true"
+          tabindex="-1"
+        >
+          {dayOptions.map((d) => <option value={d}>{d} kali</option>)}
+        </select>
+      </div>
     </div>
   </div>
 
@@ -341,7 +446,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     <button
       id="btn-submit"
       type="button"
-      class="w-1/2 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
+      class="w-1/2 bg-secondary-500 hover:bg-secondary-600 active:scale-[0.98] text-white font-semibold py-3.5 rounded-lg transition-all duration-150 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
     >
       Konfirmasi
     </button>
@@ -349,7 +454,11 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
 </div>
 
 <!-- Payment Modal -->
-<PaymentMethodModal paymentMethods={paymentMethods} />
+<PaymentMethodModal
+  paymentMethods={paymentMethods}
+  showWallet={false}
+  defaultWallet={false}
+/>
 
 <script>
   import { showToast } from "@/lib/toast";
@@ -362,6 +471,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   const API_URL = page.dataset.apiUrl ?? "";
   const programId = page.dataset.programId ?? "";
   const walletBal = Number(page.dataset.wallet ?? 0);
+  const isAuth = page.dataset.isAuth === "true";
   const token = getToken();
 
   let nominal = 0;
@@ -383,7 +493,9 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   const nominalInput = document.getElementById(
     "nominal-input",
   ) as HTMLInputElement;
-  const btnSaku = document.getElementById("btn-saku") as HTMLButtonElement;
+  const btnSaku = document.getElementById(
+    "btn-saku",
+  ) as HTMLButtonElement | null;
   const btnLangsung = document.getElementById(
     "btn-langsung",
   ) as HTMLButtonElement;
@@ -395,6 +507,9 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   const noteCommitment = document.getElementById(
     "note-commitment",
   ) as HTMLElement;
+  const guestSakuLoginNote = document.getElementById(
+    "guest-saku-login-note",
+  ) as HTMLElement | null;
   const noteInsufficient = document.getElementById(
     "note-insufficient",
   ) as HTMLElement;
@@ -404,6 +519,15 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   const commitmentSelect = document.getElementById(
     "commitment-select",
   ) as HTMLSelectElement;
+  const commitmentCustomTrigger = document.getElementById(
+    "commitment-custom-trigger",
+  ) as HTMLButtonElement;
+  const commitmentCustomRow = document.getElementById(
+    "commitment-custom-row",
+  ) as HTMLElement;
+  const commitmentCustomInput = document.getElementById(
+    "commitment-custom-input",
+  ) as HTMLInputElement;
   const rangeTypeSelect = document.getElementById(
     "range-type-select",
   ) as HTMLSelectElement;
@@ -428,12 +552,36 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
   const openModalBtn = document.getElementById(
     "open-payment-modal",
   ) as HTMLButtonElement;
+  const guestNameInput = document.getElementById(
+    "guest-name-input",
+  ) as HTMLInputElement | null;
+  const guestPhoneInput = document.getElementById(
+    "guest-phone-input",
+  ) as HTMLInputElement | null;
 
   function syncNotes() {
     const isInsufficient = !isCommitment && nominal > walletBal && nominal > 0;
-    noteSaku.classList.toggle("hidden", isCommitment || isInsufficient);
+    const showLoginPrompt = !isAuth && !isCommitment;
+
+    noteSaku.classList.toggle(
+      "hidden",
+      !isAuth || isCommitment || isInsufficient || showLoginPrompt,
+    );
     noteCommitment.classList.toggle("hidden", !isCommitment);
-    noteInsufficient.classList.toggle("hidden", !isInsufficient);
+
+    noteInsufficient.classList.toggle(
+      "hidden",
+      !isAuth || !isInsufficient || showLoginPrompt,
+    );
+    noteInsufficient.classList.toggle(
+      "flex",
+      isAuth && isInsufficient && !showLoginPrompt,
+    );
+
+    if (guestSakuLoginNote) {
+      guestSakuLoginNote.classList.toggle("hidden", !showLoginPrompt);
+      guestSakuLoginNote.classList.toggle("flex", showLoginPrompt);
+    }
   }
 
   function syncSubmitLabel() {
@@ -466,10 +614,30 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
       .forEach((b) => {
         const isActive = b === activeBtn;
         b.classList.toggle("border-primary-500", isActive);
-        b.classList.toggle("bg-primary-50", isActive);
-        b.classList.toggle("text-primary-700", isActive);
+        b.classList.toggle("bg-primary-500", isActive);
+        b.classList.toggle("text-white", isActive);
         b.classList.toggle("border-gray-200", !isActive);
         b.classList.toggle("text-gray-500", !isActive);
+        b.classList.toggle("bg-white", !isActive);
+      });
+  }
+
+  function getCommitmentValue(): number {
+    const value = Number(commitmentSelect.value);
+    return Number.isFinite(value) && value > 0 ? value : 1;
+  }
+
+  function setCommitmentChipActive(activeBtn: HTMLButtonElement | null) {
+    document
+      .querySelectorAll<HTMLButtonElement>(".commitment-chip")
+      .forEach((b) => {
+        const isActive = b === activeBtn;
+        b.classList.toggle("border-primary-500", isActive);
+        b.classList.toggle("bg-primary-500", isActive);
+        b.classList.toggle("text-white", isActive);
+        b.classList.toggle("border-gray-200", !isActive);
+        b.classList.toggle("bg-white", !isActive);
+        b.classList.toggle("text-gray-600", !isActive);
       });
   }
 
@@ -492,15 +660,46 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     syncSubmitLabel();
   });
 
+  document
+    .querySelectorAll<HTMLButtonElement>(".commitment-chip")
+    .forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const value = Number(btn.dataset.value);
+        if (!value) return;
+        commitmentSelect.value = String(value);
+        commitmentCustomRow.classList.add("hidden");
+        commitmentCustomInput.value = "";
+        setCommitmentChipActive(btn);
+        syncSubmitLabel();
+      });
+    });
+
+  commitmentCustomTrigger?.addEventListener("click", () => {
+    commitmentCustomRow.classList.remove("hidden");
+    setCommitmentChipActive(null);
+    commitmentCustomInput.focus();
+    syncSubmitLabel();
+  });
+
+  commitmentCustomInput?.addEventListener("input", () => {
+    const customValue = Number(commitmentCustomInput.value);
+    if (!Number.isFinite(customValue) || customValue <= 0) return;
+    commitmentSelect.value = String(customValue);
+    setCommitmentChipActive(null);
+    syncSubmitLabel();
+  });
+
   function setPaymentMode(commitment: boolean) {
     isCommitment = commitment;
 
-    btnSaku.classList.toggle("border-primary-500", !commitment);
-    btnSaku.classList.toggle("bg-primary-100", !commitment);
-    btnSaku.classList.toggle("text-primary-700", !commitment);
-    btnSaku.classList.toggle("border-gray-200", commitment);
-    btnSaku.classList.toggle("bg-white", commitment);
-    btnSaku.classList.toggle("text-gray-400", commitment);
+    if (btnSaku) {
+      btnSaku.classList.toggle("border-primary-500", !commitment);
+      btnSaku.classList.toggle("bg-primary-100", !commitment);
+      btnSaku.classList.toggle("text-primary-700", !commitment);
+      btnSaku.classList.toggle("border-gray-200", commitment);
+      btnSaku.classList.toggle("bg-white", commitment);
+      btnSaku.classList.toggle("text-gray-400", commitment);
+    }
 
     btnLangsung.classList.toggle("border-primary-500", commitment);
     btnLangsung.classList.toggle("bg-primary-100", commitment);
@@ -509,7 +708,8 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     btnLangsung.classList.toggle("bg-white", !commitment);
     btnLangsung.classList.toggle("text-gray-400", !commitment);
 
-    sakuInfo.classList.toggle("hidden", commitment);
+    sakuInfo?.classList.toggle("hidden", commitment || !isAuth);
+    sakuInfo?.classList.toggle("flex", !commitment && isAuth);
     paymentPicker.classList.toggle("hidden", !commitment);
     commitmentRow.classList.toggle("hidden", !commitment);
 
@@ -526,7 +726,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
     syncScheduleNote();
   }
 
-  btnSaku.addEventListener("click", () => setPaymentMode(false));
+  btnSaku?.addEventListener("click", () => setPaymentMode(false));
   btnLangsung.addEventListener("click", () => setPaymentMode(true));
 
   rangeTypeSelect?.addEventListener("change", () => {
@@ -553,6 +753,24 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
 
   btnSubmit.addEventListener("click", async () => {
     if (isProcessing) return;
+
+    const guestName = guestNameInput?.value.trim() ?? "";
+    const rawGuestPhone = guestPhoneInput?.value.trim() ?? "";
+    const guestPhone = rawGuestPhone.startsWith("0")
+      ? rawGuestPhone
+      : rawGuestPhone
+        ? `0${rawGuestPhone}`
+        : "";
+
+    if (!isAuth && (!guestName || !guestPhone)) {
+      showToast("Nama dan nomor telepon wajib diisi", "error");
+      return;
+    }
+
+    if (!isAuth && !isCommitment) {
+      showToast("Silakan login untuk menggunakan Saku Kebaikan", "error");
+      return;
+    }
 
     if (nominal < 1000) {
       showToast("Minimal donasi Rp1.000", "error");
@@ -601,6 +819,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
       time,
       nominal,
       status: "Pending",
+      ...(!isAuth ? { name: guestName, phone: guestPhone } : {}),
       ...(atasNama ? { atas_nama: atasNama } : {}),
       ...(doa ? { doa } : {}),
     };
@@ -611,7 +830,7 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
       payload.type = "default";
     } else {
       payload.payment_method_id = Number(paymentMethodId);
-      payload.commitment = Number(commitmentSelect.value);
+      payload.commitment = getCommitmentValue();
       payload.type = "commitment";
     }
 
@@ -640,4 +859,9 @@ const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
       syncSubmitLabel();
     }
   });
+
+  commitmentSelect.value = "3";
+  syncNotes();
+  syncSubmitLabel();
+  syncScheduleNote();
 </script>

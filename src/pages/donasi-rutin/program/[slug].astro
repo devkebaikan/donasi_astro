@@ -9,27 +9,22 @@ import { Image } from "astro:assets";
 import FormRutin from "@/components/sections/rutin/FormRutin.astro";
 import {
   getCampaignByLink,
-  getPaymentMethod,
   getPaymentMethodFilter,
   getUserProfile,
 } from "@/lib/FetchData.ts";
-import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const { slug } = Astro.params;
 
 if (!slug) return Astro.redirect("/donasi-rutin/opsi");
 
 const token = getServerToken(Astro.cookies);
-if (!token)
-  return Astro.redirect(`/auth/login?from=/donasi-rutin/program/${slug}`);
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const [account, campaign, paymentMethods] = await Promise.all([
-  getUserProfile(token),
+  token ? getUserProfile(token) : Promise.resolve(null),
   getCampaignByLink(slug).catch(() => null),
   getPaymentMethodFilter({ status: "true" }),
-  ,
 ]);
 
 const programId = campaign?.data.id;
@@ -54,6 +49,7 @@ const banner = {
     data-program-id={programId}
     data-wallet={walletBalance}
     data-slug={slug}
+    data-is-auth={Boolean(token)}
     class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pb-32"
   >
     <div class="container pb-4 md:pb-6 space-y-3">
@@ -68,7 +64,7 @@ const banner = {
               height="240"
               loading="eager"
               decoding="async"
-              class="w-full max-h-[500px] object-cover"
+              class="w-full max-h-125 object-cover"
             />
           )
         }
@@ -99,6 +95,7 @@ const banner = {
       <FormRutin
         paymentMethods={paymentMethods}
         walletBalance={walletBalance}
+        isAuthenticated={Boolean(token)}
       />
     </div>
   </div>

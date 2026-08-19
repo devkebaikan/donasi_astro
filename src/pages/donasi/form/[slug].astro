@@ -380,7 +380,11 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     </button>
   </div>
 
-  <PaymentMethodModal paymentMethods={paymentMethods} />
+  <PaymentMethodModal
+    paymentMethods={paymentMethods}
+    showWallet={false}
+    defaultWallet={false}
+  />
 </MainLayout>
 
 <script>
