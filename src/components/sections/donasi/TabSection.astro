@@ -214,7 +214,7 @@ const tabs = [
       const reportData = json?.data?.[0] ?? null;
       const reportNews = json?.news?.[0] ?? null;
       if (!reportData && !reportNews) {
-        container.innerHTML = `<div class="text-center py-12">
+        container.innerHTML = `<div class="text-center py-24">
           <div class="flex flex-col items-center gap-4">
             <div class="w-16 h-16 rounded-full bg-gray-50 flex items-center justify-center">
               <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -413,7 +413,7 @@ const tabs = [
             <div class="space-y-3">${itemsHtml}</div>
           </div>
         </div>
-        <a href="https://aksiberbagi.com/login" class="block rounded-lg shadow-md overflow-hidden">
+        <a href="/auth/login" class="block rounded-lg shadow-md overflow-hidden">
           <img width="400" height="400" src="/images/banner/JadiFundraiser.webp" alt="Jadi Fundraiser" class="w-full h-auto"/>
         </a>
       </div>`;

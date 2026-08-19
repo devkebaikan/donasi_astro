@@ -63,7 +63,7 @@ const statusTabs = [
             <p class="text-sm font-medium text-gray-700">Masuk untuk melihat riwayat donasi</p>
             <p class="text-xs text-gray-400 mt-1 mb-4">Lacak setiap kebaikan yang telah kamu lakukan</p>
             <a
-              href="/auth/login"
+              href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
               class="inline-flex items-center gap-1.5 bg-primary-500 hover:bg-primary-600 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-all"
             >
               Masuk Sekarang

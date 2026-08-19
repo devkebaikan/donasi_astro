@@ -71,7 +71,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
       <!-- Hero Banner -->
       {
         banner && (
-          <div class="relative w-full aspect-[16/9] overflow-hidden bg-gray-100">
+          <div class="relative w-full aspect-video overflow-hidden bg-gray-100">
             <img
               src={banner.image_url}
               alt={banner.name}
@@ -79,7 +79,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
               decoding="async"
               class="w-full h-full object-cover"
             />
-            <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+            <div class="absolute inset-0 bg-linear-to-t from-black/50 via-transparent to-transparent" />
             <div class="absolute bottom-4 left-4 right-4">
               <p class="text-white text-base font-bold drop-shadow-sm">
                 Infaq Online
@@ -129,7 +129,11 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     </div>
   </div>
 
-  <PaymentMethodModal paymentMethods={paymentMethods} />
+  <PaymentMethodModal
+    paymentMethods={paymentMethods}
+    showWallet={true}
+    defaultWallet={true}
+  />
 </MainLayout>
 
 <script>
@@ -230,8 +234,8 @@ const nominalOptions = [10000, 25000, 50000, 100000];
       .forEach((b) => {
         const on = b === activeBtn;
         b.classList.toggle("border-primary-500", on);
-        b.classList.toggle("bg-primary-50", on);
-        b.classList.toggle("text-primary-700", on);
+        b.classList.toggle("bg-primary-500", on);
+        b.classList.toggle("text-white", on);
         b.classList.toggle("border-gray-200", !on);
         b.classList.toggle("text-gray-500", !on);
       });

@@ -130,7 +130,7 @@ const donationStatuses = [
           {
             !isAuthenticated && (
               <a
-                href="/auth/login"
+                href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
                 class="inline-flex items-center gap-2 border border-primary-500 text-primary-600 text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-primary-50 transition-all active:scale-95"
               >
                 <span>Masuk untuk Melihat</span>
@@ -235,15 +235,13 @@ const donationStatuses = [
           class="flex items-center justify-between px-4 py-3 border-b border-gray-100"
         >
           <div class="flex items-center gap-2">
-            <span class="w-1 h-5 bg-primary-500 rounded-full"></span>
             <span class="text-sm font-semibold text-gray-700"
               >Kalender Donasi</span
             >
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+          <!-- <div class="flex items-center gap-1.5">
             <span class="text-[11px] text-gray-400">Donasi sukses</span>
-          </div>
+          </div> -->
         </div>
 
         <div class="p-4">

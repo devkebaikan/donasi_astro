@@ -16,7 +16,6 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
   <!-- Nominal -->
   <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
     <div class="flex items-center gap-2.5 mb-4">
-      <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
       <p class="text-sm font-bold text-gray-800">Nominal Infaq</p>
     </div>
 
@@ -40,7 +39,7 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
         nominalOptions.map((n) => (
           <button
             type="button"
-            class="nominal-chip text-xs py-2.5 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-all duration-150"
+            class="nominal-chip text-xs py-2.5 rounded-lg border border-gray-200 text-gray-500 font-semibold hover:border-primary-400 transition-all duration-150"
             data-value={n}
           >
             {formatCompactNumber(n)}
@@ -71,7 +70,6 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
   <!-- Metode Pembayaran -->
   <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
     <div class="flex items-center gap-2.5 mb-4">
-      <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
       <p class="text-sm font-bold text-gray-800">Metode Pembayaran</p>
     </div>
 
@@ -94,7 +92,7 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
         </span>
       </div>
       <span
-        class="text-xs text-primary-600 font-semibold border border-primary-200 bg-primary-50 group-hover:bg-primary-100 rounded-lg px-3 py-1.5 shrink-0 ml-2 transition-colors"
+        class="text-xs text-white font-semibold border border-primary-200 bg-primary-400 rounded-md px-3 py-1.5 shrink-0 ml-2 transition-colors"
       >
         Pilih
       </span>
@@ -132,7 +130,6 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
   <!-- Data Donatur -->
   <div class="bg-white rounded border border-gray-100 shadow-sm p-5">
     <div class="flex items-center gap-2.5 mb-4">
-      <div class="w-1 h-5 bg-primary-500 rounded-full shrink-0"></div>
       <p class="text-sm font-bold text-gray-800">Data Donatur</p>
     </div>
 
@@ -163,7 +160,7 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
             <p class="text-xs text-gray-400">
               Sudah punya akun?{" "}
               <a
-                href="/auth/login"
+                href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
                 class="text-primary-600 font-semibold hover:underline"
               >
                 Login
@@ -233,7 +230,6 @@ const { isAuth, userName, userPhone, walletBal, nominalOptions } = Astro.props;
     <div class="flex items-center justify-between mt-4">
       <div class="flex-1 pr-4">
         <div class="flex items-center gap-2.5">
-          <div class="w-1 h-5 bg-amber-400 rounded-full shrink-0"></div>
           <p class="text-sm font-bold text-gray-800">Donasi untuk Orang Lain</p>
         </div>
         <p class="text-xs text-gray-400 mt-1.5 ml-[14px]">

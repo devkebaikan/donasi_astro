@@ -111,7 +111,7 @@ const navItems = [
           <div id="login-section" class="hidden">
             <div class="my-2 h-px bg-white/20"></div>
             <a
-              href="/login"
+              href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
               class="block w-full text-center bg-white text-primary-500 font-semibold py-3 mb-2 rounded-lg shadow-md hover:bg-gray-100 transition"
             >
               Masuk

@@ -3,7 +3,7 @@ import { getAllCampaigns } from "@/lib/FetchData";
 import { storageImg, type Program } from "@/lib/home";
 import { fmt } from "@/lib/formatter";
 
-const raw = await getAllCampaigns({ limit: 3, mode:"pagination" });
+const raw = await getAllCampaigns({ limit: 10, mode:"pagination" });
 const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw) : [];
 ---
 
@@ -11,15 +11,13 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
   <div class="container-custom">
     <!-- Heading -->
     <div class="text-center mb-12" data-reveal>
-      <span class="section-label">Program Kami</span>
+      <span class="section-label">Pendanaan Pilihan</span>
       <h2 class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-primary-900 mt-2">
-        Bersama Kita Wujudkan
-        <br class="hidden md:block" />
-        Perubahan Nyata
+        10 Funding Aktif Pilihan
       </h2>
       <p class="mt-3 text-primary-700/80 text-sm md:text-base max-w-xl mx-auto leading-relaxed">
-        Pilih program yang paling dekat dengan hatimu — setiap donasi akan
-        disalurkan langsung kepada yang membutuhkan.
+        Pilih program kebaikan yang ingin kamu dukung hari ini — setiap
+        kontribusi bergerak jadi kemanfaatan nyata.
       </p>
     </div>
 
@@ -36,11 +34,11 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
             const imgSrc = item.image?.startsWith("http") ? item.image : storageImg(item.image, "programs");
             return (
               <article
-                class="flex-shrink-0 w-[270px] md:w-[320px] snap-start bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                class="shrink-0 w-67.5 md:w-80 snap-start bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                 style={`animation-delay:${i * 0.07}s`}
               >
                 <!-- Image -->
-                <div class="relative aspect-[4/3] overflow-hidden">
+                <div class="relative aspect-4/3 overflow-hidden">
                   <img
                     src={imgSrc || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=400&fit=crop"}
                     alt={item.title}
@@ -68,7 +66,7 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
                   <!-- Progress bar -->
                   <div class="w-full h-1.5 bg-neutral-100 rounded-full overflow-hidden mb-2">
                     <div
-                      class="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-700"
+                      class="h-full bg-linear-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-700"
                       style={`width:${pct}%`}
                     />
                   </div>
@@ -108,7 +106,7 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
         <!-- View all -->
         <div class="text-center mt-8" data-reveal>
           <a href="/donasi" class="btn-outline group">
-            <span>Lihat Semua Program</span>
+            <span>Lihat Kebaikan Lainnya</span>
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
             </svg>
@@ -119,7 +117,7 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
       <!-- Fallback when API unavailable -->
       <div class="text-center py-12 text-primary-600">
         <p class="text-sm">Program sedang dimuat...</p>
-        <a href="/donasi" class="mt-4 inline-block btn-primary text-sm">Lihat Semua Program</a>
+        <a href="/donasi" class="mt-4 inline-block btn-primary text-sm">Lihat Kebaikan Lainnya</a>
       </div>
     )}
   </div>

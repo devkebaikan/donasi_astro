@@ -1,34 +1,34 @@
 ---
 const focusAreas = [
   {
-    title: "Pendidikan & Perlindungan Anak",
+    title: "Relawan & Jaringan Kolaborasi",
     description:
-      "Membantu anak-anak mendapat akses pendidikan, beasiswa, dan perlindungan dari risiko putus sekolah serta pekerja anak.",
-    icon: "📚",
+      "Relawan, komunitas, dan mitra bergerak bersama membangun dampak yang lebih luas dan berkelanjutan.",
+    icon: "🤝",
     image:
       "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600&h=400&fit=crop",
   },
   {
-    title: "Kesehatan & Gizi Keluarga",
+    title: "Jaringan Penggerak Kebaikan",
     description:
-      "Menyediakan layanan kesehatan dasar, gizi anak, air bersih, dan sanitasi agar setiap keluarga hidup sehat dan bermartabat.",
-    icon: "🏥",
+      "Menghubungkan donatur, tim, relawan, dan pengelola manfaat dalam satu ekosistem kebaikan yang aktif.",
+    icon: "🌐",
     image:
       "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=400&fit=crop",
   },
   {
-    title: "Zakat, Infak & Sedekah",
+    title: "Teknologi & Inovasi",
     description:
-      "Mengelola ZIS secara profesional dan amanah — memastikan setiap rupiah sampai kepada mustahiq yang berhak menerimanya.",
-    icon: "🤲",
+      "Kami menghadirkan fitur layanan dan inovasi digital agar proses beramal lebih mudah, cepat, dan tepat.",
+    icon: "💡",
     image:
       "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&h=400&fit=crop",
   },
   {
-    title: "Kemanusiaan & Tanggap Darurat",
+    title: "Kecepatan, Ketepatan & Tracking",
     description:
-      "Hadir cepat untuk korban bencana, konflik, dan krisis kemanusiaan — menyalurkan bantuan logistik dan pemulihan.",
-    icon: "🆘",
+      "Setiap program dipantau dengan alur kerja yang terukur agar laporan, penyaluran, dan dampak dapat dilihat secara transparan.",
+    icon: "📍",
     image:
       "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=400&fit=crop",
   },
@@ -43,11 +43,11 @@ const focusAreas = [
       <h2
         class="font-display text-3xl md:text-4xl lg:text-5xl font-semibold text-primary-900 leading-tight mt-2 mb-4"
       >
-        Bagaimana Kami Bekerja untuk Membantu Masyarakat
+        Bagaimana Kami Bekerja
       </h2>
       <p class="text-primary-700/80 text-sm md:text-base leading-relaxed">
-        Dari anak-anak hingga keluarga, dari komunitas hingga masa depan bangsa
-        — kami fokus pada area yang membawa perubahan nyata dan bermartabat.
+        Kami percaya, dengan mengkolaborasikan setiap potensi, kita bisa
+        menggerakkan dan mewujudkan ekosistem kebaikan yang lebih baik.
       </p>
     </div>
 
@@ -59,7 +59,7 @@ const focusAreas = [
             class="bg-white rounded-2xl overflow-hidden shadow-card hover:shadow-lg transition-all duration-300 hover:-translate-y-1 group"
             data-reveal={i % 2 === 0 ? "left" : "right"}
           >
-            <div class="aspect-[16/9] overflow-hidden relative">
+            <div class="aspect-video overflow-hidden relative">
               <img
                 src={area.image}
                 alt={area.title}

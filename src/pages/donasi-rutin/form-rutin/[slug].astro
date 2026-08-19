@@ -21,12 +21,11 @@ if (!slug || !VALID_SLUGS.includes(slug as Slug)) {
 }
 
 const token = getServerToken(Astro.cookies);
-if (!token) return Astro.redirect(`/auth/login?from=/donasi-rutin/${slug}`);
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const [account, paymentMethods, dataPorgamSetup] = await Promise.all([
-  getUserProfile(token),
+  token ? getUserProfile(token) : Promise.resolve(null),
   getPaymentMethodFilter({ status: "true" }),
   getCampaignSetUp("rutin"),
 ]);
@@ -84,12 +83,13 @@ const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
     data-program-id={programId}
     data-wallet={walletBalance}
     data-slug={slug}
+    data-is-auth={Boolean(token)}
     class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pb-32"
   >
     <div class="container pb-4 md:pb-6 space-y-3">
       <!-- Banner -->
       <div
-        class="bg-gradient-to-t from-white to-primary-50 rounded-b border border-gray-100 shadow-sm p-4 pt-18 flex items-center gap-3"
+        class="bg-linear-to-t from-white to-primary-50 rounded-b border border-gray-100 shadow-sm p-4 pt-18 flex items-center gap-3"
       >
         <div
           class="w-12 h-12 shrink-0 rounded-full bg-gray-50 border border-gray-100"
@@ -122,6 +122,7 @@ const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
         defaultMinute={defaultMinute}
         defaultRangeType={defaultRangeType}
         lockedDay={slug === "jumat" ? "Jumat" : false}
+        isAuthenticated={Boolean(token)}
       />
     </div>
   </div>
