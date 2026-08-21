@@ -105,7 +105,7 @@ function stepBg(s: {
 }) {
   if (s.isFailed) return "bg-red-500";
   if (s.isActive) return "bg-primary-500";
-  if (s.isPending) return "bg-secondary-300";
+  if (s.isPending) return "bg-secondary-400";
   return "bg-gray-200";
 }
 
@@ -411,7 +411,6 @@ function connectorBg(s: {
               aria-expanded="false"
             >
               <div class="flex items-center gap-2">
-                <div class="w-1 h-5 bg-secondary-400 rounded-full" />
                 <span class="text-sm font-semibold text-gray-800">
                   Instruksi Pembayaran
                 </span>
@@ -466,7 +465,7 @@ function connectorBg(s: {
           href="https://www.instagram.com/aksiberbagicom"
           target="_blank"
           rel="noopener"
-          class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+          class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-gradient-to-r from-pink-500 to-purple-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
         >
           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
             <path
@@ -477,7 +476,7 @@ function connectorBg(s: {
         </a>
         <a
           href="/donasi"
-          class="flex items-center justify-center w-full py-2.5 rounded-xl border border-primary-400 text-primary-600 text-sm font-semibold hover:bg-primary-50 transition-colors"
+          class="flex items-center justify-center w-full py-2.5 rounded-lg border border-primary-400 text-primary-600 text-sm font-semibold hover:bg-primary-50 transition-colors"
         >
           Donasi ke Program Lain
         </a>

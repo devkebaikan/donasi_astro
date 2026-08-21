@@ -8,12 +8,17 @@ import { getServerToken } from "@/lib/auth";
 
 const isAuthenticated = getServerToken(Astro.cookies) !== null;
 
+// Untuk 3 tab pertama, `value` adalah nilai query param `status` yang
+// dikirim ke /my-donation (enum resmi: Paid | Canceled | Pending).
+// Untuk 2 tab terakhir (Proses Salur / Selesai Salur), /my-salur tidak
+// punya query param maupun pagination — semua data langsung dikembalikan
+// sekaligus, jadi pemisahan "proses" vs "selesai" dilakukan di frontend.
 const statusTabs = [
-  { value: "",              label: "Semua" },
-  { value: "pending",       label: "Menunggu Pembayaran" },
-  { value: "menunggu-salur", label: "Menunggu Salur" },
-  { value: "proses-salur",  label: "Proses Salur" },
-  { value: "success",       label: "Selesai Salur" },
+  { value: "",             label: "Semua" },
+  { value: "Pending",      label: "Menunggu Pembayaran" },
+  { value: "Paid",         label: "Menunggu Salur" },
+  { value: "proses-salur", label: "Proses Salur" },
+  { value: "success",      label: "Selesai Salur" },
 ];
 ---
 
@@ -47,7 +52,6 @@ const statusTabs = [
         <!-- Section header -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
           <div class="flex items-center gap-2">
-            <span class="w-1 h-5 bg-primary-500 rounded-full"></span>
             <span id="list-title" class="text-sm font-semibold text-gray-700">Semua Riwayat</span>
           </div>
         </div>
@@ -159,11 +163,18 @@ const statusTabs = [
 
   const STATUS_LABELS: Record<string, string> = {
     "":              "Semua Riwayat",
-    "pending":       "Menunggu Pembayaran",
-    "menunggu-salur":"Menunggu Salur",
+    "Pending":       "Menunggu Pembayaran",
+    "Paid":          "Menunggu Salur",
     "proses-salur":  "Proses Salur",
     "success":       "Selesai Salur",
   };
+
+  // Tab-tab ini dilayani oleh /dashboard/donatur/my-donation.
+  const DONATION_STATUSES = ["", "Pending", "Paid"];
+  // Tab-tab ini dilayani oleh /dashboard/donatur/my-salur.
+  const SALUR_STATUSES = ["proses-salur", "success"];
+
+  const PAGE_SIZE = 10;
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
 
@@ -181,10 +192,6 @@ const statusTabs = [
   } else {
 
     // ── Helpers ──────────────────────────────────────────────────────────────
-
-    function pad(n: number) {
-      return String(n).padStart(2, "0");
-    }
 
     function showEmpty() {
       empty.classList.remove("hidden");
@@ -209,23 +216,63 @@ const statusTabs = [
       }
     }
 
+    function badgeHtml(cls: string, label: string) {
+      return `<span class="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${cls}">${label}</span>`;
+    }
+
     // ── Status badge ──────────────────────────────────────────────────────────
 
-    function statusBadge(status: string): string {
+    // Untuk item dari /my-donation: badge dibaca dari field status item itu
+    // sendiri (Paid | Canceled | Pending). "Paid" ditampilkan sebagai
+    // "Menunggu Salur" karena di sistem ini status Paid berarti dana sudah
+    // masuk tapi belum diproses penyaluran.
+    function donationBadge(rawStatus: string): string {
+      const key = (rawStatus || "").toLowerCase();
       const map: Record<string, { cls: string; label: string }> = {
-        success:          { cls: "bg-green-50 text-green-600",   label: "Selesai Salur" },
-        pending:          { cls: "bg-yellow-50 text-yellow-600", label: "Menunggu Pembayaran" },
-        "menunggu-salur": { cls: "bg-blue-50 text-blue-600",     label: "Menunggu Salur" },
-        "proses-salur":   { cls: "bg-purple-50 text-purple-600", label: "Proses Salur" },
-        canceled:         { cls: "bg-gray-100 text-gray-400",    label: "Dibatalkan" },
+        paid:     { cls: "bg-blue-50 text-blue-600",     label: "Menunggu Salur" },
+        pending:  { cls: "bg-yellow-50 text-yellow-600", label: "Menunggu Pembayaran" },
+        canceled: { cls: "bg-gray-100 text-gray-400",    label: "Dibatalkan" },
       };
-      const { cls, label } = map[status] ?? { cls: "bg-gray-100 text-gray-400", label: status };
-      return `<span class="inline-block text-[10px] px-2 py-0.5 rounded-full font-medium ${cls}">${label}</span>`;
+      const entry = map[key] ?? { cls: "bg-gray-100 text-gray-400", label: rawStatus || "-" };
+      return badgeHtml(entry.cls, entry.label);
+    }
+
+    // Untuk item dari /my-salur: badge mengikuti tab yang sedang aktif,
+    // karena item yang dirender di sini sudah difilter di frontend supaya
+    // sesuai tab (lihat classifySalurStage di bawah).
+    function salurBadge(status: string): string {
+      const map: Record<string, { cls: string; label: string }> = {
+        "proses-salur": { cls: "bg-purple-50 text-purple-600", label: "Proses Salur" },
+        "success":      { cls: "bg-green-50 text-green-600",   label: "Selesai Salur" },
+      };
+      const entry = map[status] ?? { cls: "bg-gray-100 text-gray-400", label: status };
+      return badgeHtml(entry.cls, entry.label);
+    }
+
+    // /my-salur mengembalikan semua data sekaligus (proses + selesai
+    // dicampur), tanpa field yang terdokumentasi untuk membedakan
+    // keduanya. Fungsi ini menebak dari beberapa nama field yang umum
+    // dipakai (status / salur_status / stage / tahap) dan mencocokkan
+    // kata kuncinya. SESUAIKAN daftar field & kata kunci ini begitu tahu
+    // field asli dari backend — ini titik satu-satunya yang perlu diubah.
+    function classifySalurStage(item: any): "proses-salur" | "success" | "unknown" {
+      const candidates = [item.status, item.salur_status, item.stage, item.tahap, item.progress]
+        .filter((v): v is string => typeof v === "string")
+        .join(" ")
+        .toLowerCase();
+
+      if (candidates.includes("selesai")) {
+        return "success";
+      }
+      if (candidates.includes("pending")) {
+        return "proses-salur";
+      }
+      return "unknown";
     }
 
     // ── Render item ───────────────────────────────────────────────────────────
 
-    function renderItem(item: any): string {
+    function renderItem(item: any, source: "donation" | "salur"): string {
       const image = item.image_url
         ? `<img
              src="${item.image_url}"
@@ -244,9 +291,18 @@ const statusTabs = [
       const dateStr = dateObj
         ? `${dateObj.getDate()} ${MONTHS_ID[dateObj.getMonth()]} ${dateObj.getFullYear()}`
         : "-";
-      const timeStr = dateObj
-        ? `${pad(dateObj.getHours())}:${pad(dateObj.getMinutes())}`
-        : "";
+
+      // `date` cuma berisi tanggal (tanpa jam), jam sebenarnya ada di field
+      // `time` — walau tanggalnya sendiri di `time` adalah placeholder
+      // "0000-01-01", jadi ambil jam:menit-nya langsung dari string, jangan
+      // di-parse sebagai Date (dulu ini yang bikin jam selalu tampil 00:00).
+      const timeStr =
+        typeof item.time === "string" && item.time.includes("T")
+          ? item.time.split("T")[1]?.slice(0, 5) ?? ""
+          : "";
+
+      const rawStatus = item.payment_status ?? item.status ?? "";
+      const badge = source === "salur" ? salurBadge(activeStatus) : donationBadge(rawStatus);
 
       return `
         <a
@@ -281,17 +337,42 @@ const statusTabs = [
                 </p>
               </div>
               <!-- Status -->
-              ${statusBadge(item.payment_status ?? "")}
+              ${badge}
             </div>
           </div>
         </a>
       `;
     }
 
-    // ── Fetch list ────────────────────────────────────────────────────────────
+    // ── Fetch: /my-salur (tanpa param, tanpa pagination, di-cache) ─────────────
 
-    // Proses Salur & Selesai Salur menggunakan endpoint berbeda
-    const SALUR_STATUSES = ["proses-salur", "success"];
+    // Data hanya diambil sekali dari network; pindah tab antara "Proses
+    // Salur" dan "Selesai Salur" cukup memfilter ulang cache ini, tidak
+    // perlu request baru.
+    let salurCache: any[] | null = null;
+
+    async function fetchSalurData(): Promise<any[]> {
+      if (salurCache) return salurCache;
+
+      const headers: Record<string, string> = { Accept: "application/json" };
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+
+      const res  = await fetch(`${API_URL}/dashboard/donatur/my-salur`, { headers });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");
+
+      const container = json?.data;
+      const items: any[] = Array.isArray(container?.data)
+        ? container.data
+        : Array.isArray(container)
+          ? container
+          : [];
+
+      salurCache = items;
+      return items;
+    }
+
+    // ── Fetch list ────────────────────────────────────────────────────────────
 
     async function fetchList(pg = 1, append = false) {
       try {
@@ -303,24 +384,54 @@ const statusTabs = [
           loadmore.classList.add("hidden");
         }
 
+        const isSalur = SALUR_STATUSES.includes(activeStatus);
+
+        // ── /my-salur: semua data langsung, filter di frontend ────────────────
+        if (isSalur) {
+          const allSalur = await fetchSalurData();
+          const filtered = allSalur.filter((item) => classifySalurStage(item) === activeStatus);
+
+          skeleton.classList.add("hidden");
+
+          if (filtered.length === 0) {
+            showEmpty();
+            return;
+          }
+
+          list.classList.remove("hidden");
+          list.innerHTML = filtered.map((item) => renderItem(item, "salur")).join("");
+          // /my-salur tidak dipaginasi — semua data yang relevan sudah tampil.
+          loadmore.classList.add("hidden");
+          return;
+        }
+
+        // ── /my-donation: dipaginasi, pakai mode=pagination + load more ───────
         const headers: Record<string, string> = { Accept: "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
-        const isSalur  = SALUR_STATUSES.includes(activeStatus);
-        const endpoint = isSalur ? "/dashboard/donatur/my-salur" : "/dashboard/donatur/my-donation";
-
-        const params = new URLSearchParams({ page: String(pg), limit:  String(5)  });
+        const params = new URLSearchParams({
+          page: String(pg),
+          limit: String(PAGE_SIZE),
+          mode: "pagination",
+        });
         if (activeStatus) params.set("status", activeStatus);
 
-        const res  = await fetch(`${API_URL}${endpoint}?${params}`, { headers });
+        const res  = await fetch(`${API_URL}/dashboard/donatur/my-donation?${params}`, { headers });
         const json = await res.json();
 
         if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");
 
-        const allItems: any[] = json?.data ?? [];
-        // Sembunyikan item canceled
-        const items: any[]    = allItems.filter((item: any) => item.payment_status !== "canceled");
-        const hasMore: boolean = (json?.meta?.current_page ?? 1) < (json?.meta?.last_page ?? 1);
+        // Bentuk respons (mode=pagination):
+        //   { data: { data: [...], pagination: { current_page, last_page, ... } }, status }
+        const container = json?.data;
+        const items: any[] = Array.isArray(container?.data)
+          ? container.data
+          : Array.isArray(container)
+            ? container
+            : [];
+
+        const meta = container?.pagination ?? json?.pagination ?? json?.meta ?? null;
+        const hasMore = meta ? Number(meta.current_page) < Number(meta.last_page) : false;
 
         skeleton.classList.add("hidden");
 
@@ -330,8 +441,10 @@ const statusTabs = [
         }
 
         list.classList.remove("hidden");
-        if (!append) list.innerHTML = "";
-        list.insertAdjacentHTML("beforeend", items.map(renderItem).join(""));
+        list.insertAdjacentHTML(
+          "beforeend",
+          items.map((item) => renderItem(item, "donation")).join(""),
+        );
 
         if (hasMore) {
           loadmore.classList.remove("hidden");
@@ -386,7 +499,7 @@ const statusTabs = [
     // ── Init: baca status dari URL param ──────────────────────────────────────
     // Astro scripts run as deferred modules — DOMContentLoaded sudah fired, panggil langsung
     const urlStatus = new URLSearchParams(window.location.search).get("status") ?? "";
-    const validStatuses = ["", "pending", "menunggu-salur", "proses-salur", "success"];
+    const validStatuses = [...DONATION_STATUSES, ...SALUR_STATUSES];
     activeStatus = validStatuses.includes(urlStatus) ? urlStatus : "";
 
     updateStatusTabs();

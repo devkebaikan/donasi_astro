@@ -60,7 +60,7 @@ const hasAccountNumber = payment.account_number && payment.account_number !== 0;
                 </p>
               </div>
               <button
-                class="copy-btn py-1 px-2 border text-sm border-primary-400 rounded-full text-primary-600 hover:bg-primary-50 hover:border-primary-400 transition-colors"
+                class="ml-4 shrink-0 py-1.5 px-4 text-xs font-medium text-white bg-primary-400 hover:bg-primary-500 rounded-full transition-all duration-200 copy-btn group"
                 data-copy={String(payment.account_number)}
                 aria-label="Salin nomor rekening"
               >
@@ -82,7 +82,7 @@ const hasAccountNumber = payment.account_number && payment.account_number !== 0;
           </div>
 
           <button
-            class="copy-btn py-1 px-2 border text-sm border-primary-400 rounded-full text-primary-600 hover:bg-primary-50 hover:border-primary-400 transition-colors"
+            class="ml-4 shrink-0 py-1.5 px-4 text-xs font-medium text-white bg-primary-400 hover:bg-primary-500 rounded-full transition-all duration-200 copy-btn group"
             data-copy={String(donationAmount)}
             aria-label="Salin nomor rekening"
           >
