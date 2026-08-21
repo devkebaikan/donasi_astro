@@ -9,15 +9,15 @@ const { isAuthenticated } = Astro.locals.auth;
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const personalMenus = [
-  { href: "/me",       label: "Ubah Data Akun",         icon: "user",        color: "primary"    },
-  { href: "/donasi-saya",  label: "Donasi Saya",            icon: "archive",     color: "emerald" },
-  { href: "/donasi-rutin", label: "Rutin Saya",             icon: "calendar",    color: "violet"  },
-  { href: "/mutasi-saku",  label: "Aktivitas Saku Berbagi", icon: "transaction", color: "amber"   },
+  { href: "/me",            label: "Ubah Data Akun",         icon: "user"        },
+  { href: "/donasi-saya",   label: "Donasi Saya",            icon: "archive"     },
+  { href: "/donasi-rutin",  label: "Rutin Saya",             icon: "calendar"    },
+  { href: "/mutasi-saku",   label: "Aktivitas Saku Berbagi", icon: "transaction" },
 ];
 
 const generalMenus = [
-  { href: "/tentang-salur", label: "Tentang Kami",       icon: "info", color: "blue",  external: false  },
-  { href: "/syarat-ketentuan",                  label: "Syarat & Ketentuan", icon: "file", color: "slate", external: false },
+  { href: "/tentang-salur",     label: "Tentang Kami",       icon: "info", external: false },
+  { href: "/syarat-ketentuan",  label: "Syarat & Ketentuan", icon: "file", external: false },
 ];
 
 const iconPaths: Record<string, string> = {
@@ -27,6 +27,7 @@ const iconPaths: Record<string, string> = {
   transaction: "M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4",
   info:        "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z",
   file:        "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+  logout:      "M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1",
 };
 ---
 
@@ -41,33 +42,33 @@ const iconPaths: Record<string, string> = {
 
     <!-- ── Belum login ──────────────────────────────────────────────────────── -->
     {!isAuthenticated && (
-      <div class="px-4 pt-5 space-y-3">
-        <div class="bg-white rounded-lg shadow-sm p-8 flex flex-col items-center text-center">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center mb-5 shadow-lg shadow-primary-200">
-            <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+      <div class="px-4 pt-6 space-y-3">
+        <div class="bg-white rounded-2xl border border-gray-100 p-8 flex flex-col items-center text-center">
+          <div class="w-16 h-16 rounded-full border border-primary-200 flex items-center justify-center mb-5">
+            <svg class="w-7 h-7 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
             </svg>
           </div>
-          <h3 class="text-base font-bold text-gray-900 mb-1.5">Masuk ke Akunmu</h3>
+          <h3 class="text-base font-semibold text-gray-900 mb-1.5 tracking-tight">Masuk ke Akunmu</h3>
           <p class="text-sm text-gray-400 leading-relaxed mb-7 max-w-[220px]">
             Kelola donasi, pantau program, dan akses Saku Berbagi kamu
           </p>
           <a
             href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
-            class="w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-semibold py-3.5 rounded-xl transition-all shadow-sm shadow-primary-200 text-center block"
+            class="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white text-sm font-semibold py-3.5 rounded-xl transition-all text-center block"
           >
             Masuk Sekarang
           </a>
           <p class="text-xs text-gray-400 mt-4">
             Belum punya akun?&nbsp;
-            <a href="/auth/register" class="text-primary-500 font-semibold">Daftar disini</a>
+            <a href="/auth/register" class="text-primary-600 font-semibold">Daftar disini</a>
           </p>
         </div>
 
         <!-- General menu untuk guest -->
-        <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
           <div class="px-4 py-3 border-b border-gray-50">
-            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Umum</span>
+            <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-[0.15em]">Umum</span>
           </div>
           <div class="divide-y divide-gray-50">
             {generalMenus.map((menu) => (
@@ -77,13 +78,11 @@ const iconPaths: Record<string, string> = {
                 rel={menu.external ? "noopener noreferrer" : undefined}
                 class="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors group"
               >
-                <div class={`w-9 h-9 rounded-xl flex items-center justify-center bg-${menu.color}-50 shrink-0`}>
-                  <svg class={`w-4 h-4 text-${menu.color}-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                    <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths[menu.icon]}/>
-                  </svg>
-                </div>
-                <span class="flex-1 text-sm font-medium text-gray-700">{menu.label}</span>
-                <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="w-[18px] h-[18px] text-gray-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                  <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths[menu.icon]}/>
+                </svg>
+                <span class="flex-1 text-sm text-gray-700">{menu.label}</span>
+                <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                 </svg>
               </a>
@@ -96,19 +95,14 @@ const iconPaths: Record<string, string> = {
     <!-- ── Sudah login ──────────────────────────────────────────────────────── -->
     {isAuthenticated && (
       <>
-        <!-- Profile Header dengan gradient -->
-        <div class="relative bg-gradient-to-br from-primary-600 via-primary-500 to-emerald-500 px-4 pt-20 pb-16 overflow-hidden">
-          <!-- Decorative circles -->
-          <div class="absolute -top-6 -right-6 w-32 h-32 bg-white/5 rounded-full pointer-events-none"></div>
-          <div class="absolute top-12 -right-2 w-16 h-16 bg-white/5 rounded-full pointer-events-none"></div>
-
-          <!-- Edit button -->
+        <!-- Identity strip -->
+        <div class="relative bg-primary-500 px-4 pt-16 pb-9">
           <a
             href="/me"
-            class="absolute top-20 right-4 w-8 h-8 bg-white/15 hover:bg-white/25 active:bg-white/30 rounded-full flex items-center justify-center transition-colors z-10"
+            class="absolute top-16 right-4 w-8 h-8 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-colors"
             title="Edit Profil"
           >
-            <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
             </svg>
           </a>
@@ -117,7 +111,7 @@ const iconPaths: Record<string, string> = {
             <!-- Avatar: img (hidden until data loaded) -->
             <div
               id="user-avatar-img-wrap"
-              class="hidden w-[54px] h-[54px] rounded-full overflow-hidden border-2 border-white/40 shrink-0 shadow-md"
+              class="hidden w-12 h-12 rounded-full overflow-hidden ring-2 ring-white/25 shrink-0"
             >
               <img id="user-avatar-img" src="" alt="" class="w-full h-full object-cover" />
             </div>
@@ -125,63 +119,67 @@ const iconPaths: Record<string, string> = {
             <!-- Avatar: initials (default, replaced when data loaded) -->
             <div
               id="user-avatar-initials"
-              class="w-[54px] h-[54px] rounded-full bg-white/20 border-2 border-white/30 flex items-center justify-center text-base font-bold text-white shrink-0 shadow-md"
+              class="w-12 h-12 rounded-full bg-white/10 ring-2 ring-white/25 flex items-center justify-center text-sm font-semibold text-white shrink-0"
             >
               <span id="user-initials-text">
-                <!-- skeleton -->
-                <span class="block w-6 h-3 bg-white/30 rounded animate-pulse"></span>
+                <span class="block w-5 h-2.5 bg-white/25 rounded animate-pulse"></span>
               </span>
             </div>
 
             <!-- Info -->
             <div class="flex-1 min-w-0">
-              <p id="user-name" class="text-[15px] font-bold text-white truncate leading-snug">
-                <span class="inline-block w-28 h-4 bg-white/20 rounded animate-pulse align-middle"></span>
+              <p id="user-name" class="text-[15px] font-semibold text-white truncate tracking-tight leading-snug">
+                <span class="inline-block w-28 h-4 bg-white/15 rounded animate-pulse align-middle"></span>
               </p>
-              <p id="user-phone" class="hidden text-xs text-white/80 truncate mt-1"></p>
-              <p id="user-email" class="hidden text-xs text-white/80 truncate mt-0.5"></p>
+              <p id="user-phone" class="hidden text-xs text-white/65 truncate mt-1"></p>
+              <p id="user-email" class="hidden text-xs text-white/65 truncate mt-0.5"></p>
             </div>
           </div>
         </div>
 
-        <!-- Cards area (wallet card overlaps the gradient header) -->
-        <div class="-mt-9 px-4 space-y-3 relative">
+        <!-- Cards area (wallet card overlaps the identity strip) -->
+        <div class="-mt-5 px-4 space-y-3 relative">
 
-          <!-- Wallet Card -->
-          <div class="bg-white rounded-lg shadow-lg overflow-hidden z-50">
-            <div class="flex items-center gap-3 px-4 py-4">
-              <div class="w-10 h-10 bg-secondary-50 rounded-xl flex items-center justify-center shrink-0">
-                <svg class="w-5 h-5 text-secondary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                </svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-[11px] text-gray-400 leading-none mb-1">Saku Berbagi</p>
-                <p id="wallet-saldo" class="text-sm font-bold text-gray-900 leading-none">
-                  <span class="inline-block w-24 h-[18px] bg-gray-100 rounded animate-pulse align-middle"></span>
+          <!-- Wallet Card — styled like a passbook, its own signature moment -->
+          <div class="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="flex items-start justify-between px-5 pt-4 pb-3">
+              <div>
+                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Saku Berbagi</p>
+                <p id="wallet-saldo" class="mt-1.5 text-xl font-bold text-gray-900 tabular-nums tracking-tight">
+                  <span class="inline-block w-24 h-[22px] bg-gray-100 rounded animate-pulse align-middle"></span>
                 </p>
               </div>
-              <div class="flex gap-2 shrink-0">
-                <a
-                  href="/mutasi-saku"
-                  class="text-xs text-gray-500 bg-gray-100 hover:bg-gray-200 font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
-                >
-                  Riwayat
-                </a>
-                <a
-                  href="/top-up"
-                  class="text-xs text-primary-700 bg-primary-50 hover:bg-primary-100 font-semibold px-3 py-2 rounded-lg transition-colors whitespace-nowrap"
-                >
-                  Top Up
-                </a>
-              </div>
+              <svg class="w-8 h-8 text-primary-300" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- perforated divider -->
+            <div class="relative border-t border-dashed border-gray-200">
+              <span class="absolute -left-2 -top-2 w-4 h-4 rounded-full bg-neutral-50"></span>
+              <span class="absolute -right-2 -top-2 w-4 h-4 rounded-full bg-neutral-50"></span>
+            </div>
+
+            <div class="flex divide-x divide-gray-100">
+              <a
+                href="/mutasi-saku"
+                class="flex-1 text-center py-3 text-xs font-semibold text-gray-500 hover:bg-gray-50 transition-colors"
+              >
+                Riwayat
+              </a>
+              <a
+                href="/top-up"
+                class="flex-1 text-center py-3 text-xs font-semibold text-primary-700 hover:bg-primary-50/60 transition-colors"
+              >
+                Top Up
+              </a>
             </div>
           </div>
 
           <!-- Personal Menu -->
-          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-50">
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Menu Pribadi</span>
+              <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em]">Menu Pribadi</span>
             </div>
             <div class="divide-y divide-gray-50">
               {personalMenus.map((menu) => (
@@ -189,13 +187,11 @@ const iconPaths: Record<string, string> = {
                   href={menu.href}
                   class="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors group"
                 >
-                  <div class={`w-9 h-9 rounded-xl flex items-center justify-center bg-${menu.color}-50 shrink-0`}>
-                    <svg class={`w-4 h-4 text-${menu.color}-600`} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths[menu.icon]}/>
-                    </svg>
-                  </div>
-                  <span class="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{menu.label}</span>
-                  <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <svg class="w-[18px] h-[18px] text-gray-400 group-hover:text-primary-600 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                    <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths[menu.icon]}/>
+                  </svg>
+                  <span class="flex-1 text-sm text-gray-700 group-hover:text-gray-900 transition-colors">{menu.label}</span>
+                  <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                   </svg>
                 </a>
@@ -203,10 +199,10 @@ const iconPaths: Record<string, string> = {
             </div>
           </div>
 
-          <!-- General Menu -->
-          <div class="bg-white rounded-lg shadow-sm overflow-hidden">
+          <!-- General Menu + Logout, grouped together -->
+          <div class="bg-white rounded-2xl border border-gray-100 overflow-hidden">
             <div class="px-4 py-3 border-b border-gray-50">
-              <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-widest">Umum</span>
+              <span class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em]">Umum</span>
             </div>
             <div class="divide-y divide-gray-50">
               {generalMenus.map((menu) => (
@@ -216,36 +212,28 @@ const iconPaths: Record<string, string> = {
                   rel={menu.external ? "noopener noreferrer" : undefined}
                   class="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors group"
                 >
-                  <div class={`w-9 h-9 rounded-xl flex items-center justify-center bg-${menu.color}-50 shrink-0`}>
-                    <svg class={`w-4 h-4 text-${menu.color}-500`} fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                      <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths[menu.icon]}/>
-                    </svg>
-                  </div>
-                  <span class="flex-1 text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{menu.label}</span>
-                  <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-500 group-hover:translate-x-0.5 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <svg class="w-[18px] h-[18px] text-gray-400 group-hover:text-primary-600 shrink-0 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                    <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths[menu.icon]}/>
+                  </svg>
+                  <span class="flex-1 text-sm text-gray-700 group-hover:text-gray-900 transition-colors">{menu.label}</span>
+                  <svg class="w-4 h-4 text-gray-300 group-hover:text-primary-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
                   </svg>
                 </a>
               ))}
+
+              <button
+                id="btn-logout"
+                type="button"
+                class="w-full flex items-center gap-3 px-4 py-3.5 hover:bg-red-50/60 active:bg-red-50 transition-colors group"
+              >
+                <svg class="w-[18px] h-[18px] text-red-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                  <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths.logout}/>
+                </svg>
+                <span class="flex-1 text-left text-sm font-medium text-red-500">Keluar dari Akun</span>
+              </button>
             </div>
           </div>
-
-          <!-- Logout Button -->
-          <button
-            id="btn-logout"
-            type="button"
-            class="w-full flex items-center gap-3 px-4 py-3.5 bg-white rounded-lg shadow-sm hover:bg-red-50 active:bg-red-100 transition-colors group"
-          >
-            <div class="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center shrink-0">
-              <svg class="w-4 h-4 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-              </svg>
-            </div>
-            <span class="flex-1 text-left text-sm font-medium text-red-500 group-hover:text-red-600 transition-colors">Keluar dari Akun</span>
-            <svg class="w-4 h-4 text-red-300 group-hover:text-red-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
 
         </div>
       </>
@@ -254,64 +242,48 @@ const iconPaths: Record<string, string> = {
 
   <!-- ── Logout Confirmation Modal ───────────────────────────────────────── -->
   <div
-  id="logout-modal"
-  class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
->
-  <div
-    id="logout-backdrop"
-    class="absolute inset-0 bg-black/40 backdrop-blur-sm"
-  ></div>
-
-  <div
-    class="relative bg-white rounded-xl shadow-2xl w-full max-w-[380px] overflow-hidden"
+    id="logout-modal"
+    class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
   >
-    <div class="flex flex-col items-center px-6 pt-8 pb-2 text-center">
-      <div
-        class="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center mb-4"
-      >
-        <svg
-          class="w-7 h-7 text-red-400"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-          stroke-width="1.6"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-          />
-        </svg>
+    <div
+      id="logout-backdrop"
+      class="absolute inset-0 bg-black/40"
+    ></div>
+
+    <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-[380px] overflow-hidden">
+      <div class="flex flex-col items-center px-6 pt-8 pb-2 text-center">
+        <div class="w-12 h-12 rounded-full border border-red-100 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+            <path stroke-linecap="round" stroke-linejoin="round" d={iconPaths.logout}/>
+          </svg>
+        </div>
+
+        <h3 class="text-base font-semibold text-gray-900 tracking-tight">Keluar Akun?</h3>
+
+        <p class="text-sm text-gray-400 mt-1.5 mb-1">
+          Kamu perlu masuk kembali untuk mengakses fitur akun.
+        </p>
       </div>
 
-      <h3 class="text-base font-bold text-gray-900">
-        Keluar Akun?
-      </h3>
+      <div class="flex gap-2.5 px-6 py-5">
+        <button
+          id="btn-logout-cancel"
+          type="button"
+          class="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+        >
+          Batal
+        </button>
 
-      <p class="text-sm text-gray-400 mt-1.5 mb-1">
-        Kamu perlu masuk kembali untuk mengakses fitur akun.
-      </p>
-    </div>
-
-    <div class="flex gap-2.5 px-6 py-5">
-      <button
-        id="btn-logout-cancel"
-        type="button"
-        class="flex-1 border border-gray-200 text-gray-600 text-sm font-semibold py-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
-      >
-        Batal
-      </button>
-
-      <button
-        id="btn-logout-confirm"
-        type="button"
-        class="flex-1 bg-red-500 hover:bg-red-600 active:scale-[0.98] text-white text-sm font-semibold py-3 rounded-xl transition-all"
-      >
-        Ya, Keluar
-      </button>
+        <button
+          id="btn-logout-confirm"
+          type="button"
+          class="flex-1 bg-red-500 hover:bg-red-600 active:scale-[0.99] text-white text-sm font-semibold py-3 rounded-xl transition-all"
+        >
+          Ya, Keluar
+        </button>
+      </div>
     </div>
   </div>
-</div>
 
   <BottomNav active="akun" />
 </MainLayout>
@@ -432,7 +404,8 @@ const iconPaths: Record<string, string> = {
           removeToken();
           localStorage.removeItem("user_profile");
           localStorage.removeItem("saldo");
-          window.location.href = `/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`;
+          const from = encodeURIComponent(window.location.pathname + window.location.search);
+          window.location.href = `/auth/login?from=${from}`;
           return;
         }
 

@@ -13,6 +13,7 @@ type Props = SeoProps;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/images/logo.ico" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="generator" content={Astro.generator} />
 
     <!-- Inter font: preconnect lalu load non-blocking -->
@@ -36,6 +37,13 @@ type Props = SeoProps;
       />
     </noscript>
 
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/sw.js");
+        });
+      }
+    </script>
     <Seo {...Astro.props} />
   </head>
   <body class="min-h-screen bg-neutral-100 text-neutral-700 antialiased">
