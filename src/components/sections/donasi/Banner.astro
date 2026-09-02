@@ -7,9 +7,10 @@ interface Props {
   detailCampaign: any;
   link: string;
   donors: any;
+  projectId: number;
 }
 
-const { detailCampaign, link, donors } = Astro.props;
+const { detailCampaign, link, donors, projectId } = Astro.props;
 
 // Computed values
 const type = capitalizeFirstLetter(detailCampaign?.type || "");
@@ -60,38 +61,40 @@ const progressPercent = Math.min(detailCampaign?.progress_achieved || 0, 100);
     </div>
 
     <!-- last proyek program -->
-    <a
-      href={`/donasi/last-project/${link}`}
-      class="group flex items-center justify-between bg-primary-700 px-4 py-4 transition-colors hover:bg-primary-700"
-    >
-      <div class="space-y-1">
-        <div class="flex items-center gap-2 text-xs text-gray-100">
-          Project Salur terdekat lokasi
-        </div>
-
-        <p
-          class="font-medium text-white text-sm md:text-base truncate max-w-[200px]"
+    {
+      projectId && (
+        <a
+          href={`/donasi/last-project/${link}?project_id=${projectId}`}
+          class="group flex items-center justify-between bg-primary-700 px-4 py-4 transition-colors hover:bg-primary-700"
         >
-          {detailCampaign.mitra.name}
-        </p>
-      </div>
+          <div class="space-y-1">
+            <div class="flex items-center gap-2 text-xs text-gray-100">
+              Project Salur terdekat lokasi
+            </div>
 
-      <span class="btn-white-mobile transition-all group-hover:translate-x-0.5">
-        Selengkapnya <svg
-          class="h-3.5 w-3.5 text-primary-400 transition-all group-hover:text-primary-500"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          aria-hidden="true"
-        >
-          <path
-            fill-rule="evenodd"
-            clip-rule="evenodd"
-            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-          ></path>
-        </svg>
-      </span>
-    </a>
+            <p class="font-medium text-white text-sm md:text-base truncate max-w-[200px]">
+              {detailCampaign.mitra.name}
+            </p>
+          </div>
 
+          <span class="btn-white-mobile transition-all group-hover:translate-x-0.5">
+            Selengkapnya{" "}
+            <svg
+              class="h-3.5 w-3.5 text-primary-400 transition-all group-hover:text-primary-500"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+            >
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+              />
+            </svg>
+          </span>
+        </a>
+      )
+    }
     <!-- Mitra Info Card -->
     <a
       href={`/mitra/${detailCampaign?.mitra?.id}`}

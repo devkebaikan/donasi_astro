@@ -564,7 +564,7 @@ function formatRupiah(n: number) {
         JSON.stringify({
           type: "zakat",
           program_type: "zakat",
-          items: [zakatId],
+          items: [Number(zakatId)],
           zakat_type: [zakatType],
           total: [Math.round(zakat)],
         }),

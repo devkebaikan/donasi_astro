@@ -3,167 +3,276 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-import {
-  getProjectByLink,
-} from "@/lib/FetchData";
+import { getProjectById } from "@/lib/FetchData";
 import { formatDate, formatRupiah, progressPercent } from "@/lib/formatter";
 
 const { slug } = Astro.params;
-if (!slug) return Astro.redirect("/404");
 
-const [  dataProject] = await Promise.all([
-  getProjectByLink(slug),
-]);
+// DEFAULT PROJECT
+interface Mitra {
+  nama?: string;
+  image_url?: string;
+}
 
-const project = dataProject[0] || [];
-const pct = progressPercent(project.nominal_achieved, project.nominal_target);
+interface Project {
+  id: number;
+  pengaju: string;
+  image_url: string;
+  deskripsi: string;
+  nominal_ajuan: number;
+  nominal_acc: number;
+  waktu_pelaksanaan: string;
+  jumlah_pm: number;
+  judul: string;
+  activity: string;
+  location: string;
+  claimed_donasi: number;
+  total_alokasi: number;
+  mitra_utama: Mitra | null;
+  mitras: Mitra[];
+  programs: [];
+}
 
-function activityLabel(activity: string): string {
+// AMBIL PROJECT ID
+const projectIdParam = Astro.url.searchParams.get("project_id");
+
+const emptyProject: Project = {
+  id: 0,
+  pengaju: "",
+  image_url: "",
+  deskripsi: "",
+  nominal_ajuan: 0,
+  nominal_acc: 0,
+  waktu_pelaksanaan: "",
+  jumlah_pm: 0,
+  judul: "",
+  activity: "",
+  location: "",
+  claimed_donasi: 0,
+  total_alokasi: 0,
+  mitra_utama: null,
+  mitras: [],
+  programs: [],
+};
+
+let project: Project = emptyProject;
+
+try {
+  const result = await getProjectById(Number(projectIdParam));
+
+  if (result) {
+    project = result;
+  }
+} catch (error) {
+  console.error("Gagal mengambil project:", error);
+}
+
+// DATA TURUNAN
+const nominalAchieved = Number(project.claimed_donasi ?? 0);
+
+const nominalTarget = Number(
+  project.total_alokasi ?? project.nominal_acc ?? project.nominal_ajuan ?? 0,
+);
+
+const pct = progressPercent(nominalAchieved, nominalTarget);
+
+const mitra = project.mitra_utama ?? project.mitras?.[0] ?? null;
+
+const mitraName = mitra?.nama ?? project.pengaju ?? "Mitra";
+
+const mitraImage = mitra?.image_url ?? null;
+
+const description =
+  project.deskripsi
+    ?.replace(/<[^>]*>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim() ?? "";
+
+const beneficiary = Number(project.jumlah_pm ?? 0);
+
+// ACTIVITY
+function activityLabel(activity?: string): string {
   const map: Record<string, string> = {
     "active open": "Sedang Tergalang",
     "active close": "Segera Salur",
     done: "Selesai",
   };
-  return map[activity?.toLowerCase()] ?? activity;
+
+  return map[activity?.toLowerCase() ?? ""] ?? activity ?? "-";
 }
 
-function activityBadgeClass(activity: string): string {
+function activityBadgeClass(activity?: string): string {
   const a = activity?.toLowerCase();
-  if (a === "active open") return "bg-primary-100 text-primary-700";
-  if (a === "active close") return "bg-amber-100 text-amber-700";
-  if (a === "done") return "bg-blue-100 text-blue-700";
+
+  if (a === "active open") {
+    return "bg-primary-100 text-primary-700";
+  }
+
+  if (a === "active close") {
+    return "bg-amber-100 text-amber-700";
+  }
+
+  if (a === "done") {
+    return "bg-blue-100 text-blue-700";
+  }
+
   return "bg-gray-100 text-gray-600";
 }
 ---
 
 <MainLayout
-  title="Proyek Salur"
-  description="Informasi lengkap tentang proyek penyaluran donasi."
+  title={project.judul || "Proyek Salur"}
+  description={description ||
+    "Informasi lengkap tentang proyek penyaluran donasi."}
 >
-<Header type="title" text="Proyek Salur" />
+  <Header type="title" text="Proyek Salur" />
   <div class="container bg-white pb-24 pt-12">
+    <section class="mx-4 mt-5">
+      <h2 class="mb-3 text-sm font-bold text-gray-700">Detail Proyek Salur</h2>
 
-    <!-- Proyek Terbaru -->
-    {project && (
-      <section class="mx-4 mt-5">
-        <h2 class="text-sm font-bold text-gray-700 mb-3">Detail Proyek Salur</h2>
+      <div
+        class="relative flex flex-col gap-4 border-l-2 border-primary-100 pl-5"
+      >
+        <div class="relative">
+          <div
+            class="absolute -left-[25px] top-4 h-3 w-3 rounded-full border-2 border-white bg-primary-500 ring-2 ring-primary-200"
+          >
+          </div>
 
-        <div class="relative pl-5  border-l-2 border-primary-100 flex flex-col gap-4">
-
-
-              <div class="relative ">
-                <!-- Timeline dot -->
-                <div class="absolute -left-[25px] top-4 w-3 h-3 rounded-full bg-primary-500 border-2 border-white ring-2 ring-primary-200"></div>
-
-                <div class="bg-primary-50 rounded-xl border border-gray-100 overflow-hidden">
-
-                  <!-- Meta baris atas -->
-                  <div class="flex items-center justify-between px-3 pt-3 pb-2 gap-2">
-                    <div class="flex items-center gap-2 min-w-0">
-                      {project.mitra?.image
-                        ? <img src={project.mitra.image} alt={project.mitra.name} class="w-8 h-8 rounded-full object-contain border border-gray-100 flex-shrink-0" />
-                        : <div class="w-8 h-8 rounded-full bg-primary-50 flex items-center justify-center flex-shrink-0 text-primary-600 font-bold text-sm">{project.mitra?.name?.charAt(0)}</div>
-                      }
-                      <div class="min-w-0">
-                        <p class="text-sm font-semibold text-gray-800 truncate">{project.mitra?.name ?? "Mitra"}</p>
-                        <p class="text-xs text-gray-400">{formatDate(project.excecution_time)}</p>
-                      </div>
+          <div
+            class="overflow-hidden rounded-xl border border-gray-100 bg-primary-50"
+          >
+            <!-- MITRA -->
+            <div class="flex items-center justify-between gap-2 px-3 pb-2 pt-3">
+              <div class="flex min-w-0 items-center gap-2">
+                {
+                  mitraImage ? (
+                    <img
+                      src={mitraImage}
+                      alt={mitraName}
+                      width="32"
+                      height="32"
+                      class="h-8 w-8 flex-shrink-0 rounded-full border border-gray-100 object-contain"
+                    />
+                  ) : (
+                    <div class="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary-100 text-sm font-bold text-primary-600">
+                      {mitraName.charAt(0).toUpperCase()}
                     </div>
-                    <span class={`text-xs font-medium px-2.5 py-1 rounded-full flex-shrink-0 ${activityBadgeClass(project.activity)}`}>
-                      {activityLabel(project.activity)}
-                    </span>
-                  </div>
+                  )
+                }
 
-                  <!-- Banner -->
-                  {project.image && (
-                    <div class="w-full overflow-hidden">
-                      <img
-                      width={120}
-                      height={180}
-                        src={project.image}
-                        alt={project.title}
-                        class="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                  )}
+                <div class="min-w-0">
+                  <p class="truncate text-sm font-semibold text-gray-800">
+                    {mitraName}
+                  </p>
 
-                  <!-- Body -->
-                  <div class="px-3 pt-3 pb-4">
-                    <h3 class="text-sm font-bold text-gray-900 leading-snug mb-1">
-                      {project.title}
-                    </h3>
-
-                    {project.location && (
-                      <div class="flex items-center gap-1 mb-3">
-                        <svg class="w-3 h-3 text-primary-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        <span class="text-xs text-gray-400 truncate">{project.location}</span>
-                      </div>
-                    )}
-
-                    <!-- Progress -->
-                    <div class="mb-3">
-                      <div class="w-full h-1.5 bg-gray-100 rounded-full overflow-hidden mb-1.5">
-                        <div
-                          class="h-full bg-primary-500 rounded-full"
-                          style={`width:${pct}%`}
-                        ></div>
-                      </div>
-                      <div class="flex justify-between items-center">
-                        <span class="text-xs font-semibold text-primary-600">{formatRupiah(project.nominal_achieved)}</span>
-                        <span class="text-xs text-gray-400">dari {formatRupiah(project.nominal_target)}</span>
-                      </div>
-                    </div>
-
-                    <!-- Tags -->
-                    <div class="flex gap-2 flex-wrap mb-3">
-                      <span class="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
-                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                          <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        {project.beneficiary} penerima
-                      </span>
-                      <span class="inline-flex items-center gap-1 text-xs text-gray-500 bg-gray-50 px-2.5 py-1 rounded-full border border-gray-100">
-                        {pct}% terkumpul
-                      </span>
-                    </div>
-
-                    <!-- Deskripsi singkat -->
-                    {project.description && (
-                      <p class="text-xs text-gray-500 leading-relaxed mb-4">
-                        {/* {project.description.replace(/<[^>]*>/g, " ").trim().substring(0, 200)}... */}
-                        {project.description.replace(/<[^>]*>/g, " ").trim()}
+                  {
+                    project.waktu_pelaksanaan && (
+                      <p class="text-xs text-gray-400">
+                        {formatDate(project.waktu_pelaksanaan)}
                       </p>
-                    )}
-
-                    <a
-                      href={`/donasi/${slug}?project=${project.id}`}
-                      class="block w-full py-3 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-semibold text-center rounded-lg transition-all duration-150"
-                    >
-                      Donasi Untuk Proyek Ini
-                    </a>
-                  </div>
+                    )
+                  }
                 </div>
               </div>
 
+              <span
+                class={`flex-shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${activityBadgeClass(project.activity)}`}
+              >
+                {activityLabel(project.activity)}
+              </span>
+            </div>
+
+            <!-- IMAGE -->
+            {
+              project.image_url && (
+                <div class="w-full overflow-hidden bg-gray-100">
+                  <img
+                    src={project.image_url}
+                    alt={project.judul || "Project"}
+                    width="1200"
+                    height="600"
+                    class="h-auto max-h-[400px] w-full object-cover"
+                    loading="lazy"
+                  />
+                </div>
+              )
+            }
+
+            <!-- BODY -->
+            <div class="px-3 pb-4 pt-3">
+              <h3 class="mb-1 text-sm font-bold leading-snug text-gray-900">
+                {project.judul || "Data proyek tidak tersedia"}
+              </h3>
+
+              <!-- PROGRESS -->
+              <div class="mb-3">
+                <div
+                  class="mb-1.5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100"
+                >
+                  <div
+                    class="h-full rounded-full bg-primary-500"
+                    style={`width:${pct}%`}
+                  >
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                  <span class="text-xs font-semibold text-primary-600">
+                    {formatRupiah(nominalAchieved)}
+                  </span>
+
+                  <span class="text-xs text-gray-400">
+                    dari {formatRupiah(nominalTarget)}
+                  </span>
+                </div>
+              </div>
+
+              <!-- TAGS -->
+              <div class="mb-3 flex flex-wrap gap-2">
+                {
+                  beneficiary > 0 && (
+                    <span class="inline-flex items-center gap-1 rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-xs text-gray-500">
+                      {beneficiary} penerima
+                    </span>
+                  )
+                }
+
+                <span
+                  class="inline-flex items-center gap-1 rounded-full border border-gray-100 bg-gray-50 px-2.5 py-1 text-xs text-gray-500"
+                >
+                  {pct}% terkumpul
+                </span>
+              </div>
+
+              <!-- DESCRIPTION -->
+              {
+                description && (
+                  <p class="mb-4 text-xs leading-relaxed text-gray-500">
+                    {description}
+                  </p>
+                )
+              }
+
+              <!-- CTA -->
+              {
+                project.id > 0 && slug ? (
+                  <a
+                    href={`/donasi/${slug}?project=${project.id}`}
+                    class="block w-full rounded-lg bg-primary-500 py-3 text-center text-sm font-semibold text-white transition-all duration-150 hover:bg-primary-600 active:scale-[0.98]"
+                  >
+                    Donasi Untuk Proyek Ini
+                  </a>
+                ) : (
+                  <div class="rounded-lg bg-gray-100 py-3 text-center text-sm font-medium text-gray-400">
+                    Data proyek belum tersedia
+                  </div>
+                )
+              }
+            </div>
+          </div>
         </div>
-      </section>
-    )}
-
+      </div>
+    </section>
   </div>
-
-  <!-- Bottom CTA -->
-  <!-- <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-4 py-3 z-40">
-    <div class="max-w-[480px] mx-auto">
-      <a
-        href={`/donasi/${slug}`}
-        class="block w-full py-3.5 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-bold text-center rounded-xl transition-all duration-150"
-      >
-        Donasi Sekarang
-      </a>
-    </div>
-  </div> -->
 </MainLayout>

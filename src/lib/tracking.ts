@@ -17,8 +17,6 @@ export function pushGTMEvent(event: string, value?: any) {
     event,
     ...(value && value),
   });
-
-  // console.log(`GTM Event: ${event}`, value);
 }
 
 /**
@@ -60,41 +58,35 @@ export function trackBeginCheckout({
 /**
  * Track Purchase
  */
+
 export function trackPurchase({
   invoice,
-  programId,
-  programName,
   value,
 }: {
   invoice: string;
-  programId: string;
-  programName: string;
-  value: number;
+  value: number | string;
 }) {
+  const normalizedValue = Number(value);
+
+  // console.log("Purchase Value Raw:", value);
+  // console.log("Purchase Value Parsed:", normalizedValue);
+
+  if (!normalizedValue || isNaN(normalizedValue)) {
+    console.error("Invalid purchase value", value);
+    return;
+  }
+
+  // GA4 / GTM
   pushGTMEvent("purchase", {
-    transaction_id: invoice,
     currency: "IDR",
-    value,
-    items: [
-      {
-        item_id: programId,
-        item_name: programName,
-        price: value,
-        quantity: 1,
-      },
-    ],
+    value: normalizedValue,
+    transaction_id: invoice,
   });
 
-  trackMeta("Purchase", {
-    value,
+  // Meta Pixel
+  trackMeta("purchase", {
+    value: normalizedValue,
     currency: "IDR",
-    contents: [
-      {
-        id: programId,
-        quantity: 1,
-        item_price: value,
-      },
-    ],
-    content_type: "product",
+    transaction_id: invoice,
   });
 }

@@ -4,32 +4,44 @@ import Seo from "../components/Seo.astro";
 import type { SeoProps } from "../lib/seo";
 
 type Props = SeoProps;
+
+const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
+const META_PIXEL_ID = "3927582530719877";
 ---
 
 <!doctype html>
 <html lang="id">
   <head>
+    <!-- Meta -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- Favicon & PWA -->
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/images/logo.ico" />
     <link rel="manifest" href="/manifest.webmanifest" />
-    <meta name="generator" content={Astro.generator} />
 
-    <!-- Inter font: preconnect lalu load non-blocking -->
+    <!-- SEO -->
+    <Seo {...Astro.props} />
+
+    <!-- Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <link
       rel="preload"
       as="style"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
     />
+
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
       media="print"
       onload="this.media='all'"
     />
+
     <noscript>
       <link
         rel="stylesheet"
@@ -37,22 +49,128 @@ type Props = SeoProps;
       />
     </noscript>
 
-    <script>
+    <!-- Google Tag Manager -->
+    <script is:inline define:vars={{ GTM_ID }}>
+      (function (w, d, s, l, i) {
+        if (!i) return;
+
+        w[l] = w[l] || [];
+        w[l].push({
+          "gtm.start": new Date().getTime(),
+          event: "gtm.js",
+        });
+
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", GTM_ID);
+    </script>
+
+    <!-- Meta Pixel -->
+    <script is:inline define:vars={{ META_PIXEL_ID }}>
+      !(function (f, b, e, v, n, t, s) {
+        if (f.fbq) return;
+
+        n = f.fbq = function () {
+          n.callMethod
+            ? n.callMethod.apply(n, arguments)
+            : n.queue.push(arguments);
+        };
+
+        if (!f._fbq) f._fbq = n;
+
+        n.push = n;
+        n.loaded = !0;
+        n.version = "2.0";
+        n.queue = [];
+
+        t = b.createElement(e);
+        t.async = !0;
+        t.src = v;
+
+        s = b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t, s);
+      })(
+        window,
+        document,
+        "script",
+        "https://connect.facebook.net/en_US/fbevents.js",
+      );
+
+      fbq("init", META_PIXEL_ID);
+    </script>
+
+    <!-- Service Worker -->
+    <script is:inline>
       if ("serviceWorker" in navigator) {
         window.addEventListener("load", () => {
           navigator.serviceWorker.register("/sw.js");
         });
       }
     </script>
-    <Seo {...Astro.props} />
   </head>
+
   <body class="min-h-screen bg-neutral-100 text-neutral-700 antialiased">
+    <!-- GTM NoScript -->
+    {
+      GTM_ID && (
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style="display:none;visibility:hidden"
+          />
+        </noscript>
+      )
+    }
+
+    <!-- Meta Pixel NoScript -->
+    <noscript>
+      <img
+        src={`https://www.facebook.com/tr?id=${META_PIXEL_ID}&ev=PageView&noscript=1`}
+        height="1"
+        width="1"
+        style="display:none"
+        alt=""
+      />
+    </noscript>
+
+    <!-- SPA Page View Tracking -->
+    <script is:inline>
+      function trackPageView() {
+        // GTM
+        window.dataLayer = window.dataLayer || [];
+
+        window.dataLayer.push({
+          event: "page_view",
+          page_path: location.pathname,
+          page_title: document.title,
+        });
+
+        // Meta Pixel
+        if (window.fbq) {
+          fbq("track", "PageView");
+        }
+      }
+
+      document.addEventListener("astro:page-load", trackPageView);
+    </script>
+
+    <!-- Accessibility -->
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-9999 focus:px-4 focus:py-2 focus:bg-primary-600 focus:text-white focus:rounded-md focus:shadow-lg focus:text-sm focus:font-semibold"
     >
       Lewati ke konten utama
     </a>
+
+    <!-- Main Content -->
     <main id="main-content">
       <slot />
     </main>

@@ -8,6 +8,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import { getRutinDetail } from "@/lib/FetchData";
 import { formatRupiah, formatDate } from "@/lib/formatter";
 import { getServerToken } from "@/lib/auth";
+// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 // ── Params ───────────────────────────────────────────────────────────────────
 const { slug } = Astro.params;
@@ -18,7 +19,7 @@ if (!token) return Astro.redirect(`/auth/login?from=/donasi-rutin/detail/${slug}
 
 // ── Fetch detail ─────────────────────────────────────────────────────────────
 const dataDetailRutin = await getRutinDetail(slug, token);
-const detail = dataDetailRutin?.data ?? null;
+const detail = dataDetailRutin ?? null;
 
 
 // ── Derived values ────────────────────────────────────────────────────────────
@@ -122,8 +123,8 @@ const infoRows = [
   data-rutin-id={slug}
   class="container min-h-screen pb-24 bg-gray-50 pt-18"
   >
-
-    { detail && (
+<!-- <ShowJsonData data={detail} /> -->
+     { detail && (
       <div class="space-y-3 px-4 py-4">
 
         <!-- ── Status Banner ───────────────────────────────────────────────── -->
@@ -159,7 +160,6 @@ const infoRows = [
         <!-- ── Detail Info ─────────────────────────────────────────────────── -->
         <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
           <div class="flex items-center gap-2 px-4 py-3 border-b border-gray-100">
-            <span class="w-1 h-5 bg-primary-500 rounded-full"></span>
             <span class="text-sm font-semibold text-gray-700">Detail Donasi Rutin</span>
           </div>
 

@@ -21,4 +21,12 @@ export const sendInitialCheckoutEvent = async (invoice, nominal) => {
   } catch (error) {
     console.error("Error :", error);
   }
+
+  if (typeof window.fbq === "function") {
+    window.fbq("track", "InitiateCheckout", {
+      value: nominal,
+      currency: "IDR",
+      order_id: invoice,
+    });
+  }
 };

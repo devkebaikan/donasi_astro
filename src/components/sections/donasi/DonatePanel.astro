@@ -11,12 +11,15 @@ interface Props {
 const { nominalOptions, programId, programLink, projectId } = Astro.props;
 ---
 
+<!-- Wrapper Fullscreen Overlay -->
 <div
-  id="donate-panel"
-  class="fixed bottom-0 left-0 right-0 z-50 translate-y-full transition-transform duration-300"
+  id="donate-overlay"
+  class="fixed inset-0 z-50 bg-black/40 opacity-0 pointer-events-none transition-opacity duration-300 flex items-end justify-center"
 >
+  <!-- Panel Modal Utama (Gunakan e.stopPropagation() via JS agar klik di dalam tidak menutup panel) -->
   <div
-    class="mx-auto max-w-120 rounded-t-2xl shadow-lg border-2 border-neutral-300"
+    id="donate-panel"
+    class="w-full max-w-120 rounded-t-2xl shadow-lg border-2 border-neutral-300 translate-y-full transition-transform duration-300"
   >
     <div class="bg-white rounded-t-xl shadow-lg p-4 space-y-4">
       <div class="flex justify-between items-center">
@@ -31,22 +34,22 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
               <button
                 type="button"
                 data-value={amount.nominal}
-                class="preset-btn group relative border-2 border-primary-200
-                     hover:border-primary-500 rounded-md p-3 sm:p-4
-                     transition-all duration-300 hover:shadow-md"
+                class="preset-btn group relative border-2 border-primary-200 bg-white text-gray-700
+                       hover:border-primary-500 rounded-md p-3 sm:p-4
+                       transition-all duration-200 active:scale-95 ease-in-out"
               >
                 {index === 1 && (
                   <span
                     class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
-                         bg-linear-to-r from-secondary-400 to-secondary-500
-                         text-white text-[10px] text-xs font-semibold px-2 py-1
-                         rounded-t-full rounded-br-full"
+                           bg-linear-to-r from-secondary-400 to-secondary-500
+                           text-white text-[10px] text-xs font-semibold px-2 py-1
+                           rounded-t-full rounded-br-full z-10"
                   >
                     Nominal Favorit
                   </span>
                 )}
                 <div class="flex flex-col items-center gap-1">
-                  <span class="text-sm font-bold text-amount">
+                  <span class="text-sm font-bold text-amount pointer-events-none">
                     {formatRupiah(amount.nominal)}
                   </span>
                 </div>
@@ -80,6 +83,7 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
   import { formatRupiah } from "@/lib/formatter";
   import { showToast } from "@/lib/toast";
 
+  const overlay = document.getElementById("donate-overlay");
   const panel = document.getElementById("donate-panel");
   const closeBtn = document.getElementById("close-panel");
   const input = document.getElementById(
@@ -92,20 +96,50 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
     return Number(value.replace(/\D/g, "")) || 0;
   }
 
-  // Buka panel — dipicu oleh StickyDonateBar via custom event
-  document.addEventListener("donate:open", () => {
-    panel?.classList.remove("translate-y-full");
-  });
+  function clearActivePreset() {
+    presetBtns.forEach((btn) => {
+      btn.classList.remove(
+        "bg-primary-500",
+        "text-white",
+        "border-primary-500",
+      );
+      btn.classList.add("bg-white", "text-gray-700", "border-primary-200");
+    });
+  }
 
-  closeBtn?.addEventListener("click", () => {
+  function openPanel() {
+    overlay?.classList.remove("opacity-0", "pointer-events-none");
+    panel?.classList.remove("translate-y-full");
+  }
+
+  function closePanel() {
+    overlay?.classList.add("opacity-0", "pointer-events-none");
     panel?.classList.add("translate-y-full");
+  }
+
+  // Buka panel — dipicu oleh StickyDonateBar via custom event
+  document.addEventListener("donate:open", openPanel);
+
+  // Tutup panel via tombol X
+  closeBtn?.addEventListener("click", closePanel);
+
+  // Tutup panel ketika area luar (overlay) diklik
+  overlay?.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      closePanel();
+    }
   });
 
   presetBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
       const value = btn.getAttribute("data-value");
       if (!value || !input) return;
+
       input.value = formatRupiah(Number(value));
+
+      clearActivePreset();
+      btn.classList.remove("bg-white", "text-gray-700", "border-primary-200");
+      btn.classList.add("bg-primary-500", "text-white", "border-primary-500");
     });
   });
 
@@ -113,6 +147,8 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
     const target = e.target as HTMLInputElement;
     const raw = parseNumber(target.value);
     target.value = raw ? formatRupiah(raw) : "";
+
+    clearActivePreset();
   });
 
   submitBtn?.addEventListener("click", () => {

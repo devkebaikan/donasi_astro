@@ -14,6 +14,7 @@ import {
 } from "@/lib/FetchData";
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
+import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const { slug } = Astro.params;
 
@@ -31,14 +32,29 @@ if (Astro.url.searchParams.has("utm_source")) {
   });
 }
 
-const [dataDetailCampaign, dataDonors, nominalOptions] = await Promise.all([
-  getCampaignByLink(slug),
-  getDonorsByLink(slug),
-  getNominalOptions(slug),
-]);
+let dataDetailCampaign, dataDonors, nominalOptions;
+try {
+  [dataDetailCampaign, dataDonors, nominalOptions] = await Promise.all([
+    getCampaignByLink(slug),
+    getDonorsByLink(slug),
+    getNominalOptions(slug),
+  ]);
+} catch (err: any) {
+  const status = err?.response?.status ?? err?.status ?? null;
+  if (status === 404 || String(err?.message ?? "").includes("404")) {
+    return Astro.redirect("/404");
+  }
+  // For other errors, fallback to 404 to avoid exposing internal error to users
+  return Astro.redirect("/404");
+}
 
 const detailCampaign = dataDetailCampaign?.data ?? {};
 const donors = dataDonors?.data ?? [];
+
+// Jika data campaign tidak ditemukan atau kosong, lempar ke halaman 404
+if (!detailCampaign || Object.keys(detailCampaign).length === 0) {
+  return Astro.redirect("/404");
+}
 
 const isRutin = detailCampaign?.is_rutin === true;
 const isActive = detailCampaign?.status === "PUBLISH";
@@ -46,6 +62,12 @@ const isActive = detailCampaign?.status === "PUBLISH";
 // SEO
 const campaignTitle = detailCampaign?.title ?? "Detail Donasi";
 const campaignImage = detailCampaign?.image ?? null;
+
+const lastProjectId =
+  detailCampaign?.last_two_projects &&
+  detailCampaign?.last_two_projects.length > 0
+    ? detailCampaign?.last_two_projects[0].id
+    : null;
 
 const campaignJsonLd = JSON.stringify({
   "@context": "https://schema.org",
@@ -107,13 +129,19 @@ const campaignJsonLd = JSON.stringify({
 
   <div class="bg-white min-h-screen container">
     <div class="mx-auto mb-24 max-w-120">
-      <Banner link={slug} detailCampaign={detailCampaign} donors={donors} />
+      <Banner
+        link={slug}
+        detailCampaign={detailCampaign}
+        donors={donors}
+        projectId={lastProjectId ?? null}
+      />
       <BoxGuaratee />
       <ProfileMitra
         programLink={detailCampaign?.link}
         programId={detailCampaign?.id}
         projekSalur={detailCampaign?.last_two_projects}
       />
+      <!-- <ShowJsonData data={detailCampaign?.last_two_projects[0].id} /> -->
       <TabSection slug={slug} detailCampaign={detailCampaign} />
     </div>
 

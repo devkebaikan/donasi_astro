@@ -2,7 +2,6 @@
 export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
-import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import {
   getProjectSummaryByLink,
@@ -10,16 +9,48 @@ import {
   getProjectByLink,
 } from "@/lib/FetchData";
 import { formatDate, formatRupiah } from "@/lib/formatter";
-import { Image } from "astro:assets";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/404");
 
-const [projectSummary, mitraList, projects] = await Promise.all([
-  getProjectSummaryByLink(slug),
-  getMitraSalurByLink(slug),
-  getProjectByLink(slug),
-]);
+let projectSummary = null;
+let mitraList = [];
+let projects = [];
+
+try {
+  const [
+    projectSummaryData,
+    mitraListData,
+    projectsData,
+  ] = await Promise.all([
+    getProjectSummaryByLink(slug),
+    getMitraSalurByLink(slug),
+    getProjectByLink(slug),
+  ]);
+
+  projectSummary = projectSummaryData ?? null;
+
+  mitraList = Array.isArray(mitraListData)
+    ? mitraListData
+    : [];
+
+  projects = Array.isArray(projectsData)
+    ? projectsData
+    : [];
+
+} catch (error) {
+  console.error("Error fetch proyek salur:", error);
+
+  projectSummary = null;
+  mitraList = [];
+  projects = [];
+}
+
+// const [projectSummary, mitraList, projects] = await Promise.all([
+//   getProjectSummaryByLink(slug),
+//   getMitraSalurByLink(slug),
+//   getProjectByLink(slug),
+// ]);
 
 // const projects = dataProject?.data || [];
 
@@ -76,7 +107,7 @@ function activityBadgeClass(activity: string): string {
       </section>
     )}
     <!-- Mitra Salur -->
-    {mitraList.length > 0 && (
+    {Array.isArray(mitraList) && mitraList.length > 0 && (
       mitraList.map((m:any) => (
       <section class="mx-4 mt-3 bg-white rounded-xl border border-gray-100 px-4 py-3">
         <div class="flex items-center gap-3">
@@ -103,10 +134,9 @@ function activityBadgeClass(activity: string): string {
       ))
       
     )}
-    <ShowJsonData data={projects} />
 
     <!-- Proyek Terbaru -->
-    {projects > 0 && (
+    {projects?.length > 0 && (
       <section class="mx-4 mt-5">
         <h2 class="text-sm font-bold text-gray-700 mb-3">Proyek Salur Terbaru</h2>
 
@@ -196,7 +226,7 @@ function activityBadgeClass(activity: string): string {
 
                     <!-- Deskripsi singkat -->
                     {project.description && (
-                      <a href={`/donasi/project/detail/${slug}`} class="w-full">
+                      <a href={`/donasi/project/detail/${slug}?project_id=${project.id}`} class="w-full">
                         <p class="text-xs text-gray-500 leading-relaxed mb-2 line-clamp-2">
                           {project.description.replace(/<[^>]*>/g, " ").trim().substring(0, 200)}...
                           {/* {project.description.replace(/<[^>]*>/g, " ").trim()} */}

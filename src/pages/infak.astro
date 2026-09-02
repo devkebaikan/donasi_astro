@@ -13,6 +13,7 @@ import {
   getUserProfile,
   getCampaignDonorInfak,
   getPaymentMethodFilter,
+  getCampaignSetUp,
 } from "@/lib/FetchData";
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
@@ -25,13 +26,15 @@ const fetchOpts = (auth = false) => ({
   },
 });
 
-const [qrRes, pmData, donors, account] = await Promise.all([
+const [qrRes, pmData, donors, account, programSetup] = await Promise.all([
   fetch(`${API_URL}/qr-code/infaq`, fetchOpts()),
   getPaymentMethodFilter({ status: "true", program_link: "infaq" }),
   getCampaignDonorInfak({ limit: 10 }),
   token ? getUserProfile(token) : Promise.resolve(null),
+  getCampaignSetUp("infaq"),
 ]);
 
+const infaqId = programSetup?.value ?? 399;
 const qr = qrRes.ok ? (await qrRes.json())?.data : null;
 
 const isAuth = !!account;
@@ -65,6 +68,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     data-is-auth={isAuth}
     data-user-name={userName}
     data-user-phone={userPhone}
+    data-infaq-id={infaqId}
     class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-16"
   >
     <div class="container">
@@ -146,6 +150,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
   const isAuth = page?.dataset.isAuth === "true";
   const userName = page?.dataset.userName ?? "";
   const userPhone = page?.dataset.userPhone ?? "";
+  const infaqId = Number(page?.dataset.infaqId ?? 399);
   const token = getToken();
 
   // ── State ─────────────────────────────────────────────────────────────────
@@ -350,7 +355,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     const raw: Record<string, unknown> = {
       type: "donation",
       program_type: "infaq",
-      items: [399],
+      items: [infaqId],
       total: [amount],
       payment_method_id: paymentMethodId,
       name,

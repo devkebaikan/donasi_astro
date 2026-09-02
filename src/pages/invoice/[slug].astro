@@ -257,8 +257,7 @@ const qrPayload =
 import { showToast } from "@/lib/toast";
 
 import { sendInitialCheckoutEvent } from "@/lib/pixels";
-import { trackBeginCheckout } from "@/lib/tracking";
-import { formatRupiah } from "@/lib/formatter";
+import { trackBeginCheckout, trackPurchase } from "@/lib/tracking";
 
 document.addEventListener("DOMContentLoaded", () => {
   const el = document.getElementById("invoice-page");
@@ -270,16 +269,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const isPaid = el.dataset.paid === "true";
   const paymentUrl = el.dataset.paymentUrl;
   const qrCode = el.dataset.qrCode
-  // const idProgram = el.dataset.idProgram;
-  
-  // console.log(idProgram)
- 
  
   sendInitialCheckoutEvent(slug, donationAmount);
   trackBeginCheckout({
     programId: slug || "",
     value: donationAmount,
   });
+  trackPurchase({
+    invoice : slug || '',
+    value: donationAmount,
+  })
 
   if (isPaid) {
     setTimeout(() => {

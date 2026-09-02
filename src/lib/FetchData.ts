@@ -121,6 +121,11 @@ export async function getProjectByLink(link: string | null) {
   );
 }
 
+// by id
+export async function getProjectById(id: number | null) {
+  return safe(() => publicApi.get(`/program/projects/${id}`), "getProjectBId");
+}
+
 export async function getProjectSummaryByLink(link: string | null) {
   return safe(
     () =>
