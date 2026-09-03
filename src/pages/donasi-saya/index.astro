@@ -6,6 +6,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import BottomNav from "@/components/layouts/BottomNav.astro";
 import { getServerToken } from "@/lib/auth";
 import { Image } from "astro:assets";
+import KalenderDonasi from "@/components/sections/donasi-saya/KalenderDonasi.astro";
 
 const isAuthenticated = getServerToken(Astro.cookies) !== null;
 
@@ -225,90 +226,7 @@ const donationStatuses = [
       </div>
     </div>
 
-    <!-- ── Kalender Donasi ──────────────────────────────────────────────────── -->
-    <div class="px-4 mb-4">
-      <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-      >
-        <!-- Header kalender -->
-        <div
-          class="flex items-center justify-between px-4 py-3 border-b border-gray-100"
-        >
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-gray-700"
-              >Kalender Donasi</span
-            >
-          </div>
-          <!-- <div class="flex items-center gap-1.5">
-            <span class="text-[11px] text-gray-400">Donasi sukses</span>
-          </div> -->
-        </div>
-
-        <div class="p-4">
-          <!-- Month-year navigation -->
-          <div class="flex items-center justify-between mb-4">
-            <button
-              id="btn-prev-month"
-              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Bulan sebelumnya"
-            >
-              <svg
-                class="w-4 h-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 19l-7-7 7-7"></path>
-              </svg>
-            </button>
-
-            <span
-              id="btn-month-label"
-              class="text-sm font-semibold text-gray-700 px-3 py-1"
-            >
-              <!-- diisi JS -->
-            </span>
-
-            <button
-              id="btn-next-month"
-              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Bulan berikutnya"
-            >
-              <svg
-                class="w-4 h-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Day labels -->
-          <div class="grid grid-cols-7 mb-1">
-            {
-              ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => (
-                <div class="text-center text-[10px] font-semibold text-gray-400 py-1">
-                  {d}
-                </div>
-              ))
-            }
-          </div>
-
-          <!-- Calendar grid — diisi JS -->
-          <div id="calendar-grid" class="grid grid-cols-7 gap-y-1"></div>
-        </div>
-      </div>
-    </div>
+    <KalenderDonasi />
   </div>
 
   <BottomNav active="donasiku" />

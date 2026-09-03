@@ -1,0 +1,482 @@
+---
+interface DayData {
+  date: string;
+  count: number;
+  total_nominal: number;
+}
+
+// Get current date
+const today = new Date();
+const todayStr = formatDate(
+  today.getFullYear(),
+  today.getMonth(),
+  today.getDate(),
+);
+const currentYear = today.getFullYear();
+const currentMonth = today.getMonth();
+
+// Format date helper
+function formatDate(year: number, month: number, day: number): string {
+  return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+// Get first and last day of month
+function getMonthRange(year: number, month: number) {
+  const start = new Date(year, month, 1);
+  const end = new Date(year, month + 1, 0);
+  return {
+    startDate: formatDate(year, month, 1),
+    endDate: formatDate(year, month, end.getDate()),
+  };
+}
+
+// Create a map for quick lookup
+const donationMap = new Map<string, DayData>();
+
+// Generate calendar grid
+function generateCalendar(year: number, month: number) {
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+  const startingDayOfWeek = firstDay.getDay();
+
+  const weeks: number[][] = [];
+  let currentWeek: number[] = [];
+
+  for (let i = 0; i < startingDayOfWeek; i++) {
+    currentWeek.push(0);
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    currentWeek.push(day);
+    if (currentWeek.length === 7) {
+      weeks.push(currentWeek);
+      currentWeek = [];
+    }
+  }
+
+  if (currentWeek.length > 0) {
+    while (currentWeek.length < 7) {
+      currentWeek.push(0);
+    }
+    weeks.push(currentWeek);
+  }
+
+  return weeks;
+}
+
+const calendarWeeks = generateCalendar(currentYear, currentMonth);
+const monthNames = [
+  "Januari",
+  "Februari",
+  "Maret",
+  "April",
+  "Mei",
+  "Juni",
+  "Juli",
+  "Agustus",
+  "September",
+  "Oktober",
+  "November",
+  "Desember",
+];
+
+// SVG path bentuk hati, dipakai berulang di badge donasi
+const heartPath =
+  "M12 22.5s-8.5-5.5-10.8-10C-.7 8.8 1.2 4 5.5 4c2.8 0 5.2 1.7 6.5 4.1C13.2 5.7 15.7 4 18.5 4c4.3 0 6.2 4.8 4.3 8.5C20.5 17 12 22.5 12 22.5z";
+---
+
+<!-- ── Kalender Donasi ─────────────────────────────────────────────── -->
+<div class="px-4 mb-5">
+  <div
+    class="relative overflow-hidden rounded-3xl border border-secondary-100 bg-white shadow-sm"
+  >
+    <!-- Decorative background -->
+    <div
+      class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-secondary-50 blur-2xl"
+    >
+    </div>
+
+    <div
+      class="pointer-events-none absolute -bottom-20 -left-16 h-40 w-40 rounded-full bg-secondary-50/70 blur-2xl"
+    >
+    </div>
+
+    <!-- Header -->
+    <div class="relative px-5 pt-5 pb-4">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <!-- <div
+            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-secondary-50 text-secondary-600"
+          >
+            <img
+              src="/public/images/icons/logo/logo-short-color.png"
+              class="h-8 w-8"
+              alt="logo"
+            />
+          </div> -->
+
+          <div>
+            <h3 class="text-sm font-bold text-gray-900">Perjalanan Kebaikan</h3>
+
+            <p class="mt-0.5 text-[11px] leading-relaxed text-gray-500">
+              Setiap pemberian punya arti.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar -->
+    <div class="relative px-4 pb-5">
+      <!-- Month navigation -->
+      <div
+        class="mb-4 flex items-center justify-between rounded-2xl bg-gray-50/80 px-2 py-2"
+      >
+        <button
+          id="btn-prev-month"
+          type="button"
+          class="group flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition-all hover:bg-white hover:text-secondary-600 hover:shadow-sm active:scale-95"
+          aria-label="Bulan sebelumnya"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 transition-transform group-hover:-translate-x-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m15 19-7-7 7-7"></path>
+          </svg>
+        </button>
+
+        <div class="text-center">
+          <p
+            id="btn-month-label"
+            class="text-sm font-bold tracking-tight text-gray-900"
+          >
+            {monthNames[currentMonth]}
+            {currentYear}
+          </p>
+
+          <p
+            class="mt-0.5 text-[9px] font-medium uppercase tracking-widest text-gray-400"
+          >
+            Riwayat Donasi
+          </p>
+        </div>
+
+        <button
+          id="btn-next-month"
+          type="button"
+          class="group flex h-9 w-9 items-center justify-center rounded-xl text-gray-500 transition-all hover:bg-white hover:text-secondary-600 hover:shadow-sm active:scale-95"
+          aria-label="Bulan berikutnya"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            class="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="m9 5 7 7-7 7"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Day labels -->
+      <div class="mb-1 grid grid-cols-7">
+        {
+          ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((day) => (
+            <div class="py-2 text-center text-[10px] font-bold uppercase tracking-wide text-gray-400">
+              {day}
+            </div>
+          ))
+        }
+      </div>
+
+      <!-- Calendar grid -->
+      <div id="calendar-grid" class="grid grid-cols-7 gap-1">
+        {
+          calendarWeeks.map((week) =>
+            week.map((day) => {
+              if (day === 0) {
+                return <div class="h-12 sm:h-14" />;
+              }
+
+              const dateStr = formatDate(currentYear, currentMonth, day);
+              const donation = donationMap.get(dateStr);
+              const isToday = dateStr === todayStr;
+
+              return (
+                <div
+                  class={`group relative flex h-12 cursor-pointer flex-col items-center justify-center rounded-2xl text-[11px] font-semibold transition-all duration-200 sm:h-14 ${
+                    isToday
+                      ? "border-2 border-dashed border-secondary-400"
+                      : "hover:bg-gray-50"
+                  }`}
+                  data-date={dateStr}
+                  data-count={donation?.count || ""}
+                  data-nominal={donation?.total_nominal || ""}
+                >
+                  {donation ? (
+                    <div class="relative flex h-7 w-7 items-center justify-center">
+                      <svg
+                        class="absolute inset-0 h-full w-full text-secondary-500 drop-shadow-sm"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                      >
+                        <path d={heartPath} />
+                      </svg>
+                      <span class="relative z-10 text-[11px] font-bold text-white">
+                        {day}
+                      </span>
+                    </div>
+                  ) : (
+                    <span class="flex h-6 w-6 items-center justify-center rounded-full text-gray-600">
+                      {day}
+                    </span>
+                  )}
+                </div>
+              );
+            }),
+          )
+        }
+      </div>
+
+      <!-- Legend -->
+      <div
+        class="mt-4 flex items-center justify-center gap-4 border-t border-gray-100 pt-3"
+      >
+        <div class="flex items-center gap-1.5">
+          <svg
+            class="h-3 w-3 text-secondary-500"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+          >
+            <path d={heartPath}></path>
+          </svg>
+          <span class="text-[10px] font-medium text-gray-500">
+            Hari donasi
+          </span>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <span
+            class="h-2.5 w-2.5 rounded-full border-2 border-dashed border-gray-400"
+          ></span>
+          <span class="text-[10px] font-medium text-gray-500"> Hari ini </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { getToken } from "@/lib/auth";
+  import { showToast } from "@/lib/toast";
+
+  const HEART_PATH =
+    "M12 21s-6.716-4.35-9.5-8.5C.816 9.5 1.816 5 5.816 5c2 0 3.5 1.2 4.184 2.8C10.684 6.2 12.184 5 14.184 5c4 0 5 4.5 3.316 7.5C14.716 16.65 12 21 12 21z";
+
+  function initCalendar() {
+    const API_URL = import.meta.env.PUBLIC_API_URL ?? "";
+    const token = getToken();
+
+    let currentMonth = new Date().getMonth();
+    let currentYear = new Date().getFullYear();
+
+    const monthNames = [
+      "Januari",
+      "Februari",
+      "Maret",
+      "April",
+      "Mei",
+      "Juni",
+      "Juli",
+      "Agustus",
+      "September",
+      "Oktober",
+      "November",
+      "Desember",
+    ];
+
+    const btnPrevMonth = document.getElementById("btn-prev-month");
+    const btnNextMonth = document.getElementById("btn-next-month");
+    const monthLabel = document.getElementById("btn-month-label");
+    const calendarGrid = document.getElementById("calendar-grid");
+
+    function formatDateStr(year: number, month: number, day: number): string {
+      return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+    }
+
+    function renderGrid(
+      year: number,
+      month: number,
+      donationMap: Map<string, any>,
+    ) {
+      if (!calendarGrid) return;
+
+      const now = new Date();
+
+      const todayStr = formatDateStr(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+      );
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+
+      const daysInMonth = lastDay.getDate();
+      const startingDayOfWeek = firstDay.getDay();
+
+      const totalCells = Math.ceil((daysInMonth + startingDayOfWeek) / 7) * 7;
+
+      let html = "";
+      let dayCounter = 1;
+
+      for (let i = 0; i < totalCells; i++) {
+        // Empty calendar cells
+        if (i < startingDayOfWeek || dayCounter > daysInMonth) {
+          html += `
+            <div class="h-12 sm:h-14"></div>
+          `;
+
+          continue;
+        }
+
+        const dateStr = formatDateStr(year, month, dayCounter);
+
+        const donation = donationMap.get(dateStr);
+
+        const isToday = dateStr === todayStr;
+
+        const hasDonation = Boolean(donation);
+
+        const todayClass = isToday
+          ? "border-2 border-dashed border-gray-400"
+          : "hover:bg-gray-50";
+
+        const dayContent = hasDonation
+          ? `
+            <div class="relative flex h-8 w-8 items-center justify-center">
+               <img
+              src="/public/images/icons/logo/logo-short-color.png"
+              class="h-8 w-8 absolute inset-0 h-full w-full text-secondary-500 drop-shadow-sm"
+              alt="logo"
+            />
+              <span class="relative z-10 text-[11px] font-bold text-white">${dayCounter}</span>
+            </div>
+          `
+          : `
+            <span class="flex h-6 w-6 items-center justify-center rounded-full text-gray-600">
+              ${dayCounter}
+            </span>
+          `;
+
+        html += `
+          <div
+            class="group relative flex h-12 cursor-pointer flex-col items-center justify-center rounded-2xl text-[11px] font-semibold transition-all duration-200 sm:h-14 ${todayClass}"
+            data-date="${dateStr}"
+            data-count="${donation?.count ?? ""}"
+            data-nominal="${donation?.total_nominal ?? ""}"
+          >
+            ${dayContent}
+          </div>
+        `;
+
+        dayCounter++;
+      }
+
+      calendarGrid.innerHTML = html;
+    }
+
+    async function updateCalendar() {
+      if (monthLabel) {
+        monthLabel.textContent = `${monthNames[currentMonth]} ${currentYear}`;
+      }
+
+      try {
+        const startDate = formatDateStr(currentYear, currentMonth, 1);
+        const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const endDate = formatDateStr(currentYear, currentMonth, lastDate);
+
+        const headers: Record<string, string> = { Accept: "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const params = new URLSearchParams({
+          start_date: startDate,
+          end_date: endDate,
+          status: "Paid",
+        });
+
+        const response = await fetch(
+          `${API_URL}/dashboard/donatur/my-donation-calendar?${params}`,
+          { headers },
+        );
+
+        const json = await response.json();
+
+        if (!response.ok) {
+          throw new Error(json?.message ?? "Gagal memuat kalender donasi");
+        }
+
+        const donationMap = new Map<
+          string,
+          { count: number; total_nominal: number }
+        >();
+
+        if (Array.isArray(json.data?.days)) {
+          json.data.days.forEach((day: any) => {
+            const apiDate =
+              typeof day.date === "string" && day.date.includes("T")
+                ? day.date.split("T")[0]
+                : String(day.date);
+
+            donationMap.set(apiDate, {
+              count: Number(day.count) || 0,
+              total_nominal: Number(day.total_nominal) || 0,
+            });
+          });
+        }
+
+        renderGrid(currentYear, currentMonth, donationMap);
+      } catch (error: any) {
+        console.error("Error updating calendar:", error);
+        showToast(error.message ?? "Gagal memuat kalender donasi", "error");
+        renderGrid(currentYear, currentMonth, new Map());
+      }
+    }
+
+    btnPrevMonth?.addEventListener("click", () => {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      updateCalendar();
+    });
+
+    btnNextMonth?.addEventListener("click", () => {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      updateCalendar();
+    });
+
+    updateCalendar();
+  }
+
+  initCalendar();
+</script>
