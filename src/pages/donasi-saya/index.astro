@@ -13,25 +13,25 @@ const isAuthenticated = getServerToken(Astro.cookies) !== null;
 const donationStatuses = [
   {
     label: "Menunggu Pembayaran",
-    link: "/donasi-saya/riwayat-donasi?status=pending",
+    link: "/donasi-saya/riwayat-donasi?posisi=menunggu-pembayaran",
     total: 234,
     image: "/images/icons/icon-tracking/1. Pembayaran I.png",
   },
   {
     label: "Menunggu Salur",
-    link: "/donasi-saya/riwayat-donasi?status=menunggu-salur",
+    link: "/donasi-saya/riwayat-donasi?posisi=menunggu-salur",
     total: 0,
     image: "/images/icons/icon-tracking/2. Menunggu salur I.png",
   },
   {
     label: "Proses Salur",
-    link: "/donasi-saya/riwayat-donasi?status=proses-salur",
+    link: "/donasi-saya/riwayat-donasi?posisi=proses",
     total: 0,
     image: "/images/icons/icon-tracking/3. proses salur I.png",
   },
   {
     label: "Selesai Salur",
-    link: "/donasi-saya/riwayat-donasi?status=success",
+    link: "/donasi-saya/riwayat-donasi?posisi=selesai",
     total: 7,
     image: "/images/icons/icon-tracking/4. Selesai salur I.png",
   },

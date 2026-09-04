@@ -3,6 +3,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
 import { Image } from "astro:assets";
 import CampaignList from "@/components/ui/CampaignList.astro";
+import Footer from "@/components/layouts/Footer.astro";
 
 export const prerender = true;
 
@@ -139,16 +140,39 @@ const reports = [
       '"Kami tidak menyangka ada yang peduli sampai ke sini. Terima kasih atas bantuan makanan buka puasanya."',
   },
 ];
+
+const faqs = [
+  {
+    q: "Apa itu Event Salur?",
+    a: "Event Salur adalah program tematik di mana donasi dikumpulkan dan langsung disalurkan ke berbagai program kebaikan dalam satu tema besar. Kamu bisa memilih program spesifik atau mendukung tema secara umum.",
+  },
+  {
+    q: "Bagaimana cara bergabung sebagai relawan?",
+    a: "Klik tombol 'Gabung Relawan' di bawah, isi formulir pendaftaran, dan tim kami akan menghubungimu dalam 1×24 jam untuk briefing dan penugasan.",
+  },
+  {
+    q: "Apakah relawan dibayar?",
+    a: "Relawan kami bersifat sukarela (volunteer). Namun, kamu akan mendapatkan sertifikat relawan, pengalaman lapangan, dan tentu saja pahala yang insya Allah terus mengalir.",
+  },
+  {
+    q: "Kegiatan apa yang dilakukan relawan?",
+    a: "Relawan membantu distribusi bantuan di lapangan, dokumentasi, koordinasi logistik, hingga pendampingan penerima manfaat sesuai dengan kemampuan dan lokasi domisilimu.",
+  },
+  {
+    q: "Apakah ada batas usia untuk menjadi relawan?",
+    a: "Relawan minimal berusia 17 tahun. Kami menyambut semua kalangan, baik pelajar, mahasiswa, maupun profesional.",
+  },
+];
 ---
 
 <MainLayout
-  title="Tema ... | Beramalbersama.com"
+  title="Event Salur — Ramadan Berbagi Kebaikan"
   description="Salurkan kebaikanmu melalui event Ramadan Berbagi Kebaikan. Bergabung sebagai donatur atau relawan dan jadilah bagian dari perubahan nyata."
   type="website"
 >
-  <Header type="title" text="Tema ..." />
+  <Header type="title" text=`Tema ${theme.name}` />
 
-  <main class="container min-h-screen pb-16 bg-gray-50">
+  <main class="container min-h-screen bg-gray-50">
     <!-- ── Hero Banner ────────────────────────────────────────────────────── -->
     <div class="relative overflow-hidden">
       <!-- Gambar tema -->
@@ -174,27 +198,6 @@ const reports = [
           >
             {theme.name}
           </h1>
-          <!-- Periode -->
-          <div
-            class="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full"
-          >
-            <svg
-              class="w-3 h-3 text-white"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              ></path>
-            </svg>
-            <span class="text-[11px] text-white font-medium">
-              {theme.period.start} – {theme.period.end}
-            </span>
-          </div>
         </div>
       </div>
 
@@ -208,7 +211,7 @@ const reports = [
       <!-- Stats bar -->
       <div class="mx-4 -mt-1 mb-4 relative z-10">
         <div
-          class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
+          class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden"
         >
           <div class="grid grid-cols-3 divide-x divide-gray-100">
             <div class="py-3 text-center">
@@ -238,8 +241,11 @@ const reports = [
     <div class="mb-4 px-4">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
-          <span class="w-1 h-5 bg-secondary-500 rounded-full"></span>
-          <span class="text-[14px] font-bold text-gray-800">Urgent</span>
+          <span class="text-[14px] font-bold text-gray-800"
+            >Urgent <small class="font-thin">
+              (project terkait tema)</small
+            ></span
+          >
         </div>
         <!-- <a
           href="/donasi"
@@ -335,7 +341,7 @@ const reports = [
 
         <a
           href="/donasi"
-          class="block w-full text-center border border-primary-400 text-primary-600 text-[13px] font-semibold py-2.5 rounded-xl hover:bg-primary-50 transition-colors"
+          class="block w-full text-center bg-secondary-100 text-secondary-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-secondary-500 hover:text-white transition-colors"
         >
           Lihat Semua Program
         </a>
@@ -378,35 +384,7 @@ const reports = [
         }
       </div>
     </div>
-
-    <!-- ── CTA Bawah ──────────────────────────────────────────────────────── -->
-    <div class="mx-4 mb-4">
-      <a
-        href="/donasi"
-        class="flex items-center justify-between bg-gradient-to-r from-primary-500 to-teal-500 text-white px-5 py-4 rounded-2xl shadow-md hover:shadow-lg active:scale-[0.99] transition-all duration-150"
-      >
-        <div>
-          <p class="text-[14px] font-bold leading-tight mb-0.5">
-            Donasi Sekarang
-          </p>
-          <p class="text-[11px] text-white/80">Pilih program dari tema ini</p>
-        </div>
-        <div
-          class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0"
-        >
-          <svg
-            class="text-sm opacity-70 w-6 h-6"
-            fill="currentColor"
-            viewBox="0 0 20 20"
-          >
-            <path
-              fill-rule="evenodd"
-              d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-              clip-rule="evenodd"></path>
-          </svg>
-        </div>
-      </a>
-    </div>
+    <Footer />
   </main>
 </MainLayout>
 

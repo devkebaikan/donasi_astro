@@ -8,17 +8,15 @@ import { getServerToken } from "@/lib/auth";
 
 const isAuthenticated = getServerToken(Astro.cookies) !== null;
 
-// Untuk 3 tab pertama, `value` adalah nilai query param `status` yang
-// dikirim ke /my-donation (enum resmi: Paid | Canceled | Pending).
-// Untuk 2 tab terakhir (Proses Salur / Selesai Salur), /my-salur tidak
-// punya query param maupun pagination — semua data langsung dikembalikan
-// sekaligus, jadi pemisahan "proses" vs "selesai" dilakukan di frontend.
+// Tab filter riwayat donasi berdasarkan parameter query `posisi`
+// pada API /dashboard/donatur/my-donation
 const statusTabs = [
-  { value: "",             label: "Semua" },
-  { value: "Pending",      label: "Menunggu Pembayaran" },
-  { value: "Paid",         label: "Menunggu Salur" },
-  { value: "proses-salur", label: "Proses Salur" },
-  { value: "success",      label: "Selesai Salur" },
+  { value: "",                  label: "Semua" },
+  { value: "menunggu-pembayaran", label: "Menunggu Pembayaran" },
+  { value: "menunggu-salur",    label: "Menunggu Salur" },
+  { value: "proses",            label: "Proses Salur" },
+  { value: "selesai",           label: "Selesai Salur" },
+  { value: "dibatalkan",        label: "Dibatalkan" },
 ];
 ---
 
@@ -37,7 +35,7 @@ const statusTabs = [
         {statusTabs.map((tab) => (
           <button
             data-status={tab.value}
-            class="status-tab shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-primary-400 hover:text-primary-600 transition-all whitespace-nowrap"
+            class="status-tab shrink-0 text-xs font-semibold px-4 py-1.5 rounded-full border border-gray-200 text-gray-500 hover:border-primary-400 transition-all whitespace-nowrap"
           >
             {tab.label}
           </button>
@@ -154,7 +152,7 @@ const statusTabs = [
   const API_URL = page?.dataset.apiUrl ?? "";
   const token   = getToken();
 
-  let activeStatus = "";
+  let activeFilter = "";
 
   const MONTHS_ID = [
     "Januari","Februari","Maret","April","Mei","Juni",
@@ -162,17 +160,14 @@ const statusTabs = [
   ];
 
   const STATUS_LABELS: Record<string, string> = {
-    "":              "Semua Riwayat",
-    "Pending":       "Menunggu Pembayaran",
-    "Paid":          "Menunggu Salur",
-    "proses-salur":  "Proses Salur",
-    "success":       "Selesai Salur",
+    "":                    "Semua Riwayat",
+    "menunggu-pembayaran": "Menunggu Pembayaran",
+    "menunggu-salur":      "Menunggu Salur",
+    "proses":              "Proses Salur",
+    "selesai":             "Selesai Salur",
+    "dibatalkan":          "Dibatalkan",
+    "proses-refund":       "Proses Refund",
   };
-
-  // Tab-tab ini dilayani oleh /dashboard/donatur/my-donation.
-  const DONATION_STATUSES = ["", "Pending", "Paid"];
-  // Tab-tab ini dilayani oleh /dashboard/donatur/my-salur.
-  const SALUR_STATUSES = ["proses-salur", "success"];
 
   const PAGE_SIZE = 10;
 
@@ -212,7 +207,7 @@ const statusTabs = [
 
     function updateListTitle() {
       if (listTitle) {
-        listTitle.textContent = STATUS_LABELS[activeStatus] ?? "Riwayat Donasi";
+        listTitle.textContent = STATUS_LABELS[activeFilter] ?? "Riwayat Donasi";
       }
     }
 
@@ -222,57 +217,41 @@ const statusTabs = [
 
     // ── Status badge ──────────────────────────────────────────────────────────
 
-    // Untuk item dari /my-donation: badge dibaca dari field status item itu
-    // sendiri (Paid | Canceled | Pending). "Paid" ditampilkan sebagai
-    // "Menunggu Salur" karena di sistem ini status Paid berarti dana sudah
-    // masuk tapi belum diproses penyaluran.
-    function donationBadge(rawStatus: string): string {
-      const key = (rawStatus || "").toLowerCase();
-      const map: Record<string, { cls: string; label: string }> = {
-        paid:     { cls: "bg-blue-50 text-blue-600",     label: "Menunggu Salur" },
-        pending:  { cls: "bg-yellow-50 text-yellow-600", label: "Menunggu Pembayaran" },
-        canceled: { cls: "bg-gray-100 text-gray-400",    label: "Dibatalkan" },
+    function getStatusBadge(item: any): string {
+      const rawPosisi = (item.posisi || "").toString().toLowerCase().trim();
+      const rawPayment = (item.payment_status || item.status || "").toString().toLowerCase().trim();
+
+      const config: Record<string, { cls: string; label: string }> = {
+        "menunggu-pembayaran": { cls: "bg-yellow-50 text-yellow-600", label: "Menunggu Pembayaran" },
+        "menunggu-salur":      { cls: "bg-blue-50 text-blue-600",     label: "Menunggu Salur" },
+        "proses":              { cls: "bg-purple-50 text-purple-600", label: "Proses Salur" },
+        "proses-salur":        { cls: "bg-purple-50 text-purple-600", label: "Proses Salur" },
+        "selesai":             { cls: "bg-green-50 text-green-600",   label: "Selesai" },
+        "success":             { cls: "bg-green-50 text-green-600",   label: "Selesai" },
+        "dibatalkan":          { cls: "bg-red-50 text-red-600",       label: "Dibatalkan" },
+        "canceled":            { cls: "bg-red-50 text-red-600",       label: "Dibatalkan" },
+        "cancelled":           { cls: "bg-red-50 text-red-600",       label: "Dibatalkan" },
+        "proses-refund":       { cls: "bg-orange-50 text-orange-600", label: "Proses Refund" },
+        "refund":              { cls: "bg-orange-50 text-orange-600", label: "Proses Refund" },
+        "pending":             { cls: "bg-yellow-50 text-yellow-600", label: "Menunggu Pembayaran" },
+        "paid":                { cls: "bg-blue-50 text-blue-600",     label: "Menunggu Salur" },
       };
-      const entry = map[key] ?? { cls: "bg-gray-100 text-gray-400", label: rawStatus || "-" };
-      return badgeHtml(entry.cls, entry.label);
-    }
 
-    // Untuk item dari /my-salur: badge mengikuti tab yang sedang aktif,
-    // karena item yang dirender di sini sudah difilter di frontend supaya
-    // sesuai tab (lihat classifySalurStage di bawah).
-    function salurBadge(status: string): string {
-      const map: Record<string, { cls: string; label: string }> = {
-        "proses-salur": { cls: "bg-purple-50 text-purple-600", label: "Proses Salur" },
-        "success":      { cls: "bg-green-50 text-green-600",   label: "Selesai Salur" },
-      };
-      const entry = map[status] ?? { cls: "bg-gray-100 text-gray-400", label: status };
-      return badgeHtml(entry.cls, entry.label);
-    }
-
-    // /my-salur mengembalikan semua data sekaligus (proses + selesai
-    // dicampur), tanpa field yang terdokumentasi untuk membedakan
-    // keduanya. Fungsi ini menebak dari beberapa nama field yang umum
-    // dipakai (status / salur_status / stage / tahap) dan mencocokkan
-    // kata kuncinya. SESUAIKAN daftar field & kata kunci ini begitu tahu
-    // field asli dari backend — ini titik satu-satunya yang perlu diubah.
-    function classifySalurStage(item: any): "proses-salur" | "success" | "unknown" {
-      const candidates = [item.status, item.salur_status, item.stage, item.tahap, item.progress]
-        .filter((v): v is string => typeof v === "string")
-        .join(" ")
-        .toLowerCase();
-
-      if (candidates.includes("selesai")) {
-        return "success";
+      if (rawPosisi && config[rawPosisi]) {
+        return badgeHtml(config[rawPosisi].cls, config[rawPosisi].label);
       }
-      if (candidates.includes("pending")) {
-        return "proses-salur";
+
+      if (rawPayment && config[rawPayment]) {
+        return badgeHtml(config[rawPayment].cls, config[rawPayment].label);
       }
-      return "unknown";
+
+      const label = item.posisi || item.payment_status || item.status || "-";
+      return badgeHtml("bg-gray-100 text-gray-500", label);
     }
 
     // ── Render item ───────────────────────────────────────────────────────────
 
-    function renderItem(item: any, source: "donation" | "salur"): string {
+    function renderItem(item: any): string {
       const image = item.image_url
         ? `<img
              src="${item.image_url}"
@@ -292,17 +271,14 @@ const statusTabs = [
         ? `${dateObj.getDate()} ${MONTHS_ID[dateObj.getMonth()]} ${dateObj.getFullYear()}`
         : "-";
 
-      // `date` cuma berisi tanggal (tanpa jam), jam sebenarnya ada di field
-      // `time` — walau tanggalnya sendiri di `time` adalah placeholder
-      // "0000-01-01", jadi ambil jam:menit-nya langsung dari string, jangan
-      // di-parse sebagai Date (dulu ini yang bikin jam selalu tampil 00:00).
       const timeStr =
         typeof item.time === "string" && item.time.includes("T")
           ? item.time.split("T")[1]?.slice(0, 5) ?? ""
-          : "";
+          : typeof item.time === "string"
+            ? item.time.slice(0, 5)
+            : "";
 
-      const rawStatus = item.payment_status ?? item.status ?? "";
-      const badge = source === "salur" ? salurBadge(activeStatus) : donationBadge(rawStatus);
+      const badge = getStatusBadge(item);
 
       return `
         <a
@@ -344,35 +320,7 @@ const statusTabs = [
       `;
     }
 
-    // ── Fetch: /my-salur (tanpa param, tanpa pagination, di-cache) ─────────────
-
-    // Data hanya diambil sekali dari network; pindah tab antara "Proses
-    // Salur" dan "Selesai Salur" cukup memfilter ulang cache ini, tidak
-    // perlu request baru.
-    let salurCache: any[] | null = null;
-
-    async function fetchSalurData(): Promise<any[]> {
-      if (salurCache) return salurCache;
-
-      const headers: Record<string, string> = { Accept: "application/json" };
-      if (token) headers["Authorization"] = `Bearer ${token}`;
-
-      const res  = await fetch(`${API_URL}/dashboard/donatur/my-salur`, { headers });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");
-
-      const container = json?.data;
-      const items: any[] = Array.isArray(container?.data)
-        ? container.data
-        : Array.isArray(container)
-          ? container
-          : [];
-
-      salurCache = items;
-      return items;
-    }
-
-    // ── Fetch list ────────────────────────────────────────────────────────────
+    // ── Fetch list (/dashboard/donatur/my-donation) ───────────────────────────
 
     async function fetchList(pg = 1, append = false) {
       try {
@@ -384,28 +332,6 @@ const statusTabs = [
           loadmore.classList.add("hidden");
         }
 
-        const isSalur = SALUR_STATUSES.includes(activeStatus);
-
-        // ── /my-salur: semua data langsung, filter di frontend ────────────────
-        if (isSalur) {
-          const allSalur = await fetchSalurData();
-          const filtered = allSalur.filter((item) => classifySalurStage(item) === activeStatus);
-
-          skeleton.classList.add("hidden");
-
-          if (filtered.length === 0) {
-            showEmpty();
-            return;
-          }
-
-          list.classList.remove("hidden");
-          list.innerHTML = filtered.map((item) => renderItem(item, "salur")).join("");
-          // /my-salur tidak dipaginasi — semua data yang relevan sudah tampil.
-          loadmore.classList.add("hidden");
-          return;
-        }
-
-        // ── /my-donation: dipaginasi, pakai mode=pagination + load more ───────
         const headers: Record<string, string> = { Accept: "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
@@ -414,24 +340,53 @@ const statusTabs = [
           limit: String(PAGE_SIZE),
           mode: "pagination",
         });
-        if (activeStatus) params.set("status", activeStatus);
 
-        const res  = await fetch(`${API_URL}/dashboard/donatur/my-donation?${params}`, { headers });
+        if (activeFilter) {
+          const POSISI_ENUM = [
+            "menunggu-pembayaran",
+            "menunggu-salur",
+            "proses",
+            "selesai",
+            "dibatalkan",
+            "proses-refund",
+          ];
+          if (POSISI_ENUM.includes(activeFilter)) {
+            params.set("posisi", activeFilter);
+          } else if (["Paid", "Canceled", "Pending"].includes(activeFilter)) {
+            params.set("status", activeFilter);
+          } else {
+            params.set("posisi", activeFilter);
+          }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const invoiceParam = urlParams.get("invoice");
+        if (invoiceParam) {
+          params.set("invoice", invoiceParam);
+        }
+
+        const res  = await fetch(`${API_URL}/dashboard/donatur/my-donation?${params.toString()}`, { headers });
         const json = await res.json();
 
         if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");
 
-        // Bentuk respons (mode=pagination):
-        //   { data: { data: [...], pagination: { current_page, last_page, ... } }, status }
-        const container = json?.data;
-        const items: any[] = Array.isArray(container?.data)
-          ? container.data
-          : Array.isArray(container)
-            ? container
-            : [];
+        // Format respons: { data: [ ... ], status: 200 } atau { data: { data: [ ... ], pagination: { ... } }, status: 200 }
+        let items: any[] = [];
+        if (Array.isArray(json?.data)) {
+          items = json.data;
+        } else if (Array.isArray(json?.data?.data)) {
+          items = json.data.data;
+        } else if (Array.isArray(json)) {
+          items = json;
+        }
 
-        const meta = container?.pagination ?? json?.pagination ?? json?.meta ?? null;
-        const hasMore = meta ? Number(meta.current_page) < Number(meta.last_page) : false;
+        const meta = json?.pagination ?? json?.data?.pagination ?? json?.meta ?? json?.data?.meta ?? null;
+        let hasMore = false;
+        if (meta && meta.current_page != null && meta.last_page != null) {
+          hasMore = Number(meta.current_page) < Number(meta.last_page);
+        } else {
+          hasMore = items.length >= PAGE_SIZE;
+        }
 
         skeleton.classList.add("hidden");
 
@@ -443,7 +398,7 @@ const statusTabs = [
         list.classList.remove("hidden");
         list.insertAdjacentHTML(
           "beforeend",
-          items.map((item) => renderItem(item, "donation")).join(""),
+          items.map((item) => renderItem(item)).join(""),
         );
 
         if (hasMore) {
@@ -464,7 +419,7 @@ const statusTabs = [
     function updateStatusTabs() {
       document.querySelectorAll<HTMLButtonElement>(".status-tab").forEach((tab) => {
         const val = tab.dataset.status ?? "";
-        if (val === activeStatus) {
+        if (val === activeFilter) {
           tab.classList.add("bg-primary-500", "text-white", "border-primary-500");
           tab.classList.remove("text-gray-500", "border-gray-200");
         } else {
@@ -476,16 +431,28 @@ const statusTabs = [
 
     document.querySelectorAll<HTMLButtonElement>(".status-tab").forEach((tab) => {
       tab.addEventListener("click", () => {
-        activeStatus = tab.dataset.status ?? "";
+        activeFilter = tab.dataset.status ?? "";
         updateStatusTabs();
         updateListTitle();
-        fetchList();
+
+        // Update URL search query tanpa reload
+        const currentUrl = new URL(window.location.href);
+        if (activeFilter) {
+          currentUrl.searchParams.set("posisi", activeFilter);
+          currentUrl.searchParams.delete("status");
+        } else {
+          currentUrl.searchParams.delete("posisi");
+          currentUrl.searchParams.delete("status");
+        }
+        window.history.replaceState({}, "", currentUrl.toString());
+
+        fetchList(1);
       });
     });
 
     // ── Retry / Load more ─────────────────────────────────────────────────────
 
-    btnRetry?.addEventListener("click", () => fetchList());
+    btnRetry?.addEventListener("click", () => fetchList(1));
 
     btnMore?.addEventListener("click", async () => {
       const nextPage = Number(btnMore.dataset.page ?? 2);
@@ -496,14 +463,32 @@ const statusTabs = [
       btnMore.disabled    = false;
     });
 
-    // ── Init: baca status dari URL param ──────────────────────────────────────
-    // Astro scripts run as deferred modules — DOMContentLoaded sudah fired, panggil langsung
-    const urlStatus = new URLSearchParams(window.location.search).get("status") ?? "";
-    const validStatuses = [...DONATION_STATUSES, ...SALUR_STATUSES];
-    activeStatus = validStatuses.includes(urlStatus) ? urlStatus : "";
+    // ── Init: baca filter dari URL param ──────────────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramPosisi = urlParams.get("posisi");
+    const paramStatus = urlParams.get("status");
+
+    if (paramPosisi) {
+      const norm = paramPosisi.toLowerCase().trim();
+      if (norm === "proses-salur") activeFilter = "proses";
+      else if (norm === "success") activeFilter = "selesai";
+      else if (norm === "pending") activeFilter = "menunggu-pembayaran";
+      else if (norm === "canceled" || norm === "cancelled") activeFilter = "dibatalkan";
+      else activeFilter = norm;
+    } else if (paramStatus) {
+      const norm = paramStatus.toLowerCase().trim();
+      if (norm === "pending") activeFilter = "menunggu-pembayaran";
+      else if (norm === "paid" || norm === "menunggu-salur") activeFilter = "menunggu-salur";
+      else if (norm === "proses" || norm === "proses-salur") activeFilter = "proses";
+      else if (norm === "success" || norm === "selesai") activeFilter = "selesai";
+      else if (norm === "canceled" || norm === "cancelled" || norm === "dibatalkan") activeFilter = "dibatalkan";
+      else activeFilter = norm;
+    } else {
+      activeFilter = "";
+    }
 
     updateStatusTabs();
     updateListTitle();
-    fetchList();
+    fetchList(1);
   }
 </script>

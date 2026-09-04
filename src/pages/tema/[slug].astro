@@ -1,0 +1,317 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import CampaignList from "@/components/ui/CampaignList.astro";
+import Footer from "@/components/layouts/Footer.astro";
+import { formatRupiah } from "@/lib/formatter";
+
+interface Props {
+  themeData: any;
+  slug: string;
+}
+
+const { slug } = Astro.params;
+
+if (!slug) {
+  return Astro.redirect("/");
+}
+
+// ── 1. Get Data via Helper ──────────────────────────────────────────────────
+let themeData: any = null;
+
+try {
+  const targetUrl = `https://aapi.aksiberbagi.com/api/v1/program-themes/slug/${slug}`;
+  const res = await fetch(targetUrl, {
+    method: "GET",
+    headers: {
+      Accept: "application/json",
+    },
+  });
+
+  if (res.ok) {
+    const json = await res.json();
+    themeData = json?.data ?? null;
+  } else {
+    console.error(
+      `[Theme Fetch Error] Status: ${res.status} | URL: ${targetUrl}`,
+    );
+  }
+} catch (error) {
+  console.error("[Theme Fetch Error]:", error);
+}
+// const themeData = res?.data ?? res;
+const fallbackProjects = [
+  {
+    title: "Sedekah Makanan Berbuka untuk Korban Banjir Aceh",
+    image: "/images/banner/banner-qurban.avif",
+    terkumpul: "2.500.000",
+    pct: 50,
+    donatur: 328,
+    hari: "12 hari lagi",
+    lembaga: "Rumah Yatim Sumatera Utara",
+    link: "/donasi",
+  },
+  {
+    title: "Bangun Masjid Sumatera untuk Korban Banjir",
+    image: "/images/banner/banner-qurban.avif",
+    terkumpul: "5.000.000",
+    pct: 50,
+    donatur: 512,
+    hari: "18 hari lagi",
+    lembaga: "Rumah Zakat DIY",
+    link: "/donasi",
+  },
+];
+
+const fallbackPrograms = [
+  {
+    link: "/campaign/1",
+    title: "Bantu Renovasi Masjid Al-Ikhlas",
+    image: "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
+    mitra: "Yayasan Al-Ikhlas",
+    category: "Renovasi",
+    progress_achieved: 75,
+    nominal_achieved: 7500000,
+    time_target: 10,
+  },
+];
+
+// ── 3. Helper Perhitungan ────────────────────────────────────────────────────
+function calculateDaysLeft(targetWaktu: string | null): string {
+  if (!targetWaktu) return "Seterusnya";
+  const diffDays = Math.ceil(
+    (new Date(targetWaktu).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+  );
+  return diffDays > 0 ? `${diffDays} hari lagi` : "Selesai";
+}
+
+function calculatePct(terkumpul: number, target: number): number {
+  if (!target || target <= 0) return 0;
+  const pct = Math.round((terkumpul / target) * 100);
+  return pct > 100 ? 100 : pct;
+}
+
+// ── 4. Mapping Data API atau Fallback ─────────────────────────────────────────
+const rawPrograms = themeData?.programs ?? [];
+const hasApiPrograms = rawPrograms.length > 0;
+
+const totalSaldo = rawPrograms.reduce(
+  (acc: number, item: any) => acc + (Number(item.saldo) || 0),
+  0,
+);
+
+const theme = {
+  name: themeData?.judul
+    ? themeData.judul.charAt(0).toUpperCase() + themeData.judul.slice(1)
+    : "",
+  description: "",
+  image: themeData?.image
+    ? themeData.image.startsWith("http")
+      ? themeData.image
+      : `https://cdn.aksiberbagi.com/themes/${themeData.image}`
+    : "",
+  totalTerkumpul: hasApiPrograms
+    ? formatRupiah(totalSaldo).replace("Rp ", "")
+    : 0,
+  totalDonatur: 0,
+  totalProgram:
+    themeData?.programs_count ?? (hasApiPrograms ? rawPrograms.length : 0),
+};
+
+const projects = hasApiPrograms
+  ? rawPrograms.map((p: any) => ({
+      title: p.judul,
+      image: p.image || "/images/banner/banner-qurban.avif",
+      terkumpul: formatRupiah(p.saldo || 0).replace("Rp ", ""),
+      pct: calculatePct(p.saldo || 0, p.target_nominal || 0),
+      donatur: 0,
+      hari: calculateDaysLeft(p.target_waktu),
+      lembaga: p.mitra?.name || "Aksiberbagi",
+      link: `/donasi/${p.link}`,
+    }))
+  : fallbackProjects;
+
+const programs = hasApiPrograms
+  ? rawPrograms.map((p: any) => {
+      let days = 0;
+      if (p.target_waktu) {
+        const diff = Math.ceil(
+          (new Date(p.target_waktu).getTime() - Date.now()) /
+            (1000 * 60 * 60 * 24),
+        );
+        days = diff > 0 ? diff : 0;
+      }
+      return {
+        link: `/donasi/${p.link}`,
+        title: p.judul,
+        image:
+          p.image ||
+          "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
+        mitra: p.mitra?.name || "Aksiberbagi",
+        category: p.category?.name || p.tipe?.name || "Kebaikan",
+        progress_achieved: calculatePct(p.saldo || 0, p.target_nominal || 0),
+        nominal_achieved: p.saldo || 0,
+        time_target: days,
+      };
+    })
+  : fallbackPrograms;
+---
+
+<MainLayout
+  title={`Event Salur — ${theme.name}`}
+  description={theme.description}
+  type="website"
+>
+  <Header type="title" text={`Tema ${theme.name}`} />
+
+  <main class="container min-h-screen bg-gray-50 pb-8">
+    <!-- Hero Banner -->
+    <div class="relative overflow-hidden">
+      <div class="relative w-full aspect-[16/9] overflow-hidden bg-gray-100">
+        <img
+          src={theme.image}
+          alt={theme.name}
+          class="object-cover w-full h-full"
+          loading="eager"
+        />
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"
+        >
+        </div>
+        <div class="absolute bottom-4 left-4 right-4">
+          <h1
+            class="text-[20px] font-bold text-white leading-tight mb-1 drop-shadow-md capitalize"
+          >
+            {theme.name}
+          </h1>
+        </div>
+      </div>
+
+      <div class="bg-white px-4 pt-4 pb-5">
+        <p class="text-[13px] text-gray-600 leading-relaxed">belum ada</p>
+      </div>
+
+      <!-- Stats -->
+      <div class="mx-4 -mt-1 mb-4 relative z-10">
+        <div
+          class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden"
+        >
+          <div class="grid grid-cols-3 divide-x divide-gray-100">
+            <div class="py-3 text-center">
+              <p class="text-[11px] text-gray-400 mb-0.5">Terkumpul</p>
+              <p class="text-[13px] font-bold text-primary-600 leading-tight">
+                Rp {theme.totalTerkumpul}
+              </p>
+            </div>
+            <div class="py-3 text-center">
+              <p class="text-[11px] text-gray-400 mb-0.5">Donatur</p>
+              <p class="text-[13px] font-bold text-gray-800 leading-tight">
+                "belum ada"
+              </p>
+            </div>
+            <div class="py-3 text-center">
+              <p class="text-[11px] text-gray-400 mb-0.5">Program</p>
+              <p class="text-[13px] font-bold text-gray-800 leading-tight">
+                {theme.totalProgram}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Proyek Unggulan / Urgent -->
+    <div class="mb-4 px-4">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-[14px] font-bold text-gray-800">
+          Urgent <small class="font-normal text-gray-400"
+            >(project terkait tema)</small
+          >
+        </span>
+      </div>
+
+      <div class="flex gap-3 overflow-x-auto pb-1 snap-x scrollbar-none">
+        {
+          projects.map((p: any) => (
+            <a
+              href={p.link}
+              class="shrink-0 w-[200px] snap-start bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col"
+            >
+              <div class="relative w-full h-[110px] bg-gray-100 overflow-hidden">
+                <img
+                  src={p.image}
+                  alt={p.title}
+                  class="object-cover w-full h-full"
+                  loading="lazy"
+                />
+                <span class="absolute top-2 left-2 text-[9px] font-bold bg-primary-500 text-white px-2 py-0.5 rounded-full leading-none max-w-[85%] truncate">
+                  {p.lembaga.split(" ").slice(0, 2).join(" ")}
+                </span>
+              </div>
+              <div class="p-3 flex flex-col flex-1">
+                <p class="text-[11px] font-semibold text-gray-800 line-clamp-2 min-h-[34px] leading-relaxed mb-2 flex-1">
+                  {p.title}
+                </p>
+                <div class="w-full h-1 bg-gray-100 rounded-full overflow-hidden mb-1.5">
+                  <div
+                    class="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full"
+                    style={`width:${p.pct}%`}
+                  />
+                </div>
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-[10px] font-bold text-primary-600 truncate">
+                    Rp {p.terkumpul}
+                  </span>
+                  <span class="text-[10px] text-gray-400 shrink-0">
+                    {p.pct}%
+                  </span>
+                </div>
+                <p class="text-[10px] text-gray-400">{p.hari}</p>
+              </div>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+
+    <!-- Tab Program -->
+    <div class="mb-4 bg-white">
+      <div class="flex border-b border-gray-100">
+        <button
+          id="tab-program-btn"
+          class="flex-1 py-3 text-[13px] font-semibold text-primary-600 border-b-2 border-primary-500 transition-all duration-200"
+        >
+          Program ({theme.totalProgram})
+        </button>
+      </div>
+
+      <div class="px-4 pt-4 pb-5 space-y-3">
+        {
+          programs.map((campaign: any) => (
+            <CampaignList
+              link={campaign.link}
+              title={campaign.title}
+              image={campaign.image}
+              mitra={campaign.mitra}
+              category={campaign.category}
+              progress_achieved={campaign.progress_achieved}
+              collected_amount={campaign.nominal_achieved}
+              days_left={campaign.time_target}
+            />
+          ))
+        }
+
+        <a
+          href="/donasi"
+          class="block w-full text-center bg-secondary-100 text-secondary-600 text-[13px] font-semibold py-2.5 rounded-lg hover:bg-secondary-500 hover:text-white transition-colors mt-4"
+        >
+          Lihat Semua Program
+        </a>
+      </div>
+    </div>
+
+    <Footer />
+  </main>
+</MainLayout>

@@ -56,6 +56,14 @@ export async function getCampaignRamadhan() {
   );
 }
 
+// program theme
+export async function getProgramThemeBySlug(slug: string) {
+  return safe(
+    () => publicApi.get(`/program-themes/slug/${slug}`),
+    "getProgramThemeBySlug",
+  );
+}
+
 export async function getCampaignCategories() {
   return safe(
     () => publicApi.get("/program-categories"),
