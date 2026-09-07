@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import logo_white from '/public/images/icons/akber-new-putih.webp';
+// import logo_white from '/public/assets/logo/logo-long-white.png';
 // import logo_green from '/public/images/icons/akber-green.webp';
 
 // Header.astro
@@ -11,6 +11,8 @@ interface Props {
 }
 
 const { type = 'default', text = '', link = '' } = Astro.props;
+
+const logo_white = '/public/assets/logo/logo-long-white.png';
 
 const navItems = [
   { href: '/tentang', label: 'Tentang' },
@@ -31,7 +33,7 @@ const navItems = [
           class="flex-shrink-0 w-24 md:w-28 transition-transform duration-300 hover:scale-[1.02]"
           href="/home"
         >
-          <Image
+          <img
             src={logo_white}
             alt="brand_logo"
             class="w-full h-auto object-contain"
@@ -131,7 +133,7 @@ const navItems = [
           class="flex-shrink-0 w-28 md:w-36 transition-transform duration-300 hover:scale-[1.02]"
           href="/home"
         >
-          <Image
+          <img
             alt="brand_logo"
             class="w-full h-auto object-contain"
             src={logo_white}
