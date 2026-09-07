@@ -133,18 +133,11 @@ const hasNextPage = Boolean(
               type="button"
               class="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs bg-gray-100/80 hover:bg-gray-200 text-gray-600 transition-colors font-medium cursor-pointer"
             >
-              <svg
-                class="w-3.5 h-3.5 text-gray-500"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 4v16m8-8H4"></path>
-              </svg>
+              <img
+                src="/public/assets/icons/more.png"
+                alt="Lainnya"
+                class="w-3.5 h-3.5 object-contain"
+              />
               <span>Lainnya</span>
             </button>
           </div>
@@ -261,7 +254,7 @@ const hasNextPage = Boolean(
                   data-name={item.name}
                 >
                   <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-10 h-10 rounded-xl overflow-hidden bg-gray-200 shrink-0 border border-gray-100">
+                    <div class="w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">
                       {item.image_url ? (
                         <img
                           src={item.image_url}
@@ -499,7 +492,7 @@ const hasNextPage = Boolean(
       const mitra = item.mitra?.name ?? "";
       const category = item.category?.name ?? "";
       const collected = formatRupiah(item.nominal_achieved ?? 0);
-      const daysLeft = item.time_target ?? "-";
+      const daysLeft = item.remaining_days ?? "-";
 
       return `
         <a href="/donasi/${item.link}/" class="group flex flex-row items-stretch bg-white rounded border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 w-full">

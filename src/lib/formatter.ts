@@ -1,6 +1,4 @@
-/* =======================
- * FORMAT UANG (RUPIAH)
- * ======================= */
+//  FORMAT UANG (RUPIAH)
 export function formatRupiah(
   value: number | string,
   options?: {
@@ -17,9 +15,7 @@ export function formatRupiah(
   return options?.withSymbol === false ? formatted : `Rp ${formatted}`;
 }
 
-/* =======================
- * FORMAT ANGKA RINGKAS
- * ======================= */
+//  FORMAT ANGKA RINGKAS
 export function formatCompactNumber(
   value: number | string,
   options?: {
@@ -48,9 +44,7 @@ export function formatCompactNumber(
   return options?.withSymbol === false ? formatted : `Rp ${formatted}`;
 }
 
-/* =======================
- * FORMAT TANGGAL (dd MMM yyyy)
- * ======================= */
+//  FORMAT TANGGAL (dd MMM yyyy)
 export function formatDate(
   date: string | Date,
   options?: Intl.DateTimeFormatOptions,
@@ -63,9 +57,7 @@ export function formatDate(
   }).format(new Date(date));
 }
 
-/* =======================
- * FORMAT TANGGAL + JAM
- * ======================= */
+//  FORMAT TANGGAL + JAM
 export function formatDateTime(
   date: string | Date,
   options?: Intl.DateTimeFormatOptions,
@@ -80,9 +72,19 @@ export function formatDateTime(
   }).format(new Date(date));
 }
 
-/* =======================
- * WAKTU RELATIF
- * ======================= */
+//  FORMAT WAKTU JAM (HH:mm WIB)
+export function formatTime(timeStr?: string | null): string {
+  if (!timeStr || timeStr === "-") return "-";
+  const match = timeStr.match(/(?:T|\b)(\d{1,2}):(\d{2})/);
+  if (match) {
+    const hours = match[1].padStart(2, "0");
+    const minutes = match[2];
+    return `${hours}:${minutes} WIB`;
+  }
+  return timeStr;
+}
+
+//  WAKTU RELATIF
 
 export function timeAgoFormat(date: string | Date) {
   const now = new Date().getTime();
@@ -121,9 +123,7 @@ export function timeAgoFormat(date: string | Date) {
   return formatDate(date);
 }
 
-/* =======================
- * INITIAL NAMA
- * ======================= */
+//  INITIAL NAMA
 export function getInitialName(name: string) {
   if (!name) return "";
 
@@ -140,18 +140,14 @@ export function capitalizeFirstLetter(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
 }
 
-/* =======================
- * FORMAT NUMBER
- * ======================= */
+//  FORMAT NUMBER
 export function formatNumber(value: number | string) {
   const numStr = value.toString().replace(/\D/g, "");
   if (!numStr) return "";
   return parseInt(numStr).toLocaleString("id-ID");
 }
 
-/* =======================
- * FORMAT NUMBER SINGKAT (1.2 rb, 3.4 jt, dst)
- * ======================= */
+//  FORMAT NUMBER SINGKAT (1.2 rb, 3.4 jt, dst)
 
 export function fmt(n: number): string {
   if (n >= 1_000_000_000)
@@ -162,9 +158,7 @@ export function fmt(n: number): string {
   return n.toLocaleString("id-ID");
 }
 
-/* =======================
- * SISA HARI
- * ======================= */
+//  SISA HARI
 export function getRemainingDays(targetDateStr?: string | null): number | "∞" {
   // kalau explicit ∞
   if (targetDateStr === "∞") return "∞";
@@ -189,9 +183,7 @@ export function getRemainingDays(targetDateStr?: string | null): number | "∞" 
   return diffDays;
 }
 
-/* =======================
- * FORMAT PROGRESS PERCENT
- * ======================= */
+//  FORMAT PROGRESS PERCENT
 export function progressPercent(achieved: number, target: number): number {
   if (!target) return 0;
   return Math.min(100, Math.round((achieved / target) * 100));

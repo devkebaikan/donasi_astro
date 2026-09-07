@@ -40,17 +40,17 @@ const BANNER: Record<
   dipilihkan: {
     title: "Program Donasi Rutin Dipilihkan",
     description: "Donasi rutin ke program yang dipilihkan Beramal Bersama",
-    image: "/images/icons/rutin/RutinDipilihkan.png",
+    image: "/public/assets/rutin/program-dipilihkan.png",
   },
   subuh: {
     title: "Donasi Tiap Subuh",
     description: "Awali hari anda dengan keberkahan donasi rutin tiap Subuh",
-    image: "/images/icons/rutin/Subuh.png",
+    image: "/public/assets/rutin/pilih-sendiri.png",
   },
   jumat: {
     title: "Donasi Tiap Jum'at",
     description: "Jangan sampai ketinggalan keberkahan donasi di hari terbaik",
-    image: "/images/icons/rutin/Jumat.png",
+    image: "/public/assets/rutin/pilih-sendiri.png",
   },
 };
 
@@ -92,16 +92,14 @@ const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
         class="bg-linear-to-t from-white to-primary-50 rounded-b border border-gray-100 shadow-sm p-4 pt-18 flex items-center gap-3"
       >
         <div
-          class="w-12 h-12 shrink-0 rounded-full bg-gray-50 border border-gray-100"
+          class="w-13 h-13 rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden"
         >
-          <Image
+          <img
             src={banner.image}
             alt={banner.title}
-            width="44"
-            height="44"
-            loading="eager"
+            loading="lazy"
             decoding="async"
-            class="w-full h-full object-contain"
+            class="object-contain w-8 h-8"
           />
         </div>
         <div class="flex-1 min-w-0">

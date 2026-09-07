@@ -6,7 +6,7 @@ import BottomNav from "@/components/layouts/BottomNav.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 
 import { getRutinDetail } from "@/lib/FetchData";
-import { formatRupiah, formatDate } from "@/lib/formatter";
+import { formatRupiah, formatDate, formatTime } from "@/lib/formatter";
 import { getServerToken } from "@/lib/auth";
 // import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
@@ -27,7 +27,7 @@ const status     = detail?.status      ?? "";
 const invoicing  = detail?.invoicing   ?? null;
 const program    = detail?.program?.title ?? "";
 const nominal    = detail?.nominal     ?? 0;
-const time       = detail?.time        ?? "-";
+const time       = formatTime(detail?.time);
 const summary    = detail?.summary     ?? {};
 const commitment = detail?.commitment  ?? null;
 const createdAt  = detail?.created_at  ?? null;
