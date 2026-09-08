@@ -452,7 +452,7 @@ const heartPath =
         renderGrid(currentYear, currentMonth, donationMap);
       } catch (error: any) {
         console.error("Error updating calendar:", error);
-        showToast(error.message ?? "Gagal memuat kalender donasi", "error");
+        // showToast(error.message ?? "Gagal memuat kalender donasi", "error");
         renderGrid(currentYear, currentMonth, new Map());
       }
     }

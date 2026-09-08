@@ -3,7 +3,12 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-import { getProjectById } from "@/lib/FetchData";
+import DonatePanel from "@/components/sections/donasi/DonatePanel.astro";
+import {
+  getProjectById,
+  getCampaignByLink,
+  getNominalOptions,
+} from "@/lib/FetchData";
 import { formatDate, formatRupiah, progressPercent } from "@/lib/formatter";
 
 const { slug } = Astro.params;
@@ -56,16 +61,26 @@ const emptyProject: Project = {
 };
 
 let project: Project = emptyProject;
+let detailCampaign: any = null;
+let nominalOptions: any[] = [];
 
 try {
-  const result = await getProjectById(Number(projectIdParam));
+  const [result, campaignData, nominalOptionsData] = await Promise.all([
+    getProjectById(Number(projectIdParam)),
+    slug ? getCampaignByLink(slug) : Promise.resolve(null),
+    slug ? getNominalOptions(slug) : Promise.resolve([]),
+  ]);
 
   if (result) {
     project = result;
   }
+  detailCampaign = campaignData?.data ?? null;
+  nominalOptions = nominalOptionsData ?? [];
 } catch (error) {
   console.error("Gagal mengambil project:", error);
 }
+
+const programId = detailCampaign?.id ?? "";
 
 // DATA TURUNAN
 const nominalAchieved = Number(project.claimed_donasi ?? 0);
@@ -125,7 +140,11 @@ function activityBadgeClass(activity?: string): string {
   description={description ||
     "Informasi lengkap tentang proyek penyaluran donasi."}
 >
-  <Header type="title" text="Proyek Salur" />
+  <Header
+    type="title"
+    text="Detail Proyek"
+    link={slug ? `/donasi/project/${slug}` : "/home"}
+  />
   <div class="container bg-white pb-24 pt-12">
     <section class="mx-4 mt-5">
       <h2 class="mb-3 text-sm font-bold text-gray-700">Detail Proyek Salur</h2>
@@ -256,17 +275,17 @@ function activityBadgeClass(activity?: string): string {
 
               <!-- CTA -->
               {
-                project.id > 0 && slug ? (
-                  <a
-                    href={`/donasi/${slug}?project=${project.id}`}
-                    class="block w-full rounded-lg bg-primary-500 py-3 text-center text-sm font-semibold text-white transition-all duration-150 hover:bg-primary-600 active:scale-[0.98]"
+                project.activity === "active open" && (
+                  <button
+                    type="button"
+                    id="btn-donate-project-detail"
+                    class="block w-full rounded-lg bg-primary-500 py-3 text-center text-sm font-semibold text-white transition-all duration-150 hover:bg-primary-600 active:scale-[0.98] cursor-pointer"
+                    data-project-id={project.id}
+                    data-program-id={programId}
+                    data-program-link={slug}
                   >
                     Donasi Untuk Proyek Ini
-                  </a>
-                ) : (
-                  <div class="rounded-lg bg-gray-100 py-3 text-center text-sm font-medium text-gray-400">
-                    Data proyek belum tersedia
-                  </div>
+                  </button>
                 )
               }
             </div>
@@ -275,4 +294,36 @@ function activityBadgeClass(activity?: string): string {
       </div>
     </section>
   </div>
+
+  <DonatePanel
+    nominalOptions={nominalOptions}
+    programId={programId}
+    programLink={slug}
+    projectId={project.id || (projectIdParam ? Number(projectIdParam) : null)}
+  />
 </MainLayout>
+
+<script>
+  function setupProjectDetailDonateButton() {
+    const btn = document.getElementById("btn-donate-project-detail");
+    btn?.addEventListener("click", () => {
+      const projectId = btn.getAttribute("data-project-id");
+      const programId = btn.getAttribute("data-program-id");
+      const programLink = btn.getAttribute("data-program-link");
+
+      document.dispatchEvent(
+        new CustomEvent("donate:open", {
+          detail: {
+            projectId: projectId ? Number(projectId) : null,
+            programId,
+            programLink,
+          },
+        }),
+      );
+    });
+  }
+
+  setupProjectDetailDonateButton();
+  document.addEventListener("DOMContentLoaded", setupProjectDetailDonateButton);
+  document.addEventListener("astro:page-load", setupProjectDetailDonateButton);
+</script>

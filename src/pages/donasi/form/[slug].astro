@@ -15,6 +15,8 @@ if (!slug) return Astro.redirect("/");
 const programId = Astro.url.searchParams.get("id");
 if (!programId) return Astro.redirect(`/donasi/${slug}/`);
 
+const projectIdParam = Astro.url.searchParams.get("project");
+
 const token = getServerToken(Astro.cookies);
 const baseUrl = import.meta.env.PUBLIC_API_URL;
 const utm = Astro.cookies.get("utm_params")?.value ?? null;
@@ -46,6 +48,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     id="donation-page"
     data-program-id={programId}
     data-program-link={slug}
+    data-project-id={projectIdParam ?? ""}
     data-base-url={baseUrl}
     data-utm={utm}
     data-is-auth={isAuth}
@@ -415,7 +418,9 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   let isProcessing = false;
   let hideName = false;
   let forOtherPerson = false;
-  let projectId = [];
+  let projectId: number | null = page?.dataset.projectId
+    ? Number(page.dataset.projectId)
+    : null;
 
   // Zakat context
   let zakatData: Record<string, unknown> | null = null;
@@ -481,14 +486,16 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     }
   }
 
-  // Priority 2: nominal_donation (from program detail page)
+  // Priority 2: nominal_donation (from program detail page / project page)
   if (!isZakat) {
     const nominalRaw = localStorage.getItem("nominal_donation");
     if (nominalRaw) {
       try {
         const parsed = JSON.parse(nominalRaw);
         amount = parsed.amount ?? 0;
-        projectId = parsed.projectId ?? null;
+        if (parsed.projectId !== undefined && parsed.projectId !== null) {
+          projectId = Number(parsed.projectId);
+        }
         localStorage.removeItem("nominal_donation");
       } catch {
         localStorage.removeItem("nominal_donation");

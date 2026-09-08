@@ -3,7 +3,12 @@ export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
-import { getCampaignByLink, getProjectById } from "@/lib/FetchData";
+import DonatePanel from "@/components/sections/donasi/DonatePanel.astro";
+import {
+  getCampaignByLink,
+  getProjectById,
+  getNominalOptions,
+} from "@/lib/FetchData";
 import { formatDate, formatRupiah } from "@/lib/formatter";
 import { Image } from "astro:assets";
 
@@ -12,13 +17,31 @@ if (!slug) return Astro.redirect("/404");
 
 const projectId = Astro.url.searchParams.get("project_id");
 
-const p = await getProjectById(Number(projectId));
-
+let p: any = null;
+let dataCampaign: any = null;
+let nominalOptions: any[] = [];
 let campaignTitle = "";
+
 try {
-  const dataCampaign = await getCampaignByLink(slug);
+  const [projectData, campaignRes, nominalOptionsRes] = await Promise.all([
+    getProjectById(Number(projectId)),
+    slug ? getCampaignByLink(slug) : Promise.resolve(null),
+    slug ? getNominalOptions(slug) : Promise.resolve([]),
+  ]);
+
+  p = projectData ?? {};
+  dataCampaign = campaignRes ?? null;
   campaignTitle = dataCampaign?.data?.title ?? "";
-} catch {}
+  nominalOptions = nominalOptionsRes ?? [];
+} catch (err) {
+  console.error("Error fetching last-project data:", err);
+}
+
+if (!p || Object.keys(p).length === 0) {
+  return Astro.redirect("/404");
+}
+
+const programId = dataCampaign?.data?.id ?? "";
 
 const mitra = p.mitra_utama ?? p.mitras?.[0] ?? {};
 
@@ -325,16 +348,27 @@ const tabs = [
             </svg>
             Bagikan
           </button>
-          <a
-            href={`/donasi/${slug}?project=${p.id}`}
-            class="flex items-center justify-center w-2/3 py-2.5 px-4 rounded-md font-semibold bg-orange-500 hover:bg-orange-600 active:scale-[0.98] text-white text-sm transition-all duration-300"
+          <button
+            type="button"
+            id="btn-donate-last-project"
+            data-project-id={p.id}
+            data-program-id={programId}
+            data-program-link={slug}
+            class="flex items-center justify-center w-2/3 py-2.5 px-4 rounded-md font-semibold bg-secondary-500 hover:bg-secondary-600 active:scale-[0.98] text-white text-sm transition-all duration-300 cursor-pointer"
           >
             DONASI SEKARANG
-          </a>
+          </button>
         </div>
       </div>
     </div>
   </div>
+
+  <DonatePanel
+    nominalOptions={nominalOptions}
+    programId={programId}
+    programLink={slug}
+    projectId={p.id}
+  />
 
   <script>
     import { formatRupiah } from "@/lib/formatter";
@@ -653,6 +687,26 @@ const tabs = [
             .writeText(url)
             .then(() => alert("Link berhasil disalin!"));
         }
+      });
+    }
+
+    // ── Donate button ──────────────────────────────────────────────────────────
+    const donateBtn = document.getElementById("btn-donate-last-project");
+    if (donateBtn) {
+      donateBtn.addEventListener("click", () => {
+        const pId = donateBtn.getAttribute("data-project-id");
+        const prgId = donateBtn.getAttribute("data-program-id");
+        const prgLink = donateBtn.getAttribute("data-program-link");
+
+        document.dispatchEvent(
+          new CustomEvent("donate:open", {
+            detail: {
+              projectId: pId ? Number(pId) : null,
+              programId: prgId,
+              programLink: prgLink,
+            },
+          }),
+        );
       });
     }
   </script>

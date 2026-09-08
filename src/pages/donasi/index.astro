@@ -402,28 +402,24 @@ const hasNextPage = Boolean(
         </div>
 
         {/* Infinite scroll sentinel */}
-        <div id="scroll-sentinel" class="h-4"></div>
+        <div id="scroll-sentinel"></div>
 
         {/* Loading spinner */}
-        <div id="loadmore-spinner" class="hidden py-4">
-          <div
-            class="flex justify-center items-center gap-2 text-sm text-gray-400"
-          >
-            <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-              <circle
-                class="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                stroke-width="4"></circle>
-              <path
-                class="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-            <span>Memuat...</span>
-          </div>
+        <div id="loading-skeleton" class="hidden flex-col gap-3 mt-3">
+          {
+            Array.from({ length: 2 }).map(() => (
+              <div class="flex gap-3 bg-white rounded-2xl border border-gray-100 p-3 animate-pulse">
+                <div class="w-[160px] md:w-[180px] h-24 bg-gray-200 rounded-xl shrink-0" />
+                <div class="flex-1 space-y-2 py-1">
+                  <div class="h-2 bg-gray-200 rounded w-1/4" />
+                  <div class="h-3 bg-gray-200 rounded w-3/4" />
+                  <div class="h-2 bg-gray-200 rounded w-1/2" />
+                  <div class="h-1.5 bg-gray-200 rounded mt-2" />
+                  <div class="h-2 bg-gray-200 rounded w-2/3" />
+                </div>
+              </div>
+            ))
+          }
         </div>
       </div>
     </div>
@@ -483,7 +479,7 @@ const hasNextPage = Boolean(
       "scroll-sentinel",
     ) as HTMLElement;
     const loadmoreSpinner = document.getElementById(
-      "loadmore-spinner",
+      "loading-skeleton",
     ) as HTMLElement;
 
     // ── Helpers ────────────────────────────────────────────────────────────

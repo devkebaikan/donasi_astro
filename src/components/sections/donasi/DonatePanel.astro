@@ -2,13 +2,25 @@
 import { formatRupiah } from "@/lib/formatter";
 
 interface Props {
-  nominalOptions: any[];
+  nominalOptions?: any[];
   programId: string | number | undefined;
   programLink: string | undefined;
   projectId?: number | null;
 }
 
 const { nominalOptions, programId, programLink, projectId } = Astro.props;
+
+const defaultNominals = [
+  { nominal: 10000 },
+  { nominal: 25000 },
+  { nominal: 50000 },
+  { nominal: 100000 },
+];
+
+const displayNominals =
+  nominalOptions && nominalOptions.length > 0
+    ? nominalOptions
+    : defaultNominals;
 ---
 
 <!-- Wrapper Fullscreen Overlay -->
@@ -16,7 +28,7 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
   id="donate-overlay"
   class="fixed inset-0 z-50 bg-black/40 opacity-0 pointer-events-none transition-opacity duration-300 flex items-end justify-center"
 >
-  <!-- Panel Modal Utama (Gunakan e.stopPropagation() via JS agar klik di dalam tidak menutup panel) -->
+  <!-- Panel Modal Utama -->
   <div
     id="donate-panel"
     class="w-full max-w-120 rounded-t-2xl shadow-lg border-2 border-neutral-300 translate-y-full transition-transform duration-300"
@@ -24,37 +36,36 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
     <div class="bg-white rounded-t-xl shadow-lg p-4 space-y-4">
       <div class="flex justify-between items-center">
         <h3 class="font-semibold text-base">Masukkan Nominal</h3>
-        <button id="close-panel" class="text-gray-500">✕</button>
+        <button id="close-panel" class="text-gray-500 cursor-pointer p-1">✕</button>
       </div>
 
       <div class="grid grid-cols-2 gap-2">
         {
-          nominalOptions &&
-            nominalOptions.map((amount: any, index: number) => (
-              <button
-                type="button"
-                data-value={amount.nominal}
-                class="preset-btn group relative border-2 border-primary-200 bg-white text-gray-700
-                       hover:border-primary-500 rounded-md p-3 sm:p-4
-                       transition-all duration-200 active:scale-95 ease-in-out"
-              >
-                {index === 1 && (
-                  <span
-                    class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
-                           bg-linear-to-r from-secondary-400 to-secondary-500
-                           text-white text-[10px] text-xs font-semibold px-2 py-1
-                           rounded-t-full rounded-br-full z-10"
-                  >
-                    Nominal Favorit
-                  </span>
-                )}
-                <div class="flex flex-col items-center gap-1">
-                  <span class="text-sm font-bold text-amount pointer-events-none">
-                    {formatRupiah(amount.nominal)}
-                  </span>
-                </div>
-              </button>
-            ))
+          displayNominals.map((amount: any, index: number) => (
+            <button
+              type="button"
+              data-value={amount.nominal}
+              class="preset-btn group relative border-2 border-primary-200 bg-white text-gray-700
+                     hover:border-primary-500 rounded-md p-3 sm:p-4 cursor-pointer
+                     transition-all duration-200 active:scale-95 ease-in-out"
+            >
+              {index === 1 && (
+                <span
+                  class="absolute -top-2 -right-2 sm:-top-3 sm:-right-3
+                         bg-linear-to-r from-secondary-400 to-secondary-500
+                         text-white text-[10px] sm:text-xs font-semibold px-2 py-0.5
+                         rounded-t-full rounded-br-full z-10"
+                >
+                  Nominal Favorit
+                </span>
+              )}
+              <div class="flex flex-col items-center gap-1">
+                <span class="text-sm font-bold text-amount pointer-events-none">
+                  {formatRupiah(amount.nominal)}
+                </span>
+              </div>
+            </button>
+          ))
         }
       </div>
 
@@ -63,15 +74,15 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
         type="text"
         inputmode="numeric"
         placeholder="Masukkan nominal"
-        class="w-full border rounded-md px-3 py-2"
+        class="w-full border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
       />
 
       <button
         id="submit-donation"
         data-program-id={programId}
         data-program-link={programLink}
-        data-project-id={projectId}
-        class="w-full bg-orange-500 text-white py-2 rounded-md font-semibold"
+        data-project-id={projectId ?? ""}
+        class="w-full bg-secondary-500 hover:bg-secondary-600 text-white py-3 rounded-md font-semibold cursor-pointer transition-colors"
       >
         Lanjut Donasi
       </button>
@@ -110,15 +121,34 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
   function openPanel() {
     overlay?.classList.remove("opacity-0", "pointer-events-none");
     panel?.classList.remove("translate-y-full");
+    document.body.style.overflow = "hidden";
   }
 
   function closePanel() {
     overlay?.classList.add("opacity-0", "pointer-events-none");
     panel?.classList.add("translate-y-full");
+    document.body.style.overflow = "";
   }
 
-  // Buka panel — dipicu oleh StickyDonateBar via custom event
-  document.addEventListener("donate:open", openPanel);
+  // Buka panel — dipicu via custom event
+  document.addEventListener("donate:open", (e: Event) => {
+    const customEvent = e as CustomEvent;
+    if (customEvent.detail) {
+      if (customEvent.detail.projectId !== undefined && submitBtn) {
+        submitBtn.setAttribute(
+          "data-project-id",
+          customEvent.detail.projectId ? String(customEvent.detail.projectId) : "",
+        );
+      }
+      if (customEvent.detail.programId && submitBtn) {
+        submitBtn.setAttribute("data-program-id", String(customEvent.detail.programId));
+      }
+      if (customEvent.detail.programLink && submitBtn) {
+        submitBtn.setAttribute("data-program-link", String(customEvent.detail.programLink));
+      }
+    }
+    openPanel();
+  });
 
   // Tutup panel via tombol X
   closeBtn?.addEventListener("click", closePanel);
@@ -161,15 +191,19 @@ const { nominalOptions, programId, programLink, projectId } = Astro.props;
     }
 
     const projectId = submitBtn.getAttribute("data-project-id");
-
-    localStorage.setItem(
-      "nominal_donation",
-      JSON.stringify({ amount: raw, updatedAt: Date.now(), projectId }),
-    );
-
     const programId = submitBtn.getAttribute("data-program-id");
     const programLink = submitBtn.getAttribute("data-program-link");
 
-    window.location.assign(`/donasi/form/${programLink}/?id=${programId}`);
+    localStorage.setItem(
+      "nominal_donation",
+      JSON.stringify({
+        amount: raw,
+        updatedAt: Date.now(),
+        projectId: projectId ? Number(projectId) : null,
+      }),
+    );
+
+    const projectQuery = projectId ? `&project=${projectId}` : "";
+    window.location.assign(`/donasi/form/${programLink}/?id=${programId}${projectQuery}`);
   });
 </script>
