@@ -1,8 +1,4 @@
 ---
-import { Image } from 'astro:assets';
-// import logo_white from '/public/assets/logo/logo-long-white.png';
-// import logo_green from '/public/images/icons/akber-green.webp';
-
 // Header.astro
 interface Props {
   type?: 'default' | 'title' | 'search' | 'onlytext' | 'notshare' | 'onlyicon';
@@ -12,7 +8,7 @@ interface Props {
 
 const { type = 'default', text = '', link = '' } = Astro.props;
 
-const logo_white = '/public/assets/logo/logo-long-white.png';
+const logo_white = '/assets/logo/logo-long-white.png';
 
 const navItems = [
   { href: '/tentang', label: 'Tentang' },

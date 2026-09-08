@@ -22,7 +22,7 @@ if (!slug) {
 let themeData: any = null;
 
 try {
-  const targetUrl = `https://aapi.aksiberbagi.com/api/v1/program-themes/slug/${slug}`;
+  const targetUrl = `https://aapi.beramalbersama.com/api/v1/program-themes/slug/${slug}`;
   const res = await fetch(targetUrl, {
     method: "GET",
     headers: {
@@ -149,7 +149,7 @@ const programs = hasApiPrograms
         image:
           p.image ||
           "/images/thumbnail/Artboard2-ezgif.com-jpg-to-webp-converter.webp",
-        mitra: p.mitra?.name || "Aksiberbagi",
+        mitra: p.mitra?.name || "Beramalbersama",
         category: p.category?.name || p.tipe?.name || "Kebaikan",
         progress_achieved: calculatePct(p.saldo || 0, p.target_nominal || 0),
         nominal_achieved: p.saldo || 0,
