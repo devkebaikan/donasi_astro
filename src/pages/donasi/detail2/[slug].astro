@@ -107,7 +107,12 @@ const campaignJsonLd = JSON.stringify({
 
   <div class="bg-white min-h-screen container">
     <div class="mx-auto mb-24 max-w-120">
-      <Banner link={slug} detailCampaign={detailCampaign} donors={donors} />
+      <Banner
+        link={slug}
+        detailCampaign={detailCampaign}
+        donors={donors}
+        projectId={projectId ? Number(projectId) : null}
+      />
       <NominalInput
         nominalOptions={nominalOptions}
         programId={detailCampaign?.id}

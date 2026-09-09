@@ -67,16 +67,36 @@ export function useApi(): AxiosInstance {
   _instance.interceptors.response.use(
     (res) => res,
     (err) => {
-      if (err.response?.status === 401) {
+      const isLoginRequest =
+        err.config?.url?.includes("/auth/login") ||
+        window.location.pathname.startsWith("/auth/login");
+
+      if (err.response?.status === 401 && !isLoginRequest) {
         const from = encodeURIComponent(
           window.location.pathname + window.location.search,
         );
         window.location.href = `/auth/login?from=${from}`;
         return Promise.reject(err);
       }
+
+      if (err.response?.status === 429) {
+        const error = new Error(
+          "Terlalu banyak percobaan. Silakan coba lagi beberapa saat lagi.",
+        ) as Error & { status?: number; response?: any };
+        error.status = 429;
+        error.response = err.response;
+        return Promise.reject(error);
+      }
+
       const message =
         err.response?.data?.message ?? err.message ?? "Terjadi kesalahan";
-      return Promise.reject(new Error(message));
+      const error = new Error(message) as Error & {
+        status?: number;
+        response?: any;
+      };
+      if (err.response?.status) error.status = err.response.status;
+      error.response = err.response;
+      return Promise.reject(error);
     },
   );
 

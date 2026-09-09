@@ -258,7 +258,13 @@ import { Image } from "astro:assets";
           const params = new URLSearchParams(window.location.search);
           window.location.href = params.get("from") ?? "/home";
         } catch (err: any) {
-          showError(err.message ?? "Nomor Telepon atau Password Anda Salah");
+          if (err?.status === 429 || err?.response?.status === 429) {
+            showError(
+              "Terlalu banyak percobaan. Silakan coba lagi beberapa saat lagi.",
+            );
+          } else {
+            showError(err.message ?? "Nomor Telepon atau Password Anda Salah");
+          }
         } finally {
           setLoading(false);
         }

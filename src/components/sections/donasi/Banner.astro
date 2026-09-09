@@ -7,7 +7,7 @@ interface Props {
   detailCampaign: any;
   link: string;
   donors: any;
-  projectId: number;
+  projectId?: number | string | null;
 }
 
 const { detailCampaign, link, donors, projectId } = Astro.props;
