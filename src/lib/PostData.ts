@@ -1,8 +1,11 @@
+const BASE_URL = (import.meta.env.PUBLIC_API_URL ??
+  import.meta.env.PUBLIC_API_URL) as string;
+
 // initiate checkout
 export async function postInitiateCheckout(data: any) {
   try {
     const res = await fetch(
-      `https://admin.aksiberbagi.com/api/track/InitiateCheckout`,
+      `${BASE_URL}/track/InitiateCheckout`,
       {
         method: "POST",
         headers: {
