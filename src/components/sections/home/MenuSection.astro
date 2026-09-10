@@ -2,25 +2,25 @@
 const menuItems = [
   {
     href: "/donasi",
-    src: "/images/icons/menu/1. Donasi.webp",
+    src: "/assets/home/donasi.png",
     label: "Donasi",
     alt: "Donasi",
   },
   {
     href: "/infak",
-    src: "/images/icons/menu/2. Infaq.webp",
+    src: "/assets/home/infaq.png",
     label: "Infak",
     alt: "Infak",
   },
   {
     href: "/zakat",
-    src: "/images/icons/menu/3. Zakat.webp",
+    src: "/assets/home/zakat.png",
     label: "Zakat",
     alt: "Zakat",
   },
   {
     href: "/donasi-rutin",
-    src: "/images/icons/menu/6. Donasi rutin.webp",
+    src: "/assets/home/rutin.png",
     label: "Rutin",
     alt: "Donasi Rutin",
     badge: "NEW",
@@ -38,7 +38,7 @@ const menuItems = [
         >
           <div class="relative">
             {item.badge && (
-              <span class="absolute -top-2 -right-2 z-10 text-[8px] font-bold bg-linear-to-r from-emerald-400 to-teal-500 text-white px-1.5 py-0.5 rounded-full shadow-sm animate-pulse leading-none">
+              <span class="absolute -top-1 -right-1 z-10 text-[8px] font-bold bg-linear-to-r from-secondary-400 to-secondary-500 text-white px-1.5 py-0.5 rounded-full shadow-sm animate-pulse leading-none">
                 {item.badge}
               </span>
             )}

@@ -47,7 +47,7 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
                   />
                   {item.category?.name && (
                     <span class="absolute top-3 left-3 text-[10px] font-bold bg-primary-600 text-white px-2.5 py-1 rounded-full">
-                      {item.category.name}
+                      {item?.category.name}
                     </span>
                   )}
                   {item.remaining_days !== null && (

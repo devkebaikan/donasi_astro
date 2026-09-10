@@ -15,14 +15,14 @@ interface DonationItem {
 
 const generalItems: DonationItem[] = [
   {
-    image: "/images/icons/rutin/RutinDipilihkan.png",
+    image: "/assets/rutin/program-dipilihkan.png",
     href: "/donasi-rutin/form-rutin/dipilihkan",
     title: "Pilih Tujuan Donasi Rutin",
     description:
-      "Donasi rutin ke program yang dipilihkan Aksiberbagi.com untuk Anda",
+      "Donasi rutin ke program yang dipilihkan Beramalbersama.com untuk Anda",
   },
   {
-    image: "/images/icons/rutin/PilihSendiri.png",
+    image: "/assets/rutin/pilih-sendiri.png",
     href: "/donasi-rutin/program",
     title: "Pilih Program Sendiri",
     description:
@@ -32,13 +32,13 @@ const generalItems: DonationItem[] = [
 
 const categoryItems: DonationItem[] = [
   {
-    image: "/images/icons/rutin/Subuh.png",
+    image: "/assets/rutin/rutin-subuh.png",
     href: "/donasi-rutin/form-rutin/subuh",
     title: "Donasi Tiap Subuh",
     description: "Awali hari anda dengan keberkahan donasi rutin tiap Subuh",
   },
   {
-    image: "/images/icons/rutin/Jumat.png",
+    image: "/assets/rutin/rutin-jumat.png",
     href: "/donasi-rutin/form-rutin/jumat",
     title: "Donasi Tiap Jum'at",
     description: "Jangan sampai ketinggalan keberkahan donasi di hari terbaik",
@@ -48,7 +48,7 @@ const categoryItems: DonationItem[] = [
 
 <MainLayout
   title="Pilih Tujuan Donasi Rutin"
-  description="Pilih tujuan donasi rutin Anda di Aksiberbagi.com."
+  description="Pilih tujuan donasi rutin Anda di Beramalbersama.com."
 >
   <Header type="title" text="Pilih tujuan donasi rutin" link="/donasi-rutin" />
 
@@ -72,26 +72,6 @@ const categoryItems: DonationItem[] = [
 
           <!-- Content -->
           <div class="relative z-10 w-11/12">
-            <!-- Badge -->
-            <div
-              class="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full mb-3 shadow-sm"
-            >
-              <!-- Heart icon -->
-              <svg
-                class="w-3 h-3 text-rose-500 fill-current"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                ></path>
-              </svg>
-              <span
-                class="text-[10px] font-semibold text-gray-700 tracking-wide"
-              >
-                DONASI RUTIN
-              </span>
-            </div>
-
             <!-- Title -->
             <h2 class="text-[18px] font-bold text-gray-800 leading-tight mb-2">
               Berbagi Kebaikan<br />
@@ -125,15 +105,13 @@ const categoryItems: DonationItem[] = [
                 href={href}
                 class="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150"
               >
-                <div class="w-13 h-13 rounded-full flex items-center justify-center shrink-0 border border-gray-100">
-                  <Image
+                <div class="w-13 h-13 rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
+                  <img
                     src={image}
                     alt={title}
-                    width="44"
-                    height="44"
                     loading="lazy"
                     decoding="async"
-                    class="w-full h-full object-contain"
+                    class="object-contain w-8 h-8"
                   />
                 </div>
                 <div class="flex-1 min-w-0">
@@ -179,7 +157,7 @@ const categoryItems: DonationItem[] = [
                 href={href}
                 class="flex items-center gap-3 px-4 py-3.5 hover:bg-gray-50 active:bg-gray-100 transition-colors duration-150"
               >
-                <div class="w-13 h-13 rounded-full flex items-center justify-center shrink-0 border border-gray-100">
+                <div class="w-13 h-13 rounded-full flex items-center justify-center shrink-0 shadow-sm overflow-hidden">
                   <Image
                     src={image}
                     alt={title}
@@ -187,7 +165,7 @@ const categoryItems: DonationItem[] = [
                     height="44"
                     loading="lazy"
                     decoding="async"
-                    class="w-full h-full object-contain"
+                    class="w-8 h-8 object-contain"
                   />
                 </div>
                 <div class="flex-1 min-w-0">

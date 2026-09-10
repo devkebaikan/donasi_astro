@@ -18,18 +18,15 @@ const { programs } = Astro.props;
 
   <div
     id="program-scroll"
-    class="flex gap-3 items-center overflow-x-auto px-4 h-70 md:h-80 snap-x"
-    style="background-image: url('/images/jumat-berkah.jpg'); background-size: cover; background-position: center;"
+    class="flex gap-3 items-center overflow-x-auto px-4 h-70 md:h-80 snap-x scrollbar-none"
+    style="background-image: url('/assets/home/tema.png'); background-size: cover; background-position: center;"
   >
     <!-- spacer kiri agar slide pertama tidak menempel ke tepi -->
     <div class="shrink-0 w-32 md:w-48"></div>
 
     {
       programs.map((p, i) => {
-        const pct = Math.min(
-          Math.round(Number(p.progress_achieved) || 0),
-          100,
-        );
+        const pct = Math.min(Math.round(Number(p.progress_achieved) || 0), 100);
         return (
           <a
             href={`/donasi/${p.link}`}
@@ -39,8 +36,6 @@ const { programs } = Astro.props;
               <img
                 src={p.image}
                 alt={p.title}
-                width="190"
-                height="110"
                 class="w-full h-26.25 object-cover"
                 loading={i < 2 ? "eager" : "lazy"}
                 decoding="async"

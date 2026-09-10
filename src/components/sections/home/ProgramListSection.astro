@@ -11,67 +11,432 @@ interface Props {
 
 const { programs, categories } = Astro.props;
 
-const activeCategories = categories.filter((c) => c.is_active === "1");
+const activeCategories = (categories ?? []).filter((c) => c.is_active === "1");
+
+const getCatImg = (cat: ProgramCategory) => {
+  if (cat.image_url && /^https?:\/\//.test(cat.image_url)) return cat.image_url;
+  return storageImg(cat.image || cat.image_url, "kategori");
+};
 ---
 
-<section class="pt-4 pb-8 bg-white space-y-2 px-2">
+<section id="home-program-section" class="pt-4 pb-8 bg-white space-y-4 px-2">
   <SectionTitle title="Pilih Program Favoritmu" />
 
-  <!-- Category icons -->
+  <!-- Category Icons Row (Top 3 + Semua + Lainnya) -->
   {
     activeCategories.length > 0 && (
-      <div class="h-32 flex gap-2.5 overflow-x-auto py-2 scrollbar-none">
-        {activeCategories.map((cat) => {
-          const imgSrc =
-            cat.image_url && /^https?:\/\//.test(cat.image_url)
-              ? cat.image_url
-              : storageImg(cat.image || cat.image_url, "kategori");
+      <div class="grid grid-cols-5 gap-2 py-2">
+        {/* Top 4 Active Categories */}
+        {activeCategories.slice(0, 4).map((cat) => {
+          const imgSrc = getCatImg(cat);
           return (
-            <a
-              href={`/donasi?kategori=${cat.slug}`}
-              class="flex flex-col items-center gap-1 w-18 shrink-0"
+            <button
+              type="button"
+              class="home-category-btn group flex flex-col items-center gap-1.5 cursor-pointer w-full text-center focus:outline-none"
+              data-id={String(cat.id)}
+              data-name={cat.name}
             >
-              <div class="w-18 h-18 rounded-full border border-gray-300 hover:border-secondary-500 transition-colors duration-200 overflow-hidden">
-                <img
-                  src={imgSrc}
-                  alt={cat.name}
-                  width="72"
-                  height="72"
-                  class="w-full h-full object-cover"
-                  loading="lazy"
-                  decoding="async"
-                />
+              <div class="category-icon-wrapper w-12 h-12 md:w-13 md:h-13 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:border-primary-400 group-hover:scale-105">
+                {imgSrc ? (
+                  <img
+                    src={imgSrc}
+                    alt={cat.name}
+                    width="56"
+                    height="56"
+                    class="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : (
+                  <span class="text-xs font-bold text-gray-500">
+                    {cat.name.charAt(0)}
+                  </span>
+                )}
               </div>
-              <p class="text-xs text-neutral-500 text-center leading-tight line-clamp-2 w-full">
+              <span class="category-label text-[11px] font-medium text-gray-600 leading-tight line-clamp-2 w-full transition-colors">
                 {cat.name}
-              </p>
-            </a>
+              </span>
+            </button>
           );
         })}
+
+        {/* Tombol Lainnya if categories > 3 */}
+        {activeCategories.length > 3 && (
+          <button
+            id="home-btn-more-categories"
+            type="button"
+            class="home-category-more-btn group flex flex-col items-center gap-1.5 cursor-pointer w-full text-center focus:outline-none"
+          >
+            <div
+              id="home-more-icon-wrapper"
+              class="w-12 h-12 md:w-13 md:h-13 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center transition-all duration-200 group-hover:border-primary-400 group-hover:scale-105"
+            >
+              <img
+                src="/assets/icons/more.png"
+                alt="Lainnya"
+                class="w-full h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity"
+              />
+            </div>
+            <span
+              id="home-more-label"
+              class="text-[11px] font-medium text-gray-600 leading-tight line-clamp-2 w-full transition-colors"
+            >
+              Lainnya
+            </span>
+          </button>
+        )}
       </div>
     )
   }
 
-  <!-- Campaign list -->
+  <!-- Modal Bottom Sheet -->
   {
-    programs.map((p) => (
-      <CampaignList
-        link={`/donasi/${p.link}`}
-        title={p.title}
-        image={p.image}
-        mitra={p.mitra?.name ?? ""}
-        category={p.category?.name ?? ""}
-        progress_achieved={Number(p.progress_achieved) || 0}
-        collected_amount={Number(p.nominal_achieved) || 0}
-        days_left={p.time_target}
-      />
-    ))
+    activeCategories.length > 0 && (
+      <>
+        {/* Backdrop */}
+        <div
+          id="home-category-modal-backdrop"
+          class="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs opacity-0 pointer-events-none transition-opacity duration-300"
+        />
+
+        {/* Bottom Sheet */}
+        <div
+          id="home-category-modal-sheet"
+          class="fixed inset-x-0 bottom-0 z-50 pb-24 max-w-[480px] mx-auto bg-white rounded-t-3xl shadow-2xl transform translate-y-full transition-transform duration-300 ease-out max-h-[85vh] flex flex-col pointer-events-none"
+        >
+          {/* Handle bar & Header */}
+          <div class="px-5 pt-3 pb-3 border-b border-gray-100 shrink-0">
+            <div class="w-10 h-1 bg-gray-300 rounded-full mx-auto mb-3" />
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-gray-800">
+                  Kategori Program
+                </h3>
+                <p class="text-xs text-gray-400">
+                  Pilih kategori program yang ingin Anda tampilkan
+                </p>
+              </div>
+              <button
+                id="home-btn-close-category-modal"
+                type="button"
+                class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200 transition-colors cursor-pointer"
+                aria-label="Tutup"
+              >
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path
+                    fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L10 11.414l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Modal Grid of Categories */}
+          <div class="overflow-y-auto p-4 flex-1 overscroll-contain">
+            <div class="grid grid-cols-4 gap-y-5 gap-x-2">
+              {/* Opsi Semua Program */}
+              <button
+                type="button"
+                class="home-category-modal-btn group flex flex-col items-center gap-1.5 cursor-pointer text-center focus:outline-none"
+                data-id=""
+                data-name="Semua"
+              >
+                <div class="modal-icon-wrapper relative w-14 h-14 rounded-full border-2 border-primary-500 bg-primary-50 flex items-center justify-center shadow-xs transition-all duration-200 group-hover:scale-105">
+                  <svg
+                    class="w-6 h-6 text-primary-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"
+                    />
+                  </svg>
+                </div>
+                <span class="modal-label text-[11px] font-semibold text-primary-500 leading-tight line-clamp-2 w-full">
+                  Semua
+                </span>
+              </button>
+
+              {/* Tiap Kategori */}
+              {activeCategories.map((item) => {
+                const imgSrc = getCatImg(item);
+                return (
+                  <button
+                    type="button"
+                    class="home-category-modal-btn group flex flex-col items-center gap-1.5 cursor-pointer text-center focus:outline-none"
+                    data-id={String(item.id)}
+                    data-name={item.name}
+                  >
+                    <div class="modal-icon-wrapper relative w-14 h-14 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:border-primary-400 group-hover:scale-105">
+                      {imgSrc ? (
+                        <img
+                          src={imgSrc}
+                          alt={item.name}
+                          width="56"
+                          height="56"
+                          class="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      ) : (
+                        <span class="text-xs font-bold text-gray-500">
+                          {item.name.charAt(0)}
+                        </span>
+                      )}
+                    </div>
+                    <span class="modal-label text-[11px] font-medium text-gray-600 leading-tight line-clamp-2 w-full">
+                      {item.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </>
+    )
   }
 
+  <!-- Campaign list -->
+  <div id="home-campaign-list" class="space-y-3 pt-1">
+    {
+      programs.map((p) => (
+        <div
+          class="home-campaign-card-wrapper"
+          data-category-id={String(p.category?.id ?? "")}
+        >
+          <CampaignList
+            link={`/donasi/${p.link}`}
+            title={p.title}
+            image={p.image}
+            mitra={p.mitra?.name ?? ""}
+            category={p.category?.name ?? ""}
+            progress_achieved={Number(p.progress_achieved) || 0}
+            collected_amount={Number(p.nominal_achieved) || 0}
+            days_left={p.time_target}
+          />
+        </div>
+      ))
+    }
+  </div>
+
+  <!-- Empty state for filtered campaign -->
+  <div
+    id="home-campaign-empty"
+    class="hidden flex-col items-center py-10 text-center"
+  >
+    <div
+      class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3"
+    >
+      <svg
+        class="w-7 h-7 text-gray-300"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="1.5"
+          d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        ></path>
+      </svg>
+    </div>
+    <p class="text-sm font-semibold text-gray-700">
+      Tidak ada program ditemukan
+    </p>
+    <p class="text-xs text-gray-400 mt-0.5">
+      Belum ada program untuk kategori ini di halaman utama
+    </p>
+  </div>
+
+  <!-- View more button (updates link with selected category) -->
   <a
+    id="home-view-more-link"
     href="/donasi"
-    class="mx-auto px-4 py-2 text-xs md:text-sm bg-linear-to-b rounded-md from-secondary-400 to-secondary-500 text-white font-medium hover:from-secondary-500 hover:to-secondary-600 transition-colors duration-200 block w-max"
+    class="mx-auto px-4 py-2 text-xs md:text-sm bg-linear-to-b rounded-md from-secondary-400 to-secondary-500 text-white font-medium hover:from-secondary-500 hover:to-secondary-600 transition-colors duration-200 block w-max mt-4"
   >
     Lihat program lainnya
   </a>
 </section>
+
+<script>
+  function setupHomeCategoryFilter() {
+    const btnMore = document.getElementById("home-btn-more-categories");
+    const btnClose = document.getElementById("home-btn-close-category-modal");
+    const backdrop = document.getElementById("home-category-modal-backdrop");
+    const sheet = document.getElementById("home-category-modal-sheet");
+    const moreIconWrapper = document.getElementById("home-more-icon-wrapper");
+    const moreLabel = document.getElementById("home-more-label");
+    const viewMoreLink = document.getElementById(
+      "home-view-more-link",
+    ) as HTMLAnchorElement | null;
+
+    const mainButtons =
+      document.querySelectorAll<HTMLButtonElement>(".home-category-btn");
+    const modalButtons = document.querySelectorAll<HTMLButtonElement>(
+      ".home-category-modal-btn",
+    );
+    const campaignCards = document.querySelectorAll<HTMLElement>(
+      ".home-campaign-card-wrapper",
+    );
+    const emptyState = document.getElementById("home-campaign-empty");
+
+    function openModal() {
+      if (!backdrop || !sheet) return;
+      backdrop.classList.remove("opacity-0", "pointer-events-none");
+      sheet.classList.remove("translate-y-full", "pointer-events-none");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeModal() {
+      if (!backdrop || !sheet) return;
+      backdrop.classList.add("opacity-0", "pointer-events-none");
+      sheet.classList.add("translate-y-full", "pointer-events-none");
+      document.body.style.overflow = "";
+    }
+
+    btnMore?.addEventListener("click", openModal);
+    btnClose?.addEventListener("click", closeModal);
+    backdrop?.addEventListener("click", closeModal);
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeModal();
+    });
+
+    function filterPrograms(categoryId: string) {
+      // 1. Filter the program list in DOM
+      let visibleCount = 0;
+      campaignCards.forEach((card) => {
+        const cardCatId = card.dataset.categoryId || "";
+        if (!categoryId || cardCatId === categoryId) {
+          card.classList.remove("hidden");
+          visibleCount++;
+        } else {
+          card.classList.add("hidden");
+        }
+      });
+
+      if (emptyState) {
+        if (visibleCount === 0) {
+          emptyState.classList.remove("hidden");
+          emptyState.classList.add("flex");
+        } else {
+          emptyState.classList.add("hidden");
+          emptyState.classList.remove("flex");
+        }
+      }
+
+      // 2. Update view more link
+      if (viewMoreLink) {
+        if (categoryId) {
+          viewMoreLink.href = `/donasi?category=${categoryId}`;
+        } else {
+          viewMoreLink.href = "/donasi";
+        }
+      }
+
+      // 3. Update main section icons styling
+      let matchedMainBtn = false;
+      mainButtons.forEach((btn) => {
+        const btnId = btn.dataset.id || "";
+        const iconWrapper = btn.querySelector(".category-icon-wrapper");
+        const label = btn.querySelector(".category-label");
+        const svg = iconWrapper?.querySelector("svg");
+
+        if (btnId === categoryId) {
+          matchedMainBtn = true;
+          if (iconWrapper) {
+            iconWrapper.className =
+              "category-icon-wrapper w-12 h-12 md:w-13 md:h-13 rounded-full border-2 border-primary-500 bg-primary-50 flex items-center justify-center overflow-hidden transition-all duration-200 shadow-xs scale-105";
+          }
+          if (label) {
+            label.className =
+              "category-label text-[11px] font-semibold text-primary-500 leading-tight line-clamp-2 w-full transition-colors";
+          }
+          if (svg) svg.classList.add("text-primary-500");
+        } else {
+          if (iconWrapper) {
+            iconWrapper.className =
+              "category-icon-wrapper w-12 h-12 md:w-13 md:h-13 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:border-primary-400 group-hover:scale-105";
+          }
+          if (label) {
+            label.className =
+              "category-label text-[11px] font-medium text-gray-600 leading-tight line-clamp-2 w-full transition-colors";
+          }
+          if (svg) svg.classList.remove("text-primary-500");
+        }
+      });
+
+      // If category is from modal and not in top 3, highlight "Lainnya"
+      if (moreIconWrapper && moreLabel) {
+        if (categoryId && !matchedMainBtn) {
+          moreIconWrapper.className =
+            "w-12 h-12 md:w-13 md:h-13 rounded-full border-2 border-primary-500 bg-primary-50 flex items-center justify-center transition-all duration-200 shadow-xs scale-105";
+          moreLabel.className =
+            "text-[11px] font-semibold text-primary-500 leading-tight line-clamp-2 w-full transition-colors";
+        } else {
+          moreIconWrapper.className =
+            "w-12 h-12 md:w-13 md:h-13 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center transition-all duration-200 group-hover:border-primary-400 group-hover:scale-105";
+          moreLabel.className =
+            "text-[11px] font-medium text-gray-600 leading-tight line-clamp-2 w-full transition-colors";
+        }
+      }
+
+      // 4. Update modal grid buttons styling
+      modalButtons.forEach((btn) => {
+        const btnId = btn.dataset.id || "";
+        const isSelected = btnId === categoryId;
+        const iconWrapper = btn.querySelector(".modal-icon-wrapper");
+        const label = btn.querySelector(".modal-label");
+        const badge = btn.querySelector(".modal-active-badge");
+
+        if (isSelected) {
+          if (iconWrapper) {
+            iconWrapper.className =
+              "modal-icon-wrapper relative w-14 h-14 rounded-full border-2 border-primary-500 bg-primary-50 flex items-center justify-center overflow-hidden shadow-xs transition-all duration-200 scale-105";
+          }
+          if (label) {
+            label.className =
+              "modal-label text-[11px] font-semibold text-primary-500 leading-tight line-clamp-2 w-full";
+          }
+          if (badge) badge.classList.remove("hidden");
+        } else {
+          if (iconWrapper) {
+            iconWrapper.className =
+              "modal-icon-wrapper relative w-14 h-14 rounded-full border border-gray-200 bg-gray-50 flex items-center justify-center overflow-hidden transition-all duration-200 group-hover:border-primary-400 group-hover:scale-105";
+          }
+          if (label) {
+            label.className =
+              "modal-label text-[11px] font-medium text-gray-600 leading-tight line-clamp-2 w-full";
+          }
+          if (badge) badge.classList.add("hidden");
+        }
+      });
+
+      closeModal();
+    }
+
+    mainButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterPrograms(btn.dataset.id || "");
+      });
+    });
+
+    modalButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        filterPrograms(btn.dataset.id || "");
+      });
+    });
+  }
+
+  setupHomeCategoryFilter();
+  document.addEventListener("DOMContentLoaded", setupHomeCategoryFilter);
+  document.addEventListener("astro:page-load", setupHomeCategoryFilter);
+</script>

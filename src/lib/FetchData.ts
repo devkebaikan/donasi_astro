@@ -56,6 +56,14 @@ export async function getCampaignRamadhan() {
   );
 }
 
+// program theme
+export async function getProgramThemeBySlug(slug: string) {
+  return safe(
+    () => publicApi.get(`/program-themes/slug/${slug}`),
+    "getProgramThemeBySlug",
+  );
+}
+
 export async function getCampaignCategories() {
   return safe(
     () => publicApi.get("/program-categories"),
@@ -119,6 +127,11 @@ export async function getProjectByLink(link: string | null) {
     () => publicApi.get("/projects", { params: { program_link: link } }),
     "getProjectByLink",
   );
+}
+
+// by id
+export async function getProjectById(id: number | null) {
+  return safe(() => publicApi.get(`/program/projects/${id}`), "getProjectBId");
 }
 
 export async function getProjectSummaryByLink(link: string | null) {

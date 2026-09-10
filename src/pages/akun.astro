@@ -39,7 +39,6 @@ const iconPaths: Record<string, string> = {
     data-api-url={API_URL}
     class="container bg-neutral-50 min-h-screen pb-28"
   >
-
     <!-- ── Belum login ──────────────────────────────────────────────────────── -->
     {!isAuthenticated && (
       <div class="px-4 pt-6 space-y-3">
@@ -55,7 +54,7 @@ const iconPaths: Record<string, string> = {
           </p>
           <a
             href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
-            class="w-full bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white text-sm font-semibold py-3.5 rounded-xl transition-all text-center block"
+            class="w-full bg-primary-500 hover:bg-primary-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed text-white text-sm font-semibold py-4 rounded-full transition-all duration-150 mt-2"
           >
             Masuk Sekarang
           </a>
@@ -149,9 +148,9 @@ const iconPaths: Record<string, string> = {
                   <span class="inline-block w-24 h-[22px] bg-gray-100 rounded animate-pulse align-middle"></span>
                 </p>
               </div>
-              <svg class="w-8 h-8 text-primary-300" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
+              <div class="w-9 h-9 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
+                <img src="/assets/icons/wallet.png" alt="dompet kebaikan" />
+              </div>
             </div>
 
             <!-- perforated divider -->
@@ -324,7 +323,6 @@ const iconPaths: Record<string, string> = {
         localStorage.removeItem("user_profile");
         localStorage.removeItem("saldo");
 
-        showToast("Berhasil keluar", "success");
         window.location.href = "/home";
       } catch {
         showToast("Gagal keluar, coba lagi", "error");

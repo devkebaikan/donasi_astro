@@ -6,33 +6,34 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import BottomNav from "@/components/layouts/BottomNav.astro";
 import { getServerToken } from "@/lib/auth";
 import { Image } from "astro:assets";
+import KalenderDonasi from "@/components/sections/donasi-saya/KalenderDonasi.astro";
 
 const isAuthenticated = getServerToken(Astro.cookies) !== null;
 
 const donationStatuses = [
   {
     label: "Menunggu Pembayaran",
-    link: "/donasi-saya/riwayat-donasi?status=pending",
+    link: "/donasi-saya/riwayat-donasi?posisi=menunggu-pembayaran",
     total: 234,
-    image: "/images/icons/icon-tracking/1. Pembayaran I.png",
+    image: "/assets/lacak/menunggu-pembayaran-active.png",
   },
   {
     label: "Menunggu Salur",
-    link: "/donasi-saya/riwayat-donasi?status=menunggu-salur",
+    link: "/donasi-saya/riwayat-donasi?posisi=menunggu-salur",
     total: 0,
-    image: "/images/icons/icon-tracking/2. Menunggu salur I.png",
+    image: "/assets/lacak/menunggu-salur-active.png",
   },
   {
     label: "Proses Salur",
-    link: "/donasi-saya/riwayat-donasi?status=proses-salur",
+    link: "/donasi-saya/riwayat-donasi?posisi=proses",
     total: 0,
-    image: "/images/icons/icon-tracking/3. proses salur I.png",
+    image: "/assets/lacak/proses-salur-active.png",
   },
   {
     label: "Selesai Salur",
-    link: "/donasi-saya/riwayat-donasi?status=success",
+    link: "/donasi-saya/riwayat-donasi?posisi=selesai",
     total: 7,
-    image: "/images/icons/icon-tracking/4. Selesai salur I.png",
+    image: "/assets/lacak/selesai-salur-active.png",
   },
 ];
 ---
@@ -66,27 +67,6 @@ const donationStatuses = [
 
         <!-- Content -->
         <div class="relative z-10 w-11/12">
-          <!-- Badge -->
-          <div
-            class="inline-flex items-center gap-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-full mb-3 shadow-sm"
-          >
-            <svg
-              class="w-3 h-3 text-primary-500"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              stroke-width="2.5"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-            </svg>
-            <span class="text-[10px] font-semibold text-gray-700 tracking-wide">
-              DONASI SAYA
-            </span>
-          </div>
-
           <!-- Title -->
           <h2 class="text-[18px] font-bold text-gray-800 leading-tight mb-2">
             Jejak Kebaikanmu<br />
@@ -225,239 +205,8 @@ const donationStatuses = [
       </div>
     </div>
 
-    <!-- ── Kalender Donasi ──────────────────────────────────────────────────── -->
-    <div class="px-4 mb-4">
-      <div
-        class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"
-      >
-        <!-- Header kalender -->
-        <div
-          class="flex items-center justify-between px-4 py-3 border-b border-gray-100"
-        >
-          <div class="flex items-center gap-2">
-            <span class="text-sm font-semibold text-gray-700"
-              >Kalender Donasi</span
-            >
-          </div>
-          <!-- <div class="flex items-center gap-1.5">
-            <span class="text-[11px] text-gray-400">Donasi sukses</span>
-          </div> -->
-        </div>
-
-        <div class="p-4">
-          <!-- Month-year navigation -->
-          <div class="flex items-center justify-between mb-4">
-            <button
-              id="btn-prev-month"
-              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Bulan sebelumnya"
-            >
-              <svg
-                class="w-4 h-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M15 19l-7-7 7-7"></path>
-              </svg>
-            </button>
-
-            <span
-              id="btn-month-label"
-              class="text-sm font-semibold text-gray-700 px-3 py-1"
-            >
-              <!-- diisi JS -->
-            </span>
-
-            <button
-              id="btn-next-month"
-              class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
-              aria-label="Bulan berikutnya"
-            >
-              <svg
-                class="w-4 h-4 text-gray-500"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                stroke-width="2.5"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Day labels -->
-          <div class="grid grid-cols-7 mb-1">
-            {
-              ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"].map((d) => (
-                <div class="text-center text-[10px] font-semibold text-gray-400 py-1">
-                  {d}
-                </div>
-              ))
-            }
-          </div>
-
-          <!-- Calendar grid — diisi JS -->
-          <div id="calendar-grid" class="grid grid-cols-7 gap-y-1"></div>
-        </div>
-      </div>
-    </div>
+    <KalenderDonasi />
   </div>
 
   <BottomNav active="donasiku" />
 </MainLayout>
-
-<script>
-  import { getToken } from "@/lib/auth";
-
-  const page = document.getElementById("donasi-saya-page") as HTMLElement;
-  const API_URL = page?.dataset.apiUrl ?? "";
-
-  const today = new Date();
-  let activeYear = today.getFullYear();
-  let activeMonth = today.getMonth();
-  let donationDates = new Set<string>();
-
-  const MONTHS_ID = [
-    "Januari",
-    "Februari",
-    "Maret",
-    "April",
-    "Mei",
-    "Juni",
-    "Juli",
-    "Agustus",
-    "September",
-    "Oktober",
-    "November",
-    "Desember",
-  ];
-
-  const monthLabel = document.getElementById("btn-month-label") as HTMLElement;
-  const calGrid = document.getElementById("calendar-grid") as HTMLElement;
-
-  function pad(n: number) {
-    return String(n).padStart(2, "0");
-  }
-
-  function toYMD(y: number, m: number, d: number) {
-    return `${y}-${pad(m + 1)}-${pad(d)}`;
-  }
-
-  // ── Calendar rendering ────────────────────────────────────────────────────
-
-  function renderCalendar() {
-    if (!calGrid || !monthLabel) return;
-
-    monthLabel.textContent = `${MONTHS_ID[activeMonth]} ${activeYear}`;
-
-    const firstDay = new Date(activeYear, activeMonth, 1).getDay();
-    const daysInMonth = new Date(activeYear, activeMonth + 1, 0).getDate();
-
-    let html = "";
-
-    for (let i = 0; i < firstDay; i++) {
-      html += `<div></div>`;
-    }
-
-    for (let d = 1; d <= daysInMonth; d++) {
-      const ymd = toYMD(activeYear, activeMonth, d);
-      const isToday =
-        ymd === toYMD(today.getFullYear(), today.getMonth(), today.getDate());
-      const isFuture = new Date(activeYear, activeMonth, d) > today;
-      const hasDonation = donationDates.has(ymd);
-
-      let numCls =
-        "w-8 h-8 mx-auto flex items-center justify-center rounded-full text-[12px] font-medium ";
-      if (isToday) numCls += "bg-primary-100 text-primary-700 font-semibold";
-      else if (isFuture) numCls += "text-gray-300";
-      else numCls += "text-gray-600";
-
-      html += `
-        <div class="py-0.5 flex flex-col items-center">
-          <div class="${numCls}">${d}</div>
-          <div class="w-1.5 h-1.5 mt-0.5 rounded-full ${hasDonation ? "bg-green-400" : ""}"></div>
-        </div>`;
-    }
-
-    calGrid.innerHTML = html;
-  }
-
-  // ── Fetch tanggal donasi sukses ───────────────────────────────────────────
-
-  async function fetchDonationDates() {
-    const token = getToken();
-    if (!token) {
-      renderCalendar();
-      return;
-    }
-
-    try {
-      const headers: Record<string, string> = {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      };
-
-      const params = new URLSearchParams({
-        month: pad(activeMonth + 1),
-        year: String(activeYear),
-        status: "success",
-        per_page: "100",
-      });
-
-      // const res = await fetch(`${API_URL}/dashboard/my-donation?${params}`, {
-      //   headers,
-      // });
-      // if (!res.ok) throw new Error();
-
-      // const json = await res.json();
-      // const items: any[] = json?.data ?? [];
-
-      // donationDates = new Set(
-      //   items
-      //     .map((item: any) => {
-      //       const d = new Date(item.time ?? "");
-      //       return isNaN(d.getTime())
-      //         ? ""
-      //         : toYMD(d.getFullYear(), d.getMonth(), d.getDate());
-      //     })
-      //     .filter(Boolean),
-      // );
-    } catch {
-      // donationDates = new Set();
-    }
-
-    renderCalendar();
-  }
-
-  // ── Month navigation ──────────────────────────────────────────────────────
-
-  document.getElementById("btn-prev-month")?.addEventListener("click", () => {
-    if (activeMonth === 0) {
-      activeMonth = 11;
-      activeYear--;
-    } else activeMonth--;
-    fetchDonationDates();
-  });
-
-  document.getElementById("btn-next-month")?.addEventListener("click", () => {
-    if (activeYear === today.getFullYear() && activeMonth === today.getMonth())
-      return;
-    if (activeMonth === 11) {
-      activeMonth = 0;
-      activeYear++;
-    } else activeMonth++;
-    fetchDonationDates();
-  });
-
-  // ── Init ──────────────────────────────────────────────────────────────────
-  // Astro scripts run as deferred modules — DOMContentLoaded sudah fired, panggil langsung
-  fetchDonationDates();
-</script>

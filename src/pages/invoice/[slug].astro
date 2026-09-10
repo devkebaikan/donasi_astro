@@ -41,7 +41,7 @@ const qrPayload =
 
 <MainLayout
   title="Invoice Donasi"
-  description="Invoice donasi Anda di Aksiberbagi.com. Lihat detail pembayaran dan instruksi untuk menyelesaikan donasi Anda."
+  description="Invoice donasi Anda di Beramalbersama.com. Lihat detail pembayaran dan instruksi untuk menyelesaikan donasi Anda."
 >
   <Header type="notshare" text="Invoice" link="/home" />
 
@@ -199,31 +199,38 @@ const qrPayload =
           }
 
           <!-- Action Buttons -->
-          <div class="p-4 space-y-3">
+          <div class="p-4 space-y-2.5">
             {
               invoice?.items[0].program?.link !== "infaq" &&
                 invoice?.items[0].program != null && (
                   <a
                     id="btn-tracking-donasi"
                     href={`/track-donation/${slug}`}
-                    class="block w-full text-center text-sm md:text-base bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 shadow-md hover:shadow-lg"
+                    class="group flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-primary-500 hover:bg-primary-600 text-white font-medium text-sm transition-all duration-200 shadow-xs active:scale-[0.99]"
                   >
-                    Lacak Donasimu
+                    <span>Lacak Donasimu</span>
                   </a>
                 )
             }
             <a
               id="btn-cara-pembayaran"
               href={`/invoice/help/${slug}`}
-              class="flex items-center justify-center w-full text-sm md:text-base text-center bg-white hover:bg-gray-50 text-gray-700 font-semibold py-3 px-6 rounded-md border-2 border-gray-300 hover:border-primary-500 transition-all duration-200"
+              class="group flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white hover:bg-neutral-50 text-neutral-700 font-medium text-sm border border-neutral-200 hover:border-neutral-300 transition-all duration-200 active:scale-[0.99]"
             >
-              <span>Cara Pembayaran</span>
-              <svg class="ml-2 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <svg
+                class="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 transition-colors duration-200"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
                 <path
-                  fill-rule="evenodd"
-                  d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
-                  clip-rule="evenodd"></path>
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                />
               </svg>
+              <span>Cara Pembayaran</span>
             </a>
           </div>
         </div>
@@ -257,8 +264,7 @@ const qrPayload =
 import { showToast } from "@/lib/toast";
 
 import { sendInitialCheckoutEvent } from "@/lib/pixels";
-import { trackBeginCheckout } from "@/lib/tracking";
-import { formatRupiah } from "@/lib/formatter";
+import { trackBeginCheckout, trackPurchase } from "@/lib/tracking";
 
 document.addEventListener("DOMContentLoaded", () => {
   const el = document.getElementById("invoice-page");
@@ -270,16 +276,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const isPaid = el.dataset.paid === "true";
   const paymentUrl = el.dataset.paymentUrl;
   const qrCode = el.dataset.qrCode
-  // const idProgram = el.dataset.idProgram;
-  
-  // console.log(idProgram)
- 
  
   sendInitialCheckoutEvent(slug, donationAmount);
   trackBeginCheckout({
     programId: slug || "",
     value: donationAmount,
   });
+  trackPurchase({
+    invoice : slug || '',
+    value: donationAmount,
+  })
 
   if (isPaid) {
     setTimeout(() => {

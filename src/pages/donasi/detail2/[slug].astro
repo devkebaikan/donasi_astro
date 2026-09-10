@@ -79,7 +79,7 @@ const campaignJsonLd = JSON.stringify({
       url: Astro.url.href,
       recipient: {
         "@type": "Organization",
-        name: detailCampaign?.mitra?.name ?? "Aksiberbagi.com",
+        name: detailCampaign?.mitra?.name ?? "Beramalbersama.com",
       },
     },
   ],
@@ -89,7 +89,7 @@ const campaignJsonLd = JSON.stringify({
 <MainLayout
   title={campaignTitle}
   description={detailCampaign?.short_description ??
-    "Detail kampanye donasi di Aksiberbagi.com"}
+    "Detail kampanye donasi di Beramalbersama.com"}
   image={campaignImage ?? undefined}
   imageAlt={campaignTitle}
   type="article"
@@ -107,7 +107,12 @@ const campaignJsonLd = JSON.stringify({
 
   <div class="bg-white min-h-screen container">
     <div class="mx-auto mb-24 max-w-120">
-      <Banner link={slug} detailCampaign={detailCampaign} donors={donors} />
+      <Banner
+        link={slug}
+        detailCampaign={detailCampaign}
+        donors={donors}
+        projectId={projectId ? Number(projectId) : null}
+      />
       <NominalInput
         nominalOptions={nominalOptions}
         programId={detailCampaign?.id}

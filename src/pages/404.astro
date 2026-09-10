@@ -1,0 +1,42 @@
+---
+export const prerender = false;
+
+import MainLayout from "@/layouts/MainLayout.astro";
+---
+
+<MainLayout
+  title="Halaman Tidak Ditemukan"
+  description="Halaman yang kamu cari tidak ditemukan"
+>
+  <div
+    class="min-h-screen w-full flex flex-col items-center justify-center px-6 bg-gray-100"
+  >
+    <div class="flex flex-col items-center text-center max-w-xs">
+      <!-- Number -->
+      <h1
+        class="leading-none bg-gradient-to-tl from-gray-500 to-gray-800 bg-clip-text text-transparent"
+        style="font-weight: 900; font-size: 6rem; line-height: 1;"
+      >
+        404
+      </h1>
+
+      <!-- Title -->
+      <h2 class="text-lg font-bold text-gray-800 mt-3 mb-2">
+        Halaman Tidak Ditemukan
+      </h2>
+
+      <!-- Description -->
+      <p class="text-[13px] text-gray-500 leading-relaxed mb-8">
+        Halaman yang kamu cari mungkin sudah pindah atau tidak tersedia
+      </p>
+
+      <!-- Simple button -->
+      <a
+        href="/home"
+        class="inline-flex items-center justify-center gap-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-semibold px-6 py-3 rounded-lg transition-all active:scale-95"
+      >
+        Kembali ke Beranda
+      </a>
+    </div>
+  </div>
+</MainLayout>
