@@ -40,7 +40,7 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
                 <!-- Image -->
                 <div class="relative aspect-4/3 overflow-hidden">
                   <img
-                    src={imgSrc || "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&h=400&fit=crop"}
+                    src={imgSrc || "/assets/landingpage/hero/hero-1.avif"}
                     alt={item.title}
                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     loading={i < 2 ? "eager" : "lazy"}

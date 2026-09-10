@@ -1,0 +1,20 @@
+{
+  "name": "Beramalbersama",
+  "short_name": "Beramalbersama",
+  "start_url": "/home",
+  "display": "standalone",
+  "background_color": "#049dc7",
+  "theme_color": "#049dc7",
+  "icons": [
+    {
+      "src": "/icons/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
