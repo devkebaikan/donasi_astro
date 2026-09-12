@@ -12,7 +12,7 @@ const searchQuery = Astro.url.searchParams.get("q") ?? null;
 const categoryId = Astro.url.searchParams.get("category") ?? null;
 
 // Fetch data pertama & kategori secara paralel (server-side)
-const [programRes, categoryList] = await Promise.all([
+const [programResult, categoryResult] = await Promise.allSettled([
   getAllCampaigns({
     limit: 5,
     mode: "pagination",
@@ -22,6 +22,11 @@ const [programRes, categoryList] = await Promise.all([
   }),
   getCampaignCategories(),
 ]);
+
+const programRes =
+  programResult.status === "fulfilled" ? programResult.value : null;
+const categoryList =
+  categoryResult.status === "fulfilled" ? categoryResult.value : null;
 
 const programList = programRes?.data ?? [];
 const hasNextPage = Boolean(
@@ -356,11 +361,12 @@ const hasNextPage = Boolean(
         {/* Hasil list */}
         <div id="campaign-list" class="space-y-3">
           {
-            programList.map((item: any) => (
+            programList.map((item: any, index: number) => (
               <CampaignList
                 link={`/donasi/${item.link}`}
                 title={item.title}
                 image={item.image}
+                priority={index < 2}
                 mitra={item.mitra.name}
                 category={item?.category?.name}
                 progress_achieved={item.progress_achieved}
