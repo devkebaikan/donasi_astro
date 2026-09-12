@@ -27,5 +27,8 @@ export default defineConfig({
     service: {
       entrypoint: "astro/assets/services/sharp",
     },
+    remotePatterns: [
+      { protocol: "https", hostname: "cdn.beramalbersama.com" }, // ganti sesuai domain CDN gambar campaign kamu
+    ],
   },
 });
