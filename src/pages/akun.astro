@@ -12,7 +12,7 @@ const personalMenus = [
   { href: "/me",            label: "Ubah Data Akun",         icon: "user"        },
   { href: "/donasi-saya",   label: "Donasi Saya",            icon: "archive"     },
   { href: "/donasi-rutin",  label: "Rutin Saya",             icon: "calendar"    },
-  { href: "/mutasi-saku",   label: "Aktivitas Saku Berbagi", icon: "transaction" },
+  { href: "/mutasi-saku",   label: "Aktivitas Saku Kebaikan", icon: "transaction" },
 ];
 
 const generalMenus = [
@@ -50,7 +50,7 @@ const iconPaths: Record<string, string> = {
           </div>
           <h3 class="text-base font-semibold text-gray-900 mb-1.5 tracking-tight">Masuk ke Akunmu</h3>
           <p class="text-sm text-gray-400 leading-relaxed mb-7 max-w-[220px]">
-            Kelola donasi, pantau program, dan akses Saku Berbagi kamu
+            Kelola donasi, pantau program, dan akses Saku Kebaikan kamu
           </p>
           <a
             href={`/auth/login?from=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`}
@@ -143,7 +143,7 @@ const iconPaths: Record<string, string> = {
           <div class="relative bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="flex items-start justify-between px-5 pt-4 pb-3">
               <div>
-                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Saku Berbagi</p>
+                <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.2em]">Saku Kebaikan</p>
                 <p id="wallet-saldo" class="mt-1.5 text-xl font-bold text-gray-900 tabular-nums tracking-tight">
                   <span class="inline-block w-24 h-[22px] bg-gray-100 rounded animate-pulse align-middle"></span>
                 </p>

@@ -191,7 +191,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
               <path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path>
             </svg>
             <span class="text-xs text-primary-700 font-medium"
-              >Saldo Saku Berbagi</span
+              >Saldo Saku Kebaikan</span
             >
           </div>
           <span class="text-sm font-bold text-primary-700"
@@ -658,7 +658,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       return;
     }
     if (paymentType === "wallet" && amount > walletBal) {
-      showToast("Saldo Saku Berbagi tidak mencukupi", "error");
+      showToast("Saldo Saku Kebaikan tidak mencukupi", "error");
       return;
     }
     if (!isZakat && forOtherPerson && !atasNama) {

@@ -7,6 +7,7 @@ import { getInvoice } from "@/lib/FetchData";
 import { formatDateTime, formatRupiah } from "@/lib/formatter";
 
 import QrisPayment from "@/components/ui/QrisPayment.astro";
+// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 interface Props {
   invoice: any;
@@ -55,6 +56,8 @@ const qrPayload =
     data-qr-code={qrPayload}
     class="min-h-screen "
   >
+
+  <!-- <ShowJsonData data={payment} /> -->
     <div class="container bg-neutral-50 min-h-screen">
       <div class="space-y-4">
         <!-- Payment Deadline Section -->

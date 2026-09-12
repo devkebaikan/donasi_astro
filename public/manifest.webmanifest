@@ -3,8 +3,8 @@
   "short_name": "Astro App",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#049dc7",
-  "theme_color": "#049dc7",
+  "background_color": "#1eb8b1",
+  "theme_color": "#1eb8b1",
   "icons": [
     {
       "src": "/icons/logo.png",

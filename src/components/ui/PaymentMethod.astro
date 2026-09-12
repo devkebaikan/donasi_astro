@@ -26,7 +26,7 @@ const walletDisplay =
     ? walletMethod
     : {
         id: 3000,
-        name: "Saku Berbagi",
+        name: "Saku Kebaikan",
         image_url: "",
         type: "wallet",
       };
@@ -84,12 +84,12 @@ const API_URL = import.meta.env.PUBLIC_API_URL;
 
     <!-- Scrollable content -->
     <div class="overflow-y-auto flex-1 px-5 pb-8 pt-4 space-y-5">
-      <!-- Saku Berbagi (wallet) -->
+      <!-- Saku Kebaikan (wallet) -->
       {
         isAuthenticated && showWallet && (
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-              Saku Berbagi
+              Saku Kebaikan
             </p>
             <div class="space-y-2">
               <button
