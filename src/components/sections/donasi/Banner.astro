@@ -30,9 +30,11 @@ const progressPercent = Math.min(detailCampaign?.progress_achieved || 0, 100);
   <!-- Hero Image Section -->
   <div class="relative max-w-120">
     <div class="relative">
-      <img
+      <Image
+        inferSize
         src={detailCampaign?.image ?? "/images/banner-bio.webp"}
         alt={detailCampaign?.title || "Donasi Image"}
+        sizes="(max-width: 640px) 100vw, 480px"
         loading="eager"
         fetchpriority="high"
         decoding="async"

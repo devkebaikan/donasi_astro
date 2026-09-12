@@ -1,6 +1,6 @@
 ---
 import { formatRupiah } from '@/lib/formatter';
-import { Image } from 'astro:assets';
+import { Image } from "astro:assets";
 
 
 interface Props {
@@ -39,13 +39,13 @@ const { programLink, projekSalur, programId } = Astro.props;
 
           <div class="flex flex-col gap-4 items-start">
             {salur.image && (
-              <Image
-              width={120}
-              height={80}
-                src={salur.image}
-                alt={salur.title}
-                class="w-full h-auto rounded-lg object-cover"
-              />
+            <img
+              src={salur.image}
+              alt={salur.title}
+              loading="lazy"
+              decoding="async"
+              class="w-full h-auto rounded-lg object-cover"
+            />
             )}
 
             <div class="flex flex-col gap-3 p-1">
