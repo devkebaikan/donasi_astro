@@ -17,9 +17,21 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
     <meta name="generator" content={Astro.generator} />
 
     <!-- Favicon & PWA -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="public/assets/logo/logo-short-white.png" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="192x192"
+      href="/assets/logo/logo-short-color.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="512x512"
+      href="/assets/logo/logo-short-color.png"
+    />
+
+    <!-- PWA installer -->
+    <link rel="manifest" href="/manifest.json" />
 
     <!-- SEO -->
     <Seo {...Astro.props} />

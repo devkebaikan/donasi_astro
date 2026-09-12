@@ -4,38 +4,30 @@
   /* ===================== */
   /* Primary (Teal)        */
   /* ===================== */
-  /* --color-primary-50:  #f0fdf9;
-  --color-primary-100: #ddf5f1;
-  --color-primary-200: #b7e9e0;
-  --color-primary-300: #8edcd0;
-  --color-primary-400: #4fc8af;
-  --color-primary-500: #19b697;
-  --color-primary-600: #139e82;
-  --color-primary-700: #0f7f69;
-  --color-primary-800: #0c6657;
-  --color-primary-900: #094d42; */
+  --color-primary-50: #eefbfb;
+  --color-primary-100: #d5f7f4;
+  --color-primary-200: #aef0ea;
+  --color-primary-300: #77e4dc;
+  --color-primary-400: #3fcdc5;
+  --color-primary-500: #1eb8b1;
+  --color-primary-600: #169792;
+  --color-primary-700: #167874;
+  --color-primary-800: #16605e;
+  --color-primary-900: #174f4e;
 
-  --color-primary-50: #eefbff;
-  --color-primary-100: #d7f4fb;
-  --color-primary-200: #afe8f7;
-  --color-primary-300: #7fd8ef;
-  --color-primary-400: #42c3e1;
-  --color-primary-500: #049dc7;
-  --color-primary-600: #0289af;
-  --color-primary-700: #026f8f;
-  --color-primary-800: #035b74;
-  --color-primary-900: #044b5f;
   /* ===================== */
-  /* Secondary (Orange)    */
+  /* Secondary (Coral)     */
   /* ===================== */
-  --color-secondary-50: #fff8f5;
-  --color-secondary-100: #fff1ec;
-  --color-secondary-200: #ffd4c6;
-  --color-secondary-300: #ffb39b;
-  --color-secondary-400: #ff8d66;
-  --color-secondary-500: #fd6938;
-  --color-secondary-600: #e85a2b;
-  --color-secondary-700: #c94a22;
+  --color-secondary-50: #fff5f2;
+  --color-secondary-100: #ffede7;
+  --color-secondary-200: #ffd9cf;
+  --color-secondary-300: #ffbcaa;
+  --color-secondary-400: #ff9279;
+  --color-secondary-500: #fd6542;
+  --color-secondary-600: #eb4b26;
+  --color-secondary-700: #c63917;
+  --color-secondary-800: #a43117;
+  --color-secondary-900: #872c18;
 
   /* ===================== */
   /* Neutral               */
@@ -87,6 +79,8 @@
   --secondary-500: var(--color-secondary-500);
   --secondary-600: var(--color-secondary-600);
   --secondary-700: var(--color-secondary-700);
+  --secondary-800: var(--color-secondary-800);
+  --secondary-900: var(--color-secondary-900);
 }
 
 /* Global styles */
@@ -154,10 +148,10 @@ html {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #f0f9f1;
+  background: var(--color-primary-50);
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a7540;
+  background: var(--color-primary-400);
   border-radius: 4px;
 }
 

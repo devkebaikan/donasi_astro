@@ -85,7 +85,7 @@ const defaultCommitment = 3;
 <div class="bg-white rounded border border-gray-100 shadow-sm p-4">
   <p class="text-sm font-semibold text-gray-500 mb-0.5">Metode pembayaran</p>
   <p class="text-xs text-gray-400 mb-3 leading-relaxed">
-    Donasi rutin dipotong otomatis dari Saku Berbagi setiap periodenya
+    Donasi rutin dipotong otomatis dari Saku Kebaikan setiap periodenya
   </p>
 
   <!-- Segmented Switcher -->
@@ -103,7 +103,7 @@ const defaultCommitment = 3;
       type="button"
       class="py-2.5 px-3 rounded-lg bg-transparent text-gray-500 text-xs font-semibold border border-transparent transition-all duration-150 flex items-center justify-center gap-1.5"
     >
-      Saku Berbagi
+      Saku Kebaikan
     </button>
   </div>
   {
@@ -112,7 +112,7 @@ const defaultCommitment = 3;
         id="saku-info"
         class="items-center justify-between bg-gray-50 rounded-lg px-4 py-3 hidden"
       >
-        <span class="text-sm text-gray-500">Saldo Saku Berbagi</span>
+        <span class="text-sm text-gray-500">Saldo Saku Kebaikan</span>
         <span id="wallet-display" class="text-sm font-bold text-primary-600">
           {formatRupiah(walletBalance)}
         </span>
@@ -170,7 +170,7 @@ const defaultCommitment = 3;
     id="note-saku"
     class="text-xs text-start rounded-lg px-4 py-2.5 bg-primary-50 text-primary-600 mt-3"
   >
-    Donasi akan otomatis diproses menggunakan saldo Saku Berbagi Anda
+    Donasi akan otomatis diproses menggunakan saldo Saku Kebaikan Anda
   </p>
   <p
     id="note-commitment"
@@ -182,7 +182,7 @@ const defaultCommitment = 3;
     id="note-insufficient"
     class="text-xs text-start rounded-lg px-4 py-2.5 bg-red-50 mt-3 h-auto flex-col hidden"
   >
-    <p class="text-sm font-semibold">Saldo Saku Berbagi tidak mencukupi</p>
+    <p class="text-sm font-semibold">Saldo Saku Kebaikan tidak mencukupi</p>
     <p>Silakan top up terlebih dahulu</p>
     <a
       href="/top-up"
@@ -380,9 +380,7 @@ const defaultCommitment = 3;
 
   <!-- Pukul -->
   <div class="space-y-1.5">
-    <label class="block text-xs font-semibold text-gray-500">
-      Pukul
-    </label>
+    <label class="block text-xs font-semibold text-gray-500"> Pukul </label>
     <div class="flex items-center gap-2">
       <select
         id="hour-select"
@@ -420,7 +418,9 @@ const defaultCommitment = 3;
       for="atas-nama-input"
       class="block text-xs font-semibold text-gray-500"
     >
-      Atas nama orang lain <span class="font-normal text-gray-400">(opsional)</span>
+      Atas nama orang lain <span class="font-normal text-gray-400"
+        >(opsional)</span
+      >
     </label>
     <input
       id="atas-nama-input"
@@ -432,10 +432,7 @@ const defaultCommitment = 3;
 
   <!-- Doa -->
   <div class="space-y-1.5">
-    <label
-      for="doa-input"
-      class="block text-xs font-semibold text-gray-500"
-    >
+    <label for="doa-input" class="block text-xs font-semibold text-gray-500">
       Doa & Harapan <span class="font-normal text-gray-400">(opsional)</span>
     </label>
     <textarea
@@ -627,7 +624,7 @@ const defaultCommitment = 3;
   function syncScheduleNote() {
     scheduleNote.textContent = isCommitment
       ? "Sistem akan memproses donasi rutin Anda secara otomatis sesuai jadwal"
-      : "Donasi rutin akan aktif selama saldo Saku Berbagi Anda mencukupi";
+      : "Donasi rutin akan aktif selama saldo Saku Kebaikan Anda mencukupi";
   }
 
   function setChipActive(activeBtn: HTMLButtonElement | null) {
@@ -805,7 +802,7 @@ const defaultCommitment = 3;
       return;
     }
     if (!isCommitment && nominal > walletBal) {
-      showToast("Saldo Saku Berbagi tidak mencukupi", "error");
+      showToast("Saldo Saku Kebaikan tidak mencukupi", "error");
       return;
     }
     if (isCommitment && !paymentSelected) {

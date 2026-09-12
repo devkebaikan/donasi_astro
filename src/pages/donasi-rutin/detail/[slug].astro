@@ -105,7 +105,7 @@ const infoRows = [
   { label: "Dijadwalkan mulai tanggal", value: createdAt ? formatDate(createdAt) : "-" },
   { label: "Frekuensi",                 value: frequency },
   { label: "Tiap Pukul",                value: time },
-  { label: "Metode Pembayaran",         value: commitment === null ? "Saku Berbagi" : "Bayar Langsung" },
+  { label: "Metode Pembayaran",         value: commitment === null ? "Saku Kebaikan" : "Bayar Langsung" },
   ...(rangeType !== "daily" && rangeLabel ? [{ label: rangeLabel, value: rangeDisplay }] : []),
   { label: "Nominal per Periode",       value: formatRupiah(nominal) },
   { label: "Sudah Berapa Hari",         value: `${summary?.frekuensi_donasi ?? 0} Hari` },
