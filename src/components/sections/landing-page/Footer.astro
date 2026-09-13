@@ -1,9 +1,9 @@
 ---
 const quickLinks = [
   { name: "Tentang kami", href: "/tentang" },
-  { name: "Download", href: "/aplikasi" },
-  { name: "Rekening", href: "/rekening" },
-  { name: "Menjadi Relawan", href: "/kontak" },
+  // { name: "Download", href: "/aplikasi" },
+  // { name: "Rekening", href: "/rekening" },
+  // { name: "Menjadi Relawan", href: "/kontak" },
 ];
 
 const infoLinks = [
@@ -22,7 +22,7 @@ const infoLinks = [
   </div>
 
   <div class="container-custom py-14 md:py-18">
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12">
       <!-- Logo & Description -->
       <div class="md:col-span-1">
         <a href="/" class="inline-block mb-5">
@@ -79,7 +79,7 @@ const infoLinks = [
       </div>
 
       <!-- Quick Links -->
-      <div>
+      <div class="hidden">
         <h4 class="font-display text-base font-semibold mb-4 text-white">
           Tautan Cepat
         </h4>
@@ -101,7 +101,7 @@ const infoLinks = [
       </div>
 
       <!-- Info Links -->
-      <div>
+      <div class="hidden">
         <h4 class="font-display text-base font-semibold mb-4 text-white">
           Sekilas
         </h4>
