@@ -93,7 +93,7 @@ const qrPayload =
                 qrPayload={qrPayload}
                 donationAmount={donationAmount}
                 accountBehalf={payment.account_behalf}
-                imgUrl={payment.image_url}
+                imgUrl={payment.image}
               />
             ) : (
               <Fragment>
@@ -105,7 +105,7 @@ const qrPayload =
                     <img
                       class="h-full max-w-full object-contain"
                       alt={payment.name || "Payment method"}
-                      src={payment.image_url}
+                      src={payment.image}
                     />
                   </div>
                 </div>
