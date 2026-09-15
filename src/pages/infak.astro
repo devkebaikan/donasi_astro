@@ -143,6 +143,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
 <script>
   import { showToast } from "@/lib/toast";
   import { getToken } from "@/lib/auth";
+  import { getIncomingReffCode } from "@/lib/referral";
 
   const page = document.getElementById("infaq-page") as HTMLElement;
   const API_URL = page?.dataset.apiUrl ?? "";
@@ -352,6 +353,8 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     btnSubmit.disabled = true;
     btnSubmit.textContent = "Memproses...";
 
+    const reffCode = getIncomingReffCode();
+
     const raw: Record<string, unknown> = {
       type: "donation",
       program_type: "infaq",
@@ -363,6 +366,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
       status: "Pending",
       ...(doa ? { doa } : {}),
       ...(atasNama ? { atas_nama: atasNama } : {}),
+      ...(reffCode ? { reff_code: reffCode } : {}),
     };
 
     try {

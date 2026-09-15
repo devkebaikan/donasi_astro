@@ -372,6 +372,8 @@ const tabs = [
 
   <script>
     import { formatRupiah } from "@/lib/formatter";
+    import { appendReffCodeToUrl } from "@/lib/referral";
+    import { showToast } from "@/lib/toast";
 
     // ── Tab system ─────────────────────────────────────────────────────────────
     const tabButtons = Array.from(
@@ -678,14 +680,14 @@ const tabs = [
     // ── Share button ───────────────────────────────────────────────────────────
     const shareBtn = document.getElementById("btn-share-lp");
     if (shareBtn) {
-      shareBtn.addEventListener("click", () => {
-        const url = window.location.href;
+      shareBtn.addEventListener("click", async () => {
+        const shareUrl = await appendReffCodeToUrl(window.location.href);
         if (navigator.share) {
-          navigator.share({ title: document.title, url }).catch(() => {});
+          navigator.share({ title: document.title, url: shareUrl }).catch(() => {});
         } else {
           navigator.clipboard
-            .writeText(url)
-            .then(() => alert("Link berhasil disalin!"));
+            .writeText(shareUrl)
+            .then(() => showToast("Link berhasil disalin!", "success"));
         }
       });
     }

@@ -78,5 +78,9 @@ export function requireAuth(redirectTo = "/auth/login"): boolean {
 /** Logout: hapus token dan redirect ke halaman login. */
 export function logout(redirectTo = "/auth/login"): void {
   removeToken();
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("user_reff_code");
+    localStorage.removeItem("save_reff_code");
+  }
   window.location.href = redirectTo;
 }

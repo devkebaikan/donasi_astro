@@ -15,7 +15,7 @@ const user = await getUserProfile(token);
 ---
 
 <MainLayout title="Ubah Profil" description="Ubah profil akun Anda">
-  <Header type="title" text="Ubah Profil" />
+  <Header type="notshare" text="Ubah Profil" />
 
   <main class="min-h-screen">
     <div class="container px-2.5 bg-neutral-50 pt-16 pb-32">
@@ -333,6 +333,9 @@ const user = await getUserProfile(token);
                 updated.email ?? "";
               (document.getElementById("reff_code") as HTMLInputElement).value =
                 updated.reff_code ?? "";
+              if (updated.reff_code) {
+                localStorage.setItem("user_reff_code", updated.reff_code.trim());
+              }
               if (avatarName) avatarName.textContent = updated.name ?? "...";
             }
             showToast("Profil berhasil diubah", "success");

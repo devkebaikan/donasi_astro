@@ -63,30 +63,28 @@ const { isRutin, isActive, link } = Astro.props;
 </div>
 
 <script>
-  // Simpan parameter URL ke localStorage
-  const urlParams = new URLSearchParams(window.location.search);
-  const reffCode = urlParams.get("reff_code");
-  const leads = urlParams.get("leads");
+  import { appendReffCodeToUrl } from "@/lib/referral";
+  import { showToast } from "@/lib/toast";
 
-  if (reffCode) localStorage.setItem("reffCode", reffCode);
+  // Simpan parameter leads ke localStorage jika ada
+  const urlParams = new URLSearchParams(window.location.search);
+  const leads = urlParams.get("leads");
   if (leads) localStorage.setItem("leads", leads);
 
   // Tombol Bagikan
   const shareButton = document.getElementById("btn-share-dp");
-  shareButton?.addEventListener("click", () => {
-    const savedReffCode = localStorage.getItem("save_reff_code") || "";
-    const url = new URL(window.location.href);
-    url.searchParams.set("reff_code", savedReffCode);
-    const shareUrl = url.toString();
+  shareButton?.addEventListener("click", async () => {
+    const shareUrl = await appendReffCodeToUrl(window.location.href);
 
-    if (navigator.share) {
-      navigator
-        .share({ title: document.title, url: shareUrl })
-        .catch((err) => console.log("Error sharing:", err));
-    } else {
-      navigator.clipboard
-        .writeText(shareUrl)
-        .then(() => alert("Link berhasil disalin!"));
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: document.title, url: shareUrl });
+      } else {
+        await navigator.clipboard.writeText(shareUrl);
+        showToast("Link berhasil disalin!", "success");
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
     }
   });
 

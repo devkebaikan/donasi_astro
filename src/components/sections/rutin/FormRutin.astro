@@ -483,6 +483,7 @@ const defaultCommitment = 3;
   import { showToast } from "@/lib/toast";
   import { getToken } from "@/lib/auth";
   import { formatRupiah } from "@/lib/formatter";
+  import { getIncomingReffCode } from "@/lib/referral";
 
   const page = document.getElementById("rutin-page") as HTMLElement;
   if (!page) throw new Error("rutin-page not found");
@@ -837,6 +838,8 @@ const defaultCommitment = 3;
     const atasNama = atasNamaInput?.value.trim();
     const doa = doaInput?.value.trim();
 
+    const reffCode = getIncomingReffCode();
+
     const payload: Record<string, unknown> = {
       program_id: Number(programId),
       range_type,
@@ -847,6 +850,7 @@ const defaultCommitment = 3;
       ...(!isAuth ? { name: guestName, phone: guestPhone } : {}),
       ...(atasNama ? { atas_nama: atasNama } : {}),
       ...(doa ? { doa } : {}),
+      ...(reffCode ? { reff_code: reffCode } : {}),
     };
 
     if (!isCommitment) {

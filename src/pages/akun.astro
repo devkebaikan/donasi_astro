@@ -32,7 +32,7 @@ const iconPaths: Record<string, string> = {
 ---
 
 <MainLayout title="Akun Saya" description="Kelola profil dan aktivitas akun kamu.">
-  <Header type="title" text="Akun" />
+  <Header type="notshare" text="Akun" />
 
   <div
     id="akun-page"
@@ -322,6 +322,8 @@ const iconPaths: Record<string, string> = {
         removeToken();
         localStorage.removeItem("user_profile");
         localStorage.removeItem("saldo");
+        localStorage.removeItem("user_reff_code");
+        localStorage.removeItem("save_reff_code");
 
         window.location.href = "/home";
       } catch {
@@ -402,6 +404,8 @@ const iconPaths: Record<string, string> = {
           removeToken();
           localStorage.removeItem("user_profile");
           localStorage.removeItem("saldo");
+          localStorage.removeItem("user_reff_code");
+          localStorage.removeItem("save_reff_code");
           const from = encodeURIComponent(window.location.pathname + window.location.search);
           window.location.href = `/auth/login?from=${from}`;
           return;
@@ -416,6 +420,11 @@ const iconPaths: Record<string, string> = {
         const profile = { name: data.name, phone: data.phone, email: data.email, img: data.img };
         renderProfile(profile);
         localStorage.setItem("user_profile", JSON.stringify(profile));
+
+        // Update & cache user reff_code
+        if (data.reff_code) {
+          localStorage.setItem("user_reff_code", data.reff_code.trim());
+        }
 
         // Update & cache saldo
         const saldo = Number(data.dompet_kebaikan?.saldo ?? 0);

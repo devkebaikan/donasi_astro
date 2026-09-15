@@ -159,6 +159,15 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
       document.addEventListener("astro:page-load", trackPageView);
     </script>
 
+    <!-- Referral Tracker -->
+    <script>
+      import { initIncomingReffTracker } from "@/lib/referral";
+
+      initIncomingReffTracker();
+      document.addEventListener("astro:page-load", initIncomingReffTracker);
+    </script>
+
+
     <!-- Accessibility -->
     <a
       href="#main-content"

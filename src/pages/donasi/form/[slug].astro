@@ -36,12 +36,15 @@ const walletBal = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
 const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   // if (m.type === "e_wallet") return isAuth;
-  return ["dompet_kebaikan", "virtual_account", "bank", "e_wallet"].includes(m.type);
+  return ["dompet_kebaikan", "virtual_account", "bank", "e_wallet"].includes(
+    m.type,
+  );
 });
 
 // ✅ TAMBAHKAN INI UNTUK MELIHAT DATA SETELAH DIFILTER
 // console.log("➡️ Data paymentMethods setelah difilter:", paymentMethods);
 ---
+
 <MainLayout
   title="Konfirmasi Donasi"
   description="Formulir pembayaran donasi untuk program pilihan Anda."
@@ -402,6 +405,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 <script>
   import { showToast } from "@/lib/toast";
   import { getToken } from "@/lib/auth";
+  import { getIncomingReffCode } from "@/lib/referral";
   import type { TransactionPayload } from "@/lib/types";
 
   const page = document.getElementById("donation-page") as HTMLElement;
@@ -682,6 +686,8 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       return;
     }
 
+    const reffCode = getIncomingReffCode();
+
     const payload: TransactionPayload =
       isZakat && zakatData
         ? {
@@ -696,6 +702,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             status: "Pending",
             ...(doa ? { doa } : {}),
             ...(utmParams ? { parameter_detail: utmParams } : {}),
+            ...(reffCode ? { reff_code: reffCode } : {}),
           }
         : {
             type: "donation",
@@ -710,6 +717,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             ...(doa ? { doa } : {}),
             ...(atasNama ? { other_detail: atasNama } : {}),
             ...(utmParams ? { parameter_detail: utmParams } : {}),
+            ...(reffCode ? { reff_code: reffCode } : {}),
           };
 
     try {
