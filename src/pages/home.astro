@@ -13,6 +13,7 @@ import ProjectListSection from "@/components/sections/home/ProjectListSection.as
 import SliderBanner from "@/components/sections/home/SliderBanner.astro";
 import { storageImg, bannerHref } from "@/lib/home";
 import { getHomeData } from "@/lib/FetchData";
+import DonorNotifSection from "@/components/sections/home/DonorNotifSection.astro";
 
 const homeData = await getHomeData();
 
@@ -46,7 +47,7 @@ const secondBannerHref = homeData?.second_banner
         <a href={mainBannerHref}>
           <img
             src={mainBannerSrc}
-            alt={homeData?.main_banner?.name ?? "Banner Aksiberbagi"}
+            alt={homeData?.main_banner?.name ?? "Banner Beramalbersama"}
             width="480"
             height="160"
             class="w-full h-auto mb-3"
@@ -64,7 +65,7 @@ const secondBannerHref = homeData?.second_banner
         <a href={secondBannerHref}>
           <img
             src={secondBannerSrc}
-            alt={homeData?.second_banner?.name ?? "Banner Aksiberbagi"}
+            alt={homeData?.second_banner?.name ?? "Banner Beramalbersama"}
             width="480"
             height="160"
             class="w-full h-auto mb-3"
@@ -83,6 +84,8 @@ const secondBannerHref = homeData?.second_banner
       programs={homeData?.program_list ?? []}
       categories={homeData?.program_category ?? []}
     />
+
+    <!-- <DonorNotifSection /> -->
 
     <Footer />
   </main>

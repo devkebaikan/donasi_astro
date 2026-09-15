@@ -233,7 +233,7 @@ const contactPhone =
                   <CampaignList
                     category={c.category?.name}
                     image={c.image}
-                    link={`/donasi/${c.link}`}
+                    link={`/${c.link}`}
                     mitra={c.mitra?.name}
                     nominal_achieved={c.nominal_achieved}
                     progress_achieved={c.progress_achieved}
@@ -333,7 +333,7 @@ const contactPhone =
       return `
        <li>
         <a
-          href="/donasi/${escapeHtml(c.link)}"
+          href="/${escapeHtml(c.link)}"
           class="group flex flex-row items-stretch bg-white rounded border border-gray-100 overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 w-full"
         >
           <!-- Image -->

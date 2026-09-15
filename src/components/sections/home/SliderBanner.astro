@@ -10,7 +10,7 @@ const { bannerSlides } = Astro.props;
 
 const slides = bannerSlides.map((b) => ({
   src: storageImg(b.image_url, "banner"),
-  alt: "Banner Aksiberbagi",
+  alt: "Banner Beramalbersama",
   href: bannerHref(b.link),
   newTab: b.is_new_tab,
 }));
@@ -134,8 +134,21 @@ const slides = bannerSlides.map((b) => ({
       });
     });
 
-    vp.addEventListener("touchstart", () => { touching = true; }, { passive: true });
-    vp.addEventListener("touchend", () => { touching = false; startAuto(); }, { passive: true });
+    vp.addEventListener(
+      "touchstart",
+      () => {
+        touching = true;
+      },
+      { passive: true },
+    );
+    vp.addEventListener(
+      "touchend",
+      () => {
+        touching = false;
+        startAuto();
+      },
+      { passive: true },
+    );
 
     document.addEventListener("visibilitychange", () => {
       document.hidden ? clearInterval(autoTimer) : startAuto();

@@ -3,90 +3,228 @@ import { Image } from "astro:assets";
 ---
 
 <div
-  class="fixed z-50 bottom-[80px] md:left-6 inset-x-0 left-1/2 md:translate-x-0 -translate-x-1/2"
+  class="fixed z-50 bottom-5 left-4 sm:left-6 pointer-events-none max-w-[calc(100vw-2rem)] sm:max-w-sm"
 >
   <div
     id="donatur-notif"
     data-api={import.meta.env.PUBLIC_API_URL}
-    class="z-10 max-w-[200px] md:max-w-[270px] flex items-center gap-2
-    bg-white/80 rounded-md px-3 py-2 overflow-hidden
-    transition-all duration-700 ease-out
-    opacity-0 pointer-events-none"
+    class="pointer-events-auto flex items-center gap-3 bg-white/95 backdrop-blur-md rounded-2xl p-3 pr-4 shadow-[0_10px_30px_-5px_rgba(0,0,0,0.12)] border border-neutral-100/90 transition-all duration-500 ease-out opacity-0 translate-y-3 scale-95"
   >
+    <!-- Logo Icon -->
     <div
-      class="min-w-6 max-w-6 md:max-w-8 md:min-w-8 overflow-hidden flex items-center justify-center"
+      class="w-10 h-10 min-w-10 rounded-xl bg-primary-50 border border-primary-100/80 p-1.5 flex items-center justify-center overflow-hidden flex-shrink-0 relative"
     >
       <Image
-        width={80}
+        width={60}
         height={60}
-        src="/images/logo.avif"
-        alt="notif donatur terbaru"
-        class="w-full object-contain"
+        src="/assets/logo/logo-short-color.png"
+        alt="Logo Beramalbersama"
+        class="w-full h-full object-contain"
+        loading="eager"
+        decoding="async"
       />
+      <span class="absolute top-1 right-1 flex h-2 w-2">
+        <span
+          class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"
+        ></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"
+        ></span>
+      </span>
     </div>
 
-    <div class="text-xs md:text-sm">
-      <span id="donatur-name" class="font-semibold text-primary-500"></span>
-      &nbsp;baru saja berdonasi sebesar&nbsp;
-      <span id="donatur-nominal" class="font-semibold text-primary-500"></span>
+    <!-- Notification Content -->
+    <div class="flex-1 min-w-0 pr-1">
+      <div class="flex items-center gap-1.5">
+        <span
+          id="donatur-name"
+          class="font-semibold text-neutral-900 text-xs sm:text-sm truncate max-w-[130px] sm:max-w-[170px]"
+        >
+          Hamba Allah
+        </span>
+        <span
+          class="text-[10px] text-neutral-400 font-medium whitespace-nowrap"
+        >
+          • Baru saja
+        </span>
+      </div>
+      <div class="text-xs sm:text-[13px] text-neutral-600 truncate mt-0.5">
+        Berdonasi <span id="donatur-nominal" class="font-bold text-primary-600"
+        ></span>
+      </div>
     </div>
+
+    <!-- Close Button -->
+    <button
+      id="donatur-notif-close"
+      type="button"
+      aria-label="Tutup notifikasi"
+      class="text-neutral-400 hover:text-neutral-600 p-1 -mr-1 rounded-lg hover:bg-neutral-100 transition-colors flex-shrink-0"
+    >
+      <svg
+        class="w-3.5 h-3.5"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          stroke-width="2"
+          d="M6 18L18 6M6 6l12 12"></path>
+      </svg>
+    </button>
   </div>
 </div>
 
 <script is:inline>
-  (async () => {
+  (() => {
     const notif = document.getElementById("donatur-notif");
     const nameEl = document.getElementById("donatur-name");
     const nominalEl = document.getElementById("donatur-nominal");
+    const closeBtn = document.getElementById("donatur-notif-close");
+
     if (!notif || !nameEl || !nominalEl) return;
 
-    const apiBase = notif.dataset.api ?? "";
+    const apiBase = (notif.dataset.api || "").replace(/\/+$/, "");
 
     const formatRupiah = (value) =>
       new Intl.NumberFormat("id-ID", {
         style: "currency",
         currency: "IDR",
         minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
       }).format(value);
+
+    // Fallback donors in case API is unavailable
+    const fallbackDonors = [
+      { name: "Hamba Allah", nominal: 50000 },
+      { name: "Mega Hayu", nominal: 50000 },
+      { name: "PONIMIN MST", nominal: 150000 },
+      { name: "Larasati Puji", nominal: 100000 },
+      { name: "Umar Sumardi", nominal: 50000 },
+      { name: "Rhika Agustin", nominal: 100000 },
+    ];
 
     let donors = [];
     let index = 0;
+    let isPaused = false;
+    let timer = null;
+    let isDismissed = false;
 
-    const showNext = () => {
-      if (!donors.length) return;
+    // Pause on hover
+    notif.addEventListener("mouseenter", () => {
+      isPaused = true;
+    });
+    notif.addEventListener("mouseleave", () => {
+      isPaused = false;
+    });
 
-      notif.classList.add("opacity-0");
-      notif.classList.remove("opacity-90", "translate-y-0");
+    // Dismiss on close click
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        isDismissed = true;
+        hideNotif();
+        if (timer) clearTimeout(timer);
+      });
+    }
 
-      setTimeout(() => {
+    const showNotif = () => {
+      if (isDismissed || !notif) return;
+      notif.classList.remove(
+        "opacity-0",
+        "translate-y-3",
+        "scale-95",
+        "pointer-events-none",
+      );
+      notif.classList.add(
+        "opacity-100",
+        "translate-y-0",
+        "scale-100",
+        "pointer-events-auto",
+      );
+    };
+
+    const hideNotif = () => {
+      if (!notif) return;
+      notif.classList.remove(
+        "opacity-100",
+        "translate-y-0",
+        "scale-100",
+        "pointer-events-auto",
+      );
+      notif.classList.add(
+        "opacity-0",
+        "translate-y-3",
+        "scale-95",
+        "pointer-events-none",
+      );
+    };
+
+    const cycleNotification = () => {
+      if (isDismissed) return;
+
+      if (isPaused) {
+        timer = setTimeout(cycleNotification, 2000);
+        return;
+      }
+
+      // 1. Hide current notif
+      hideNotif();
+
+      // 2. Wait for hide transition to finish, then swap data and show
+      timer = setTimeout(() => {
+        if (isDismissed || !donors.length) return;
+
         const d = donors[index];
-        nameEl.textContent = d.name;
-        nominalEl.textContent = formatRupiah(d.nominal);
+        nameEl.textContent = d.name || "Hamba Allah";
+        nominalEl.textContent = formatRupiah(d.nominal || 50000);
+
         index = (index + 1) % donors.length;
 
         requestAnimationFrame(() => {
-          notif.classList.remove("opacity-0");
-          notif.classList.add("opacity-90", "translate-y-0");
+          showNotif();
         });
-      }, 700);
+
+        // 3. Keep visible for 4.5 seconds before next cycle
+        timer = setTimeout(cycleNotification, 4500);
+      }, 600);
     };
 
-    try {
-      const res = await fetch(`${apiBase}/donors/list?limit=5`);
-      const json = await res.json();
-      const list = json?.data?.data ?? json?.data ?? [];
+    const init = async () => {
+      try {
+        const url = apiBase
+          ? `${apiBase}/programs/link/infaq/donors?limit=10`
+          : "/programs/link/infaq/donors?limit=10";
 
-      donors = list.map((d) => ({
-        name: d.user?.name ?? d.name ?? "Hamba Allah",
-        nominal: d.total ?? d.nominal_donasi ?? 0,
-      }));
+        const res = await fetch(url);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json?.data?.data ?? json?.data ?? [];
 
-      if (!donors.length) return;
+          if (Array.isArray(list) && list.length > 0) {
+            donors = list.map((d) => ({
+              name: d.user?.name ?? d.name ?? "Hamba Allah",
+              nominal: d.total ?? d.nominal_donasi ?? 50000,
+            }));
+          }
+        }
+      } catch {
+        // Fallback to local data
+      }
 
-      showNext();
-      setInterval(showNext, 5500);
-    } catch {
-      // fetch gagal, notif tidak tampil
+      if (!donors.length) {
+        donors = fallbackDonors;
+      }
+
+      // Initial delay before showing the first notification
+      timer = setTimeout(cycleNotification, 1500);
+    };
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
     }
   })();
 </script>

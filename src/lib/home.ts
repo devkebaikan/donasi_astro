@@ -107,11 +107,11 @@ export function storageImg(filename: string, folder = ""): string {
  * Resolves a banner link:
  * - "No Link" → "#"
  * - Absolute URL → as-is
- * - Slug → /donasi/{slug}
+ * - Slug → /{slug}
  */
 export function bannerHref(link: string): string {
   if (!link || link === "No Link") return "#";
-  return /^https?:\/\//.test(link) ? link : `/donasi/${link}`;
+  return /^https?:\/\//.test(link) ? link : `/${link.replace(/^\/+/, "")}`;
 }
 
 /** Strips HTML tags and normalises whitespace. */

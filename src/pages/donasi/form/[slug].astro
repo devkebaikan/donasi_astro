@@ -12,7 +12,7 @@ const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/");
 
 const programId = Astro.url.searchParams.get("id");
-if (!programId) return Astro.redirect(`/donasi/${slug}/`);
+if (!programId) return Astro.redirect(`/${slug}`);
 
 const projectIdParam = Astro.url.searchParams.get("project");
 
@@ -46,7 +46,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   title="Konfirmasi Donasi"
   description="Formulir pembayaran donasi untuk program pilihan Anda."
 >
-  <Header type="notshare" text="Konfirmasi Donasi" link={`/donasi/${slug}/`} />
+  <Header type="notshare" text="Konfirmasi Donasi" link={`/${slug}`} />
 
   <div
     id="donation-page"

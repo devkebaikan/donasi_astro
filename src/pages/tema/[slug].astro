@@ -129,7 +129,7 @@ const projects = hasApiPrograms
       donatur: 0,
       hari: calculateDaysLeft(p.target_waktu),
       lembaga: p.mitra?.name || "Aksiberbagi",
-      link: `/donasi/${p.link}`,
+      link: `/${p.link}`,
     }))
   : fallbackProjects;
 
@@ -144,7 +144,7 @@ const programs = hasApiPrograms
         days = diff > 0 ? diff : 0;
       }
       return {
-        link: `/donasi/${p.link}`,
+        link: `/${p.link}`,
         title: p.judul,
         image:
           p.image ||

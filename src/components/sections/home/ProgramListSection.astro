@@ -212,7 +212,7 @@ const getCatImg = (cat: ProgramCategory) => {
           data-category-id={String(p.category?.id ?? "")}
         >
           <CampaignList
-            link={`/donasi/${p.link}`}
+            link={`/${p.link}`}
             title={p.title}
             image={p.image}
             mitra={p.mitra?.name ?? ""}
