@@ -7,7 +7,6 @@ import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
 import { getPaymentMethod, getUserProfile } from "@/lib/FetchData.ts";
 import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
-// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/");
@@ -26,6 +25,9 @@ const [accountRes, dataPaymentMethods] = await Promise.all([
   getPaymentMethod(slug),
 ]);
 
+// ✅ TAMBAHKAN INI UNTUK MELIHAT HASIL API DI TERMINAL
+// console.log("➡️ Hasil API getPaymentMethod:", dataPaymentMethods);
+
 const account = accountRes ?? null;
 const isAuth = !!account;
 const userName = (account?.name ?? "") as string;
@@ -34,10 +36,12 @@ const walletBal = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
 const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   // if (m.type === "e_wallet") return isAuth;
-  return ["VA", "bank", "e_wallet"].includes(m.type);
+  return ["dompet_kebaikan", "virtual_account", "bank", "e_wallet"].includes(m.type);
 });
----
 
+// ✅ TAMBAHKAN INI UNTUK MELIHAT DATA SETELAH DIFILTER
+// console.log("➡️ Data paymentMethods setelah difilter:", paymentMethods);
+---
 <MainLayout
   title="Konfirmasi Donasi"
   description="Formulir pembayaran donasi untuk program pilihan Anda."
@@ -390,7 +394,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 
   <PaymentMethodModal
     paymentMethods={paymentMethods}
-    showWallet={false}
+    showWallet={true}
     defaultWallet={false}
   />
 </MainLayout>

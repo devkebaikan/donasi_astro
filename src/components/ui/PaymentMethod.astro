@@ -14,10 +14,13 @@ const activeMethods = (paymentMethods as any[]).filter((m: any) => {
   return ![false, "false", 0, "0"].includes(status);
 });
 
+// TAMBAHKAN BARIS INI UNTUK MELIHAT DATA DI TERMINAL
+// console.log("Data Active Methods:", activeMethods);
+
 const walletMethod =
-  activeMethods.find((m: any) => m.type === "wallet") ?? null;
+  activeMethods.find((m: any) => m.type === "dompet_kebaikan") ?? null;
 const banks = activeMethods.filter((m: any) => m.type === "bank");
-const vas = activeMethods.filter((m: any) => m.type === "VA");
+const vas = activeMethods.filter((m: any) => m.type === "virtual_account");
 const ewallets = activeMethods.filter((m: any) => m.type === "e_wallet");
 
 const isAuthenticated = getServerToken(Astro.cookies) !== null;
@@ -28,12 +31,11 @@ const walletDisplay =
         id: 3000,
         name: "Saku Kebaikan",
         image_url: "",
-        type: "wallet",
+        type: "dompet_kebaikan",
       };
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 ---
-
 <!-- Backdrop -->
 <div
   id="payment-modal"
