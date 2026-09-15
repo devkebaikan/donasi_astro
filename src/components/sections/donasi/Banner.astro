@@ -15,10 +15,8 @@ const { detailCampaign, link, donors, projectId } = Astro.props;
 // Computed values
 const type = capitalizeFirstLetter(detailCampaign?.type || "");
 const availableFunds = detailCampaign?.no_project_nominal.nominal || 0;
-const distributedFunds = Math.max(
-  detailCampaign?.nominal_used || 0,
-  detailCampaign?.nominal_by_news || 0,
-);
+const distributedFunds =
+  detailCampaign?.nominal_achieved - detailCampaign?.no_project_nominal.nominal;
 const totalBeneficiaries = Math.max(
   detailCampaign?.total_beneficiery || 0,
   detailCampaign?.beneficiery_by_news || 0,
@@ -197,10 +195,12 @@ const progressPercent = Math.min(detailCampaign?.progress_achieved || 0, 100);
         <p class="text-sm text-gray-600 mb-1">Donasi Terkumpul</p>
         <h5 class="text-lg md:text-xl font-bold text-primary-600 leading-tight">
           {formatRupiah(detailCampaign?.nominal_achieved || 0)}
-          <span class="text-sm text-gray-500 font-normal"> dari target </span>
-          <span class="text-gray-800 text-sm md:text-base font-bold">
-            {formatRupiah(detailCampaign?.nominal_target || 0)}</span
-          >
+          {detailCampaign?.nominal_target !== "∞" && (
+            <span class="text-sm text-gray-500 font-normal"> dari target </span>
+            <span class="text-gray-800 text-sm md:text-base font-bold">
+              {formatRupiah(detailCampaign?.nominal_target)}
+            </span>
+          )}
         </h5>
       </div>
 
