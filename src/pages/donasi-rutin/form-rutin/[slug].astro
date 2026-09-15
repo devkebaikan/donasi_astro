@@ -19,17 +19,26 @@ if (!slug || !VALID_SLUGS.includes(slug as Slug)) {
   return Astro.redirect("/donasi-rutin/opsi");
 }
 
-const token = getServerToken(Astro.cookies);
+// Mapping slug ke parameter API getCampaignSetUp
+const CAMPAIGN_KEY_MAP: Record<Slug, string> = {
+  dipilihkan: "rutin",
+  subuh: "subuh",
+  jumat: "jumat",
+};
 
+const token = getServerToken(Astro.cookies);
 const API_URL = import.meta.env.PUBLIC_API_URL;
+
+// Ambil key yang sesuai berdasarkan slug
+const campaignKey = CAMPAIGN_KEY_MAP[slug as Slug];
 
 const [account, paymentMethods, dataPorgamSetup] = await Promise.all([
   token ? getUserProfile(token) : Promise.resolve(null),
   getPaymentMethodFilter({ status: "true" }),
-  getCampaignSetUp("rutin"),
+  getCampaignSetUp(campaignKey), // Parameter dikirim secara dinamis
 ]);
 
-const programId = (dataPorgamSetup?.id ?? "") as string;
+const programId = (dataPorgamSetup?.value ?? "") as string;
 const walletBalance = (account?.dompet_kebaikan?.saldo ?? 0) as number;
 
 const BANNER: Record<
@@ -64,6 +73,7 @@ const isLocked = slug === "subuh" || slug === "jumat";
 const defaultHour = slug === "subuh" ? "04" : slug === "jumat" ? "03" : "08";
 const defaultMinute = slug === "subuh" ? "33" : "00";
 const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
+---
 ---
 
 <MainLayout
