@@ -16,6 +16,18 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
 
+    <!-- Theme Color -->
+    <meta
+      name="theme-color"
+      content="#1eb8b1"
+      media="(prefers-color-scheme: light)"
+    />
+    <meta
+      name="theme-color"
+      content="#0f172a"
+      media="(prefers-color-scheme: dark)"
+    />
+
     <!-- Favicon & PWA -->
     <link
       rel="icon"
@@ -166,7 +178,6 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
       initIncomingReffTracker();
       document.addEventListener("astro:page-load", initIncomingReffTracker);
     </script>
-
 
     <!-- Accessibility -->
     <a
