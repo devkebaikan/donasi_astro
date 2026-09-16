@@ -184,7 +184,7 @@ function cleanText(htmlString: string = ""): string {
 
                       <!-- Footer Action (Instagram / Detail) -->
                       <div class="pt-2 border-t border-gray-50 flex items-center justify-between gap-2">
-                        {item.ig_link !== "-" ? (
+                        {item.ig_link !== "-" && item.ig_link !== "" && item.ig_link !== null ? (
                           <a
                             href={item.ig_link}
                             target="_blank"

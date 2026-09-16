@@ -5,7 +5,7 @@ import type { SeoProps } from "../lib/seo";
 
 type Props = SeoProps;
 
-const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
+// const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
 ---
 
 <!doctype html>
@@ -73,7 +73,7 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
     </noscript>
 
     <!-- Google Tag Manager -->
-    <script is:inline define:vars={{ GTM_ID }}>
+    <script is:inline>
       (function (w, d, s, l, i) {
         if (!i) return;
         w[l] = w[l] || [];
@@ -113,7 +113,7 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
         "https://connect.facebook.net/en_US/fbevents.js",
       );
 
-      fbq("init", "3927582530719877");
+      fbq("init", "1819072569103407");
     </script>
 
     <!-- Service Worker -->
@@ -128,7 +128,7 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
 
   <body class="min-h-screen bg-neutral-100 text-neutral-700 antialiased">
     <!-- GTM NoScript -->
-    {
+    <!-- {
       GTM_ID && (
         <noscript>
           <iframe
@@ -139,7 +139,15 @@ const GTM_ID = import.meta.env.PUBLIC_GTM_ID;
           />
         </noscript>
       )
-    }
+    } -->
+
+    <noscript>
+      <iframe
+        src={`https://www.googletagmanager.com/ns.html?id=GTM-MRG9WCSJ`}
+        height="0"
+        width="0"
+        style="display:none;visibility:hidden"></iframe>
+    </noscript>
 
     <!-- Meta Pixel NoScript -->
     <noscript>

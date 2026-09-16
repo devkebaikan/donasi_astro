@@ -53,12 +53,12 @@ const BANNER: Record<
   subuh: {
     title: "Donasi Tiap Subuh",
     description: "Awali hari anda dengan keberkahan donasi rutin tiap Subuh",
-    image: "/assets/rutin/pilih-sendiri.png",
+    image: "/assets/rutin/rutin-subuh.png",
   },
   jumat: {
     title: "Donasi Tiap Jum'at",
     description: "Jangan sampai ketinggalan keberkahan donasi di hari terbaik",
-    image: "/assets/rutin/pilih-sendiri.png",
+    image: "/assets/rutin/rutin-jumat.png",
   },
 };
 
@@ -73,7 +73,6 @@ const isLocked = slug === "subuh" || slug === "jumat";
 const defaultHour = slug === "subuh" ? "04" : slug === "jumat" ? "03" : "08";
 const defaultMinute = slug === "subuh" ? "33" : "00";
 const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
----
 ---
 
 <MainLayout
