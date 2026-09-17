@@ -128,7 +128,7 @@ const projects = hasApiPrograms
       pct: calculatePct(p.saldo || 0, p.target_nominal || 0),
       donatur: 0,
       hari: calculateDaysLeft(p.target_waktu),
-      lembaga: p.mitra?.name || "Aksiberbagi",
+      lembaga: p.mitra?.name || "Beramalbersama",
       link: `/${p.link}`,
     }))
   : fallbackProjects;
