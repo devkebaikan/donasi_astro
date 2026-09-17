@@ -15,7 +15,7 @@ const [nishabData, programRaw] = await Promise.all([
 
 const nishabEmas = Number(nishabData[1]?.value) || 0;
 const nishabYearly = nishabEmas * 85;
-const updatedAt = nishabData?.data?.[1]?.updated_at ?? null;
+const updatedAt = nishabData?.[1]?.updated_at ?? null;
 
 const parsedProg = programRaw?.value ? JSON.parse(programRaw.value) : null;
 const zakatId = parsedProg?.id ?? 0;

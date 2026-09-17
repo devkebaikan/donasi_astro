@@ -29,13 +29,10 @@ const CAMPAIGN_KEY_MAP: Record<Slug, string> = {
 const token = getServerToken(Astro.cookies);
 const API_URL = import.meta.env.PUBLIC_API_URL;
 
-// Ambil key yang sesuai berdasarkan slug
-const campaignKey = CAMPAIGN_KEY_MAP[slug as Slug];
-
 const [account, paymentMethods, dataPorgamSetup] = await Promise.all([
   token ? getUserProfile(token) : Promise.resolve(null),
   getPaymentMethodFilter({ status: "true" }),
-  getCampaignSetUp(campaignKey), // Parameter dikirim secara dinamis
+  getCampaignSetUp("rutin"),
 ]);
 
 const programId = (dataPorgamSetup?.value ?? "") as string;

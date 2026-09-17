@@ -3,20 +3,36 @@
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
 import Footer from "@/components/layouts/Footer.astro";
+import { qrCodeRekening } from "@/lib/FetchData";
 
 const noRek = [
-  { label: "BSI", number: "7418889998" },
-  { label: "BRI", number: "001201001453562" },
-  { label: "Bank Mandiri", number: "1330015666886" },
-  { label: "BCA", number: "8720367352" },
-  { label: "BNI", number: "1227401168" },
+  { label: "BSI Penerima", number: "6677889924" },
+  { label: "MANDIRI", number: "1380081178118" },
+  { label: "BTN", number: "7141003610" },
+  { label: "MUAMALAT", number: "5220007855" },
+  { label: "BJB", number: "140856274001" },
+  { label: "BRI", number: "009701001673564" },
+  { label: "BCA", number: "0158220001" },
+  { label: "BNI", number: "1332589240" },
+  { label: "PERMATA", number: "09857711111" },
 ];
 
 const csNumbers = [
-  { label: "Notifikasi Center", number: "0813-1996-4703" },
-  { label: "Asisten Kebaikan", number: "0821-3492-9144" },
-  { label: "Asisten Kebaikan", number: "0819-9292-3400" },
+  {
+    label: "No WhatsApp Layanan Donatur",
+    number: "0813-8111-1453",
+  },
+  {
+    label: "No WhatsApp Layanan Donatur",
+    number: "0813-8111-1527",
+  },
+  {
+    label: "No WhatsApp Layanan Donatur",
+    number: "0851-1746-3122",
+  },
 ];
+
+const qrCode = await qrCodeRekening();
 
 const toWaLink = (n: string) =>
   `https://wa.me/${n.replace(/-/g, "").replace(/^0/, "62")}`;
@@ -24,13 +40,7 @@ const toWaLink = (n: string) =>
 const offices = [
   {
     label: "Kantor Operasional",
-    address:
-      "Gg Waru No 47, Petoran, Kel Jebres, Kec Jebres, Kota Surakarta. 57126",
-  },
-  {
-    label: "Kantor Marketing",
-    address:
-      "Jl. Tirtosumirat II No 4, Kampung Bumi, Kec Laweyan, Kota Surakarta. 57149",
+    address: "Jl. Srikatan No. 14 RT 01 RW 04 Kerten, Kec. Laweyan, Surakarta",
   },
 ];
 ---
@@ -68,7 +78,7 @@ const offices = [
             class="overflow-hidden rounded-xl flex items-center justify-center"
           >
             <img
-              src="/images/qrBMI.webp"
+              src={qrCode?.image_url}
               alt="QRIS Bank Muamalat Indonesia"
               width="400"
               height="560"

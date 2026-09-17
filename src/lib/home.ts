@@ -40,6 +40,7 @@ export interface Program {
   nominal_target: number;
   nominal_achieved: string | number;
   progress_achieved: string | number;
+  is_target_nominal: boolean;
   remaining_days: number | null;
   mitra: ProgramMitra;
   category: { id: number; name: string; slug: string; image: string };

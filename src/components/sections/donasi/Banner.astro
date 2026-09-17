@@ -13,7 +13,7 @@ interface Props {
 const { detailCampaign, link, donors, projectId } = Astro.props;
 
 // Computed values
-const type = capitalizeFirstLetter(detailCampaign?.type || "");
+const type = capitalizeFirstLetter(detailCampaign?.tipe?.name || "");
 const availableFunds = detailCampaign?.no_project_nominal.nominal || 0;
 const distributedFunds =
   detailCampaign?.nominal_achieved - detailCampaign?.no_project_nominal.nominal;
@@ -279,7 +279,7 @@ const progressPercent = Math.min(detailCampaign?.progress_achieved || 0, 100);
         ></path>
       </svg>
       <p class="text-[10px] md:text-xs text-gray-700 leading-relaxed">
-        Alhamdulillah, Infaq sebesar <span class="font-semibold text-gray-900">
+        Alhamdulillah, {type} sebesar <span class="font-semibold text-gray-900">
           {formatRupiah(distributedFunds)}</span
         > telah tersalurkan untuk <span class="font-semibold text-gray-900"
           >{totalBeneficiaries}</span

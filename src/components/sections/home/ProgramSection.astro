@@ -18,7 +18,7 @@ const { programs } = Astro.props;
 
   <div
     id="program-scroll"
-    class="flex gap-3 items-center overflow-x-auto px-4 h-70 md:h-80 snap-x scrollbar-none"
+    class="flex gap-3 items-center overflow-x-auto px-4 h-70 md:h-80 snap-x"
     style="background-image: url('/assets/home/tema.avif'); background-size: cover; background-position: center;"
   >
     <!-- spacer kiri agar slide pertama tidak menempel ke tepi -->
@@ -61,7 +61,8 @@ const { programs } = Astro.props;
                   Rp {fmt(Number(p.nominal_achieved))}
                 </span>
                 <span class="text-[10px] text-neutral-400">
-                  {pct}% · {p.remaining_days ?? "∞"}
+                  {p.is_target_nominal === true && <span>{pct}% ·</span>}{" "}
+                  {p.remaining_days ?? "∞"}
                 </span>
               </div>
             </div>

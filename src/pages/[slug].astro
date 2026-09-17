@@ -94,6 +94,7 @@ if (!detailCampaign || Object.keys(detailCampaign).length === 0) {
 
 const isRutin = detailCampaign?.is_rutin === true;
 const isActive = detailCampaign?.status === "PUBLISH";
+const type = detailCampaign?.tipe.name;
 
 // SEO
 const campaignTitle = detailCampaign?.title ?? "Detail Donasi";
@@ -175,7 +176,12 @@ const campaignJsonLd = JSON.stringify({
       <TabSection slug={slug} detailCampaign={detailCampaign} />
     </div>
 
-    <StickyDonateBar isRutin={isRutin} link={slug} isActive={isActive} />
+    <StickyDonateBar
+      type={type ?? "Donasi"}
+      isRutin={isRutin}
+      link={slug}
+      isActive={isActive}
+    />
     <DonatePanel
       nominalOptions={nominalOptions}
       programId={detailCampaign?.id}

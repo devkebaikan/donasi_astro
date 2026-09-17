@@ -27,7 +27,7 @@ const fetchOpts = (auth = false) => ({
 });
 
 const [qrRes, pmData, donors, account, programSetup] = await Promise.all([
-  fetch(`${API_URL}/qr-code/infaq`, fetchOpts()),
+  fetch(`${API_URL}/infaq/qr-code`, fetchOpts()),
   getPaymentMethodFilter({ status: "true", program_link: "infaq" }),
   getCampaignDonorInfak({ limit: 10 }),
   token ? getUserProfile(token) : Promise.resolve(null),
@@ -43,8 +43,7 @@ const userPhone = account?.phone ?? "";
 const walletBal = account?.dompet_kebaikan?.saldo ?? 0;
 
 const paymentMethods: any[] = (pmData as any[]).filter((m: any) => {
-  if (m.type === "wallet") return isAuth;
-  return ["VA", "bank", "e_wallet"].includes(m.type);
+  return ["VA", "virtual_account", "bank", "e_wallet", "dompet_kebaikan"].includes(m.type);
 });
 
 const banner = {
@@ -136,7 +135,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
   <PaymentMethodModal
     paymentMethods={paymentMethods}
     showWallet={true}
-    defaultWallet={true}
+    defaultWallet={false}
   />
 </MainLayout>
 
@@ -291,7 +290,10 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     paymentType = type ?? "";
     paymentSelected = true;
 
-    walletInfo.classList.toggle("hidden", paymentType !== "wallet");
+    walletInfo.classList.toggle(
+      "hidden",
+      paymentType !== "wallet" && paymentType !== "dompet_kebaikan",
+    );
     paymentImg.src = image ?? "";
     paymentImg.classList.toggle("hidden", !image);
     paymentNameEl.textContent = name ?? "Pilih metode pembayaran";

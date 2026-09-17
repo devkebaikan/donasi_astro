@@ -3,9 +3,10 @@ interface Props {
   isRutin: boolean;
   isActive: boolean;
   link?: string;
+  type?: string;
 }
 
-const { isRutin, isActive, link } = Astro.props;
+const { isRutin, isActive, link, type } = Astro.props;
 ---
 
 <div
@@ -22,7 +23,7 @@ const { isRutin, isActive, link } = Astro.props;
           <a
             href={`/donasi-rutin/program/${link}`}
             id="btn-rutin-dp"
-            class="btn flex items-center bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
+            class="btn flex items-center text-sm md:text-base bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
           >
             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
               <path
@@ -36,11 +37,13 @@ const { isRutin, isActive, link } = Astro.props;
         ) : (
           <button
             id="btn-share-dp"
-            class="btn flex items-center bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
+            class="btn flex items-center text-sm md:text-base bg-white justify-center gap-2 w-1/3 py-2.5 px-4 rounded-md border-2 border-primary-500 text-primary-500 font-semibold hover:bg-primary-100 transition-colors"
           >
-            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-            </svg>
+            <span class="w-5">
+              <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+              </svg>
+            </span>
             Bagikan
           </button>
         )
@@ -56,7 +59,7 @@ const { isRutin, isActive, link } = Astro.props;
             : "bg-gray-300 text-gray-500 cursor-not-allowed",
         ]}
       >
-        {isActive ? "DONASI SEKARANG" : "BELUM DIBUKA"}
+        {isActive ? `${type?.toUpperCase()} SEKARANG` : "BELUM DIBUKA"}
       </button>
     </div>
   </div>

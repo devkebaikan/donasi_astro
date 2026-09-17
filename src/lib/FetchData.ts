@@ -152,6 +152,14 @@ export async function getMitraSalurByLink(link: string | null) {
   );
 }
 
+export async function getMitraById(id: number | null) {
+  return safe(
+    () =>
+      publicApi.get(`/mitra/${id}`),
+    "getMitraById",
+  );
+}
+
 export async function getCampaignSetUp(type: string) {
   return safe(
     () => publicApi.get(`/program-setup/${type}`),
@@ -234,3 +242,7 @@ export async function getMyWallet(token: string) {
 //     return null;
 //   }
 // }
+
+export async function qrCodeRekening() {
+  return safe(() => publicApi.get("/infaq/qr-code"), "qrCodeInfaq");
+}

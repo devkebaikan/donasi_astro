@@ -5,9 +5,7 @@ import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getInvoice } from "@/lib/FetchData";
 import { formatDateTime, formatRupiah } from "@/lib/formatter";
-
 import QrisPayment from "@/components/ui/QrisPayment.astro";
-// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 interface Props {
   invoice: any;
@@ -80,7 +78,31 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
           <div class="space-y-4">
             <!-- Payment Deadline Section -->
             {
-              payment.name !== "OVO" && donationAmount !== 0 && (
+              payment.bank !== "OVO" && donationAmount !== 0 ? (
+                <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
+                  <h6 class="text-sm font-semibold mb-2">
+                    Batas waktu pembayaran
+                  </h6>
+                  <div class="flex justify-between items-center text-sm">
+                    <p class="font-medium">
+                      {formatDateTime(invoice?.last_payment_time)}
+                    </p>
+                    <div class="flex items-center gap-2">
+                      <svg
+                        class="w-4 h-4"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ) : (
                 <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
                   <h6 class="text-sm font-semibold mb-2">
                     Batas waktu pembayaran
@@ -111,7 +133,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
             <div class="bg-white rounded-md shadow-md overflow-hidden">
               {/* qris payment */}
               {
-                payment.name === "Qris" ? (
+                payment.bank === "Qris" ? (
                   <QrisPayment
                     qrPayload={qrPayload}
                     donationAmount={donationAmount}
@@ -125,7 +147,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                       <div class="h-12 flex items-center justify-start">
                         <img
                           class="h-full max-w-full object-contain"
-                          alt={payment.name || "Payment method"}
+                          alt={payment.bank || "Payment method"}
                           src={payment.image}
                         />
                       </div>
@@ -161,7 +183,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
 
                     {/* Donation Amount Section */}
                     {
-                      payment.name !== "OVO" && (
+                      payment.bank !== "OVO" && (
                         <div class="p-4 border-b border-gray-200">
                           <div class="flex justify-between items-center">
                             <div class="flex-1">
@@ -204,7 +226,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                           </svg>
                           <div class="flex-1">
                             <p class="text-[12px] text-amber-900 leading-relaxed">
-                              {payment.name !== "OVO" ? (
+                              {payment.bank !== "OVO" ? (
                                 <span>
                                   <span class="font-bold">PENTING!</span> Mohon
                                   transfer tepat sampai 3 angka terakhir agar
@@ -212,9 +234,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                                 </span>
                               ) : (
                                 <span>
-                                  <span class="font-bold">PENTING!</span> Mohon
-                                  untuk cek aplikasi OVO anda sesuai dengan
-                                  nomor Donatur
+                                  <span class="font-bold">PENTING!</span> Silahkan masuk ke aplikasi <span class="font-semibold">OVO</span> anda dan selesaikan pembayaran anda
                                 </span>
                               )}
                             </p>

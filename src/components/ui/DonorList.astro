@@ -199,7 +199,7 @@ const likeCount = donor.liked || 0;
 
           // Call API
           try {
-            const response = await fetch("/amin/${transactionId}/like", {
+            const response = await fetch(`/amin/${donorId}/like`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

@@ -74,7 +74,9 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
                     <span class="text-xs font-bold text-primary-600">
                       Rp {fmt(Number(item.nominal_achieved))}
                     </span>
-                    <span class="text-xs text-neutral-400">{pct}% terkumpul</span>
+                    {item.nominal_target !== null && (
+                      <span class="text-xs text-neutral-400">{pct}% terkumpul</span>
+                    )}
                   </div>
 
                   <a
