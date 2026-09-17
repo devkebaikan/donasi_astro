@@ -1,35 +1,35 @@
 ---
-import type { BannerSlide } from "@/lib/home";
-import { storageImg, bannerHref } from "@/lib/home";
+import type { BannerSlide, BannerItem } from "@/lib/home";
 
 interface Props {
-  bannerSlides: BannerSlide[];
+  mainBanner?: BannerItem;
+  bannerSlides?: BannerSlide[];
 }
 
-const { bannerSlides } = Astro.props;
+const { mainBanner, bannerSlides = [] } = Astro.props;
 
-const slides =
-  bannerSlides.length > 0
-    ? bannerSlides.map((b) => ({
-        src: storageImg(b.image_url, "banner"),
-        alt: "Banner Beramalbersama",
-        href: bannerHref(b.link),
-        newTab: b.is_new_tab,
-      }))
-    : [
-        {
-          src: "/images/banner/banner-qurban.avif",
-          alt: "Qurban Pelosok Nusantara",
-          href: "/donasi/qurban",
-          newTab: false,
-        },
-        {
-          src: "/images/ramadhan/ramadhan-1.webp",
-          alt: "Program Sedekah Rutin",
-          href: "/donasi-rutin",
-          newTab: false,
-        },
-      ];
+// const slides =
+//   bannerSlides.length > 0
+//     ? bannerSlides.map((b) => ({
+//         src: storageImg(b.image_url, "banner"),
+//         alt: "Banner Beramalbersama",
+//         href: bannerHref(b.link),
+//         newTab: b.is_new_tab,
+//       }))
+//     : [
+//         {
+//           src: "/images/banner/banner-qurban.avif",
+//           alt: "Qurban Pelosok Nusantara",
+//           href: "/donasi/qurban",
+//           newTab: false,
+//         },
+//         {
+//           src: "/images/ramadhan/ramadhan-1.webp",
+//           alt: "Program Sedekah Rutin",
+//           href: "/donasi-rutin",
+//           newTab: false,
+//         },
+//       ];
 ---
 
 <section class="bg-white">
@@ -40,31 +40,27 @@ const slides =
       class="flex will-change-transform"
       style="transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);"
     >
-      {
-        slides.map((slide, i) => (
-          <a
-            href={slide.href}
-            class="w-full shrink-0 block"
-            target={slide.newTab ? "_blank" : undefined}
-            rel={slide.newTab ? "noopener noreferrer" : undefined}
-          >
-            <img
-              src={slide.src}
-              alt={slide.alt}
-              width="480"
-              height="240"
-              class="w-full h-auto block"
-              loading={i === 0 ? "eager" : "lazy"}
-              fetchpriority={i === 0 ? "high" : "auto"}
-              decoding={i === 0 ? "sync" : "async"}
-            />
-          </a>
-        ))
-      }
+      <a
+        href={mainBanner?.link}
+        class="w-full shrink-0 block"
+        target={mainBanner?.link ? "_blank" : undefined}
+        rel={mainBanner?.link ? "noopener noreferrer" : undefined}
+      >
+        <img
+          src={mainBanner?.image_url}
+          alt={mainBanner?.name}
+          width="480"
+          height="240"
+          class="w-full h-auto block"
+          loading={mainBanner ? "eager" : "lazy"}
+          fetchpriority={mainBanner ? "high" : "auto"}
+          decoding={mainBanner ? "sync" : "async"}
+        />
+      </a>
     </div>
 
     <!-- Dot indicators -->
-    <div
+    <!-- <div
       class="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10 pointer-events-none"
     >
       {
@@ -80,7 +76,7 @@ const slides =
           />
         ))
       }
-    </div>
+    </div> -->
   </div>
 
   <!-- Wallet / Saldo Card -->
@@ -95,7 +91,7 @@ const slides =
       <div
         class="w-9 h-9 rounded-full bg-primary-50 flex items-center justify-center shrink-0"
       >
-        <img src="/assets/icons/wallet.png" alt="dompet kebaikan" />
+        <img src="/assets/icons/wallet.png" alt="Saku berbagi" />
       </div>
 
       <div class="flex-1 min-w-0">

@@ -5,7 +5,6 @@ import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
-import { Image } from "astro:assets";
 import FormRutin from "@/components/sections/rutin/FormRutin.astro";
 import {
   getCampaignByLink,
@@ -54,17 +53,17 @@ const banner = {
   >
     <div class="container pb-4 md:pb-6 space-y-3">
       <!-- Banner -->
-      <div class="bg-linear-to-t from-white to-primary-50 rounded-b shadow-sm">
+      <div
+        class="bg-linear-to-t from-white to-primary-50 rounded-b overflow-hidden shadow-sm"
+      >
         {
           banner.image && (
-            <Image
+            <img
               src={banner.image}
               alt={banner.title}
-              width="320"
-              height="240"
               loading="eager"
               decoding="async"
-              class="w-full max-h-125 object-cover"
+              class="w-full object-cover"
             />
           )
         }

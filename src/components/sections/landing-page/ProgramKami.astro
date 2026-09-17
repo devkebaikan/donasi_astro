@@ -38,9 +38,9 @@ const programs: Program[] = Array.isArray(raw?.data ?? raw) ? (raw?.data ?? raw)
                 style={`animation-delay:${i * 0.07}s`}
               >
                 <!-- Image -->
-                <div class="relative aspect-4/3 overflow-hidden">
+                <div class="relative overflow-hidden">
                   <img
-                    src={imgSrc || "/assets/landingpage/hero/hero-1.avif"}
+                    src={imgSrc}
                     alt={item.title}
                     class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                     loading={i < 2 ? "eager" : "lazy"}

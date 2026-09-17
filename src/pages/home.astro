@@ -14,21 +14,24 @@ import SliderBanner from "@/components/sections/home/SliderBanner.astro";
 import { storageImg, bannerHref } from "@/lib/home";
 import { getHomeData } from "@/lib/FetchData";
 import DonorNotifSection from "@/components/sections/home/DonorNotifSection.astro";
+import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 
 const homeData = await getHomeData();
 
-const mainBannerSrc = homeData?.main_banner?.image_url
-  ? storageImg(homeData.main_banner.image_url, "home-banner")
-  : null;
-const mainBannerHref = homeData?.main_banner
-  ? bannerHref(homeData.main_banner.link)
-  : "#";
+const mainBanner = homeData?.main_banner;
 
-const secondBannerSrc = homeData?.second_banner?.image_url
+const mainBannerSrc = homeData?.second_banner?.image_url
   ? storageImg(homeData.second_banner.image_url, "home-banner")
   : null;
-const secondBannerHref = homeData?.second_banner
+const mainBannerHref = homeData?.second_banner
   ? bannerHref(homeData.second_banner.link)
+  : "#";
+
+const secondBannerSrc = homeData?.third_banner?.image_url
+  ? storageImg(homeData.third_banner.image_url, "home-banner")
+  : null;
+const secondBannerHref = homeData?.third_banner
+  ? bannerHref(homeData.third_banner.link)
   : "#";
 ---
 
@@ -39,7 +42,10 @@ const secondBannerHref = homeData?.second_banner
 >
   <Header />
   <main class="container pb-16">
-    <HeroSection bannerSlides={homeData?.banner_slides ?? []} />
+    <HeroSection
+      mainBanner={mainBanner}
+      bannerSlides={homeData?.banner_slides ?? []}
+    />
     <MenuSection />
 
     {
@@ -58,6 +64,7 @@ const secondBannerHref = homeData?.second_banner
       )
     }
 
+    <!-- <ShowJsonData data={homeData} /> -->
     <ProgramSection programs={homeData?.program_list ?? []} />
 
     {

@@ -302,26 +302,18 @@ const navItems = [
       const scrolled = window.scrollY > 20;
 
       if (mainHeader) {
-        mainHeader.classList.toggle("bg-gradient-to-r", scrolled);
-        mainHeader.classList.toggle("from-primary-600", scrolled);
-        mainHeader.classList.toggle("to-teal-600", scrolled);
+        mainHeader.classList.toggle("bg-transparent", !scrolled);
+        mainHeader.classList.toggle("bg-primary-500", scrolled);
         mainHeader.classList.toggle("shadow-lg", scrolled);
         mainHeader.classList.toggle("backdrop-blur-sm", scrolled);
-
-        mainHeader.classList.toggle("from-primary-500", !scrolled);
-        mainHeader.classList.toggle("to-teal-500", !scrolled);
       }
 
       if (header && backButton && shareButton && textHeader) {
-        header.classList.toggle("bg-gradient-to-r", scrolled);
-        header.classList.toggle("from-primary-600", scrolled);
-        header.classList.toggle("to-teal-600", scrolled);
+        header.classList.toggle("bg-transparent", !scrolled);
+        header.classList.toggle("bg-primary-500", scrolled);
         header.classList.toggle("shadow-lg", scrolled);
         header.classList.toggle("backdrop-blur-sm", scrolled);
         header.classList.toggle("text-white", scrolled);
-
-        header.classList.toggle("from-primary-500", !scrolled);
-        header.classList.toggle("to-teal-500", !scrolled);
         header.classList.toggle("text-primary-600", !scrolled);
 
         backButton.classList.toggle("bg-white/80", !scrolled);

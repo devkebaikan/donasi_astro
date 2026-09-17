@@ -27,7 +27,7 @@ const walletDisplay =
     ? walletMethod
     : {
         id: 3000,
-        name: "Saku Kebaikan",
+        name: "Saku Berbagi",
         image_url: "",
         type: "dompet_kebaikan",
       };
@@ -289,7 +289,7 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
                       class="h-6 w-auto object-contain"
                     />
                   </div>
-                  <span class="flex-1 text-left md:text-sm font-medium text-gray-800">
+                  <span class="flex-1 text-left text-xs md:text-sm font-medium text-gray-800">
                     {method.name}
                   </span>
                   <svg
