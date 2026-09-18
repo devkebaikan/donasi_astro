@@ -407,6 +407,10 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   import { getToken } from "@/lib/auth";
   import { getIncomingReffCode } from "@/lib/referral";
   import type { TransactionPayload } from "@/lib/types";
+  import { trackAddToCart } from "@/lib/tracking";
+
+  // tracking add to chart
+  trackAddToCart();
 
   const page = document.getElementById("donation-page") as HTMLElement;
   const programId = page?.dataset.programId ?? "";

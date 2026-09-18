@@ -88,10 +88,17 @@ export function trackPurchase({
   });
 
   // Meta Pixel (Standard Event: Purchase)
-  trackMeta("Purchase", {
-    value: normalizedValue,
-    currency: "IDR",
-    content_type: "product",
-    transaction_id: invoice,
-  });
+  // trackMeta("Purchase", {
+  //   value: normalizedValue,
+  //   currency: "IDR",
+  //   content_type: "product",
+  //   transaction_id: invoice,
+  // });
+}
+
+/**
+ * Track AddToCart (Donasi)
+ */
+export function trackAddToCart() {
+  trackMeta("AddToCart");
 }
