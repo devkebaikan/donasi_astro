@@ -57,13 +57,14 @@ const defaultCommitment = 3;
     </span>
     <input
       id="nominal-input"
-      type="number"
+      type="text"
       inputmode="numeric"
       min="1000"
       placeholder="Masukkan nominal lainnya"
       class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-200 text-sm font-semibold text-gray-800 placeholder:text-gray-300 placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
     />
   </div>
+
   <p class="text-xs text-gray-400 mt-2">Minimal donasi Rp1.000</p>
 
   <div class="grid grid-cols-3 gap-2 mt-3.5">
@@ -666,7 +667,7 @@ const defaultCommitment = 3;
     .forEach((btn) => {
       btn.addEventListener("click", () => {
         nominal = Number(btn.dataset.value);
-        nominalInput.value = String(nominal);
+        nominalInput.value = nominal > 0 ? nominal.toLocaleString("id-ID") : "";
         setChipActive(btn);
         syncNotes();
         syncSubmitLabel();
@@ -674,7 +675,9 @@ const defaultCommitment = 3;
     });
 
   nominalInput.addEventListener("input", () => {
-    nominal = Number(nominalInput.value) || 0;
+    const raw = nominalInput.value.replace(/\D/g, "");
+    nominal = raw ? parseInt(raw, 10) : 0;
+    nominalInput.value = nominal > 0 ? nominal.toLocaleString("id-ID") : "";
     setChipActive(null);
     syncNotes();
     syncSubmitLabel();

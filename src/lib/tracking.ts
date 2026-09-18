@@ -22,11 +22,15 @@ export function pushGTMEvent(event: string, value?: any) {
 /**
  * Track Meta Pixel
  */
-export function trackMeta(event: string, payload: any) {
+export function trackMeta(event: string, payload?: any) {
   if (typeof window === "undefined") return;
 
-  if (window.fbq) {
-    window.fbq("track", event, payload);
+  if (typeof window.fbq === "function") {
+    if (payload) {
+      window.fbq("track", event, payload);
+    } else {
+      window.fbq("track", event);
+    }
   }
 }
 
@@ -83,10 +87,11 @@ export function trackPurchase({
     transaction_id: invoice,
   });
 
-  // Meta Pixel
-  trackMeta("purchase", {
+  // Meta Pixel (Standard Event: Purchase)
+  trackMeta("Purchase", {
     value: normalizedValue,
     currency: "IDR",
+    content_type: "product",
     transaction_id: invoice,
   });
 }
