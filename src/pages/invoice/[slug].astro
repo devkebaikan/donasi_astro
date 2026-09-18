@@ -21,25 +21,42 @@ if (!slug) {
 const invoice = await getInvoice(slug);
 
 const payment = invoice?.payment_method ?? {};
+const thirdPartyDetail = invoice?.third_party_detail ?? {};
 const donationAmount = invoice?.nominal ?? 0;
 const isPaid = invoice?.status === "Paid";
 const payment_url = invoice?.payment_url;
 const firstItem = invoice?.items?.[0];
-// const idProgram = firstItem?.program?.id ?? 0;
 
 const formatted = formatRupiah(donationAmount); // Rp 50.354
-
 const lastThree = formatted.slice(-3); // 354
 const firstPart = formatted.slice(0, -3); // Rp 50.
 
-const qrPayload =
-  payment?.name === "Qris"
-    ? invoice?.third_party_detail?.qr_string ?? ""
-    : null;
+// Deteksi jenis pembayaran berdasarkan field `bank` yang sudah dikirim backend
+const isQris = payment?.bank === "Qris";
+const isOvo = payment?.bank === "OVO";
+const isVA = !!(thirdPartyDetail?.account_number && thirdPartyDetail?.bank_code);
 
-// Kasus: belum bayar, ada payment_url dari gateway (bukan QRIS) → akan auto-redirect.
-// Jangan render invoice card penuh (rekening dsb) untuk kasus ini, cukup loading state.
-const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
+// QRIS → generate QR dari qr_string, JANGAN redirect browser
+const qrPayload = isQris ? thirdPartyDetail?.qr_string ?? "" : null;
+
+// VA → ambil nomor rekening & nama penerima dari third_party_detail,
+// karena payment_method.account_number di DB cuma placeholder "0"
+const vaAccountNumber = isVA
+  ? thirdPartyDetail?.account_number ??
+    thirdPartyDetail?.raw?.bill_payment?.receiver_bank_account?.account_number
+  : null;
+const vaAccountName = isVA
+  ? thirdPartyDetail?.account_holder ?? payment?.account_behalf
+  : null;
+
+const displayAccountNumber = isVA ? vaAccountNumber : payment?.account_number;
+const displayAccountName = isVA ? vaAccountName : payment?.account_behalf;
+
+// Kasus: belum bayar, ada payment_url dari gateway yang memang BUTUH redirect
+// (bukan Qris/OVO/VA) → akan auto-redirect. Jangan render invoice card penuh
+// untuk kasus ini, cukup loading state.
+const willAutoRedirect =
+  !isPaid && !!payment_url && !qrPayload && !isOvo && !isVA;
 ---
 
 <MainLayout
@@ -56,6 +73,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
     data-paid={isPaid}
     data-payment-url={payment_url}
     data-qr-code={qrPayload}
+    data-payment-type={isQris ? "qris" : isOvo ? "ovo" : isVA ? "va" : "other"}
     class="min-h-screen "
   >
     {
@@ -77,63 +95,31 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
         <div class="container bg-neutral-50 min-h-screen">
           <div class="space-y-4">
             <!-- Payment Deadline Section -->
-            {
-              payment.bank !== "OVO" && donationAmount !== 0 ? (
-                <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
-                  <h6 class="text-sm font-semibold mb-2">
-                    Batas waktu pembayaran
-                  </h6>
-                  <div class="flex justify-between items-center text-sm">
-                    <p class="font-medium">
-                      {formatDateTime(invoice?.last_payment_time)}
-                    </p>
-                    <div class="flex items-center gap-2">
-                      <svg
-                        class="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
+            <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
+              <h6 class="text-sm font-semibold mb-2">
+                Batas waktu pembayaran
+              </h6>
+              <div class="flex justify-between items-center text-sm">
+                <p class="font-medium">
+                  {formatDateTime(invoice?.last_payment_time)}
+                </p>
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fill-rule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
                 </div>
-              ) : (
-                <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
-                  <h6 class="text-sm font-semibold mb-2">
-                    Batas waktu pembayaran
-                  </h6>
-                  <div class="flex justify-between items-center text-sm">
-                    <p class="font-medium">
-                      {formatDateTime(invoice?.last_payment_time)}
-                    </p>
-                    <div class="flex items-center gap-2">
-                      <svg
-                        class="w-4 h-4"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fill-rule="evenodd"
-                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                          clip-rule="evenodd"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              )
-            }
+              </div>
+            </div>
 
             <!-- Payment Details Card -->
             <div class="bg-white rounded-md shadow-md overflow-hidden">
               {/* qris payment */}
               {
-                payment.bank === "Qris" ? (
+                isQris ? (
                   <QrisPayment
                     qrPayload={qrPayload}
                     donationAmount={donationAmount}
@@ -153,37 +139,38 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                       </div>
                     </div>
 
-                    {/* Account Number Section */}
+                    {/* Account Number Section (bank transfer / VA) */}
                     {
-                      Number(payment.account_number) !== 0 && (
-                        <div class="p-4 border-b border-gray-200">
-                          <div class="flex justify-between items-center">
-                            <div class="flex-1">
-                              <h6 class="text-xs text-gray-500 mb-1">
-                                Nama Rekening
-                              </h6>
-                              <p class="text-sm font-semibold text-gray-900">
-                                {payment.account_behalf}
-                              </p>
-                              <p class="text-lg font-mono font-bold text-gray-800 mt-1">
-                                {payment.account_number}
-                              </p>
+                      displayAccountNumber &&
+                        Number(displayAccountNumber) !== 0 && (
+                          <div class="p-4 border-b border-gray-200">
+                            <div class="flex justify-between items-center">
+                              <div class="flex-1">
+                                <h6 class="text-xs text-gray-500 mb-1">
+                                  Nama Rekening
+                                </h6>
+                                <p class="text-sm font-semibold text-gray-900">
+                                  {displayAccountName}
+                                </p>
+                                <p class="text-lg font-mono font-bold text-gray-800 mt-1">
+                                  {displayAccountNumber}
+                                </p>
+                              </div>
+                              <button
+                                class="ml-4 shrink-0 py-1.5 px-4 text-xs font-medium text-white bg-primary-400 hover:bg-primary-500 rounded-full transition-all duration-200 copy-btn group"
+                                data-copy={displayAccountNumber}
+                                aria-label="Copy account number"
+                              >
+                                Salin
+                              </button>
                             </div>
-                            <button
-                              class="ml-4 shrink-0 py-1.5 px-4 text-xs font-medium text-white bg-primary-400 hover:bg-primary-500 rounded-full transition-all duration-200 copy-btn group"
-                              data-copy={payment.account_number}
-                              aria-label="Copy account number"
-                            >
-                              Salin
-                            </button>
                           </div>
-                        </div>
-                      )
+                        )
                     }
 
                     {/* Donation Amount Section */}
                     {
-                      payment.bank !== "OVO" && (
+                      !isOvo && (
                         <div class="p-4 border-b border-gray-200">
                           <div class="flex justify-between items-center">
                             <div class="flex-1">
@@ -226,15 +213,20 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                           </svg>
                           <div class="flex-1">
                             <p class="text-[12px] text-amber-900 leading-relaxed">
-                              {payment.bank !== "OVO" ? (
+                              {isOvo ? (
+                                <span>
+                                  <span class="font-bold">PENTING!</span>{" "}
+                                  Silahkan masuk ke aplikasi{" "}
+                                  <span class="font-semibold">OVO</span> Anda
+                                  dan selesaikan pembayaran. Biasanya juga
+                                  sudah ada notifikasi pembayaran di HP OVO
+                                  Anda.
+                                </span>
+                              ) : (
                                 <span>
                                   <span class="font-bold">PENTING!</span> Mohon
                                   transfer tepat sampai 3 angka terakhir agar
                                   donasi terverifikasi otomatis
-                                </span>
-                              ) : (
-                                <span>
-                                  <span class="font-bold">PENTING!</span> Silahkan masuk ke aplikasi <span class="font-semibold">OVO</span> anda dan selesaikan pembayaran anda
                                 </span>
                               )}
                             </p>
@@ -261,6 +253,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                     )
                 }
 
+                {/* PERBAIKAN: Menambahkan tag <a yang hilang di sini */}
                 <a
                   id="btn-cara-pembayaran"
                   href={`/invoice/help/${slug}`}
@@ -290,6 +283,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
                 Ada yang ingin ditanyakan?
               </h3>
               <div class="space-y-3">
+                {/* PERBAIKAN: Menambahkan tag <a yang hilang di sini */}
                 <a
                   href="https://api.whatsapp.com/send?phone=6281325521905&text=Assalamu%27alaikum"
                   class="flex items-center justify-center w-full text-sm md:text-base bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 shadow-md hover:shadow-lg"
@@ -326,6 +320,7 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
       const isPaid = el.dataset.paid === "true";
       const paymentUrl = el.dataset.paymentUrl;
       const qrCode = el.dataset.qrCode;
+      const paymentType = el.dataset.paymentType; // "qris" | "ovo" | "va" | "other"
 
       // Tracking cukup dikirim sekali, jangan diulang tiap kali pageshow (mis. dari bfcache)
       if (!hasTracked) {
@@ -345,7 +340,8 @@ const willAutoRedirect = !isPaid && !!payment_url && !qrPayload;
         setTimeout(() => {
           window.location.href = `/track-donation/${slug}`;
         }, 500);
-      } else if (paymentUrl && !qrCode) {
+      } else if (paymentUrl && !qrCode && paymentType === "other") {
+        // Cuma redirect untuk metode yang bukan Qris/OVO/VA
         setTimeout(() => {
           window.location.href = paymentUrl;
         }, 3000);
