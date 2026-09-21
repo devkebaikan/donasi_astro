@@ -2,7 +2,6 @@
 export const prerender = false;
 
 import Header from "@/components/layouts/Header.astro";
-// import ShowJsonData from "@/components/ui/ShowJsonData.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import { getAllReportByLink } from "@/lib/FetchData";
 import { formatDate } from "@/lib/formatter";
@@ -74,147 +73,123 @@ function cleanText(htmlString: string = ""): string {
 
           <!-- Timeline Container -->
           <div class="relative ml-3 pl-5 border-l-2 border-primary-200/70 space-y-6">
-            {reports.map((item: any) => {
-              const mitra = item.mitra?.[0];
-              const mitraName = mitra?.name || "Beramalbersama";
-              const mitraImage = mitra?.image_url;
-              const displayImage =
-                item.wa_image ||
-                item.kegiatan?.image ||
-                item.image ||
-                item.program?.image;
-              const title =
-                item.title ||
-                item.kegiatan?.title ||
-                item.project?.title ||
-                "Penyaluran Donasi";
-              const rawContent =
-                item.content ||
-                item.kegiatan?.deskripsi ||
-                item.wa_caption ||
-                "";
-              const cleanedDescription = cleanText(rawContent);
-              const statusLabel =
-                item.type === "Final" ? "Selesai" : item.type || "Penyaluran";
+            {reports.map((item: any) => (
+              <div class="relative group">
+                <!-- Timeline dot -->
+                <div class="absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full bg-primary-500 border-2 border-white ring-2 ring-primary-200 shadow-xs"></div>
 
-              return (
-                <div class="relative group">
-                  <!-- Timeline dot -->
-                  <div class="absolute -left-[27px] top-4 w-3.5 h-3.5 rounded-full bg-primary-500 border-2 border-white ring-2 ring-primary-200 shadow-xs"></div>
-
-                  <!-- Card -->
-                  <div class="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden transition-all duration-200 hover:shadow-md">
-                    <!-- META / Header -->
-                    <div class="flex items-center justify-between p-3.5 pb-3 border-b border-gray-50 gap-2">
-                      <div class="flex items-center gap-2.5 min-w-0">
-                        {mitraImage ? (
-                          <img
-                            src={mitraImage}
-                            alt={mitraName}
-                            class="w-8 h-8 rounded-full object-contain border border-gray-200 bg-white shrink-0"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div class="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
-                            {mitraName.charAt(0).toUpperCase()}
-                          </div>
-                        )}
-
-                        <div class="min-w-0">
-                          <p class="text-xs font-bold text-gray-800 truncate">
-                            {mitraName}
-                          </p>
-                          <p class="text-[11px] text-gray-400">
-                            {item.date ? formatDate(item.date) : "-"}
-                          </p>
-                        </div>
-                      </div>
-
-                      <!-- STATUS BADGE -->
-                      <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
-                        {statusLabel}
-                      </span>
-                    </div>
-
-                    <!-- IMAGE (if available) -->
-                    {displayImage && (
-                      <div class="w-full bg-gray-100 overflow-hidden max-h-72">
+                <!-- Card -->
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-xs overflow-hidden transition-all duration-200 hover:shadow-md">
+                  <!-- META / Header -->
+                  <div class="flex items-center justify-between p-3.5 pb-3 border-b border-gray-50 gap-2">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      {item.mitra?.[0]?.image_url ? (
                         <img
-                          src={displayImage}
-                          alt={title}
-                          class="w-full h-auto object-cover max-h-72 transition-transform duration-300 group-hover:scale-[1.02]"
+                          src={item.mitra[0].image_url}
+                          alt={item.mitra[0].name || "Beramalbersama"}
+                          class="w-8 h-8 rounded-full object-contain border border-gray-200 bg-white shrink-0"
                           loading="lazy"
                         />
+                      ) : (
+                        <div class="w-8 h-8 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                          {(item.mitra?.[0]?.name || "Beramalbersama").charAt(0).toUpperCase()}
+                        </div>
+                      )}
+
+                      <div class="min-w-0">
+                        <p class="text-xs font-bold text-gray-800 truncate">
+                          {item.mitra?.[0]?.name || "Beramalbersama"}
+                        </p>
+                        <p class="text-[11px] text-gray-400">
+                          {item.date ? formatDate(item.date) : "-"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- STATUS BADGE -->
+                    <span class="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+                      {item.type === "Final" ? "Selesai" : item.type || "Penyaluran"}
+                    </span>
+                  </div>
+
+                  <!-- IMAGE (if available) -->
+                  {(item.wa_image || item.kegiatan?.image || item.image || item.program?.image) && (
+                    <div class="w-full bg-gray-100 overflow-hidden max-h-72">
+                      <img
+                        src={item.wa_image || item.kegiatan?.image || item.image || item.program?.image}
+                        alt={item.title || item.kegiatan?.title || item.project?.title || "Penyaluran Donasi"}
+                        class="w-full h-auto object-cover max-h-72 transition-transform duration-300 group-hover:scale-[1.02]"
+                        loading="lazy"
+                      />
+                    </div>
+                  )}
+
+                  <!-- BODY -->
+                  <div class="p-4 space-y-2.5">
+                    <!-- Project Tag / Location (if any) -->
+                    {item.project?.title && item.project.title !== (item.title || item.kegiatan?.title) && (
+                      <div class="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary-700 bg-primary-50/80 px-2.5 py-1 rounded-lg">
+                        <svg class="w-3.5 h-3.5 text-primary-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span class="line-clamp-1">{item.project.title}</span>
                       </div>
                     )}
 
-                    <!-- BODY -->
-                    <div class="p-4 space-y-2.5">
-                      <!-- Project Tag / Location (if any) -->
-                      {item.project?.title && item.project.title !== title && (
-                        <div class="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary-700 bg-primary-50/80 px-2.5 py-1 rounded-lg">
-                          <svg class="w-3.5 h-3.5 text-primary-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                          </svg>
-                          <span class="line-clamp-1">{item.project.title}</span>
-                        </div>
-                      )}
-
-                      {item.project?.location && item.project.location.trim() !== "" && (
-                        <div class="flex items-center gap-1 text-[11px] text-gray-500">
-                          <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          <span class="truncate">{item.project.location}</span>
-                        </div>
-                      )}
-
-                      <!-- Title -->
-                      <h3 class="text-sm font-bold text-gray-900 leading-snug">
-                        {title}
-                      </h3>
-
-                      <!-- Description Preview -->
-                      {cleanedDescription && (
-                        <p class="text-xs text-gray-600 leading-relaxed line-clamp-3">
-                          {cleanedDescription}
-                        </p>
-                      )}
-
-                      <!-- Footer Action (Instagram / Detail) -->
-                      <div class="pt-2 border-t border-gray-50 flex items-center justify-between gap-2">
-                        {item.ig_link !== "-" && item.ig_link !== "" && item.ig_link !== null ? (
-                          <a
-                            href={item.ig_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-pink-600 hover:text-pink-700 transition-colors"
-                          >
-                            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                            </svg>
-                            Lihat di Instagram
-                          </a>
-                        ) : (
-                          <span></span>
-                        )}
-
-                        <a
-                          href={`/donasi/report/detail/${slug}`}
-                          class="text-xs font-semibold text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
-                        >
-                          Detail Laporan
-                          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                          </svg>
-                        </a>
+                    {item.project?.location && item.project.location.trim() !== "" && (
+                      <div class="flex items-center gap-1 text-[11px] text-gray-500">
+                        <svg class="w-3.5 h-3.5 text-rose-500 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span class="truncate">{item.project.location}</span>
                       </div>
+                    )}
+
+                    <!-- Title -->
+                    <h3 class="text-sm font-bold text-gray-900 leading-snug">
+                      {item.title || item.kegiatan?.title || item.project?.title || "Penyaluran Donasi"}
+                    </h3>
+
+                    <!-- Description Preview -->
+                    {(item.content || item.kegiatan?.deskripsi || item.wa_caption) && (
+                      <p class="text-xs text-gray-600 leading-relaxed line-clamp-3">
+                        {cleanText(item.content || item.kegiatan?.deskripsi || item.wa_caption)}
+                      </p>
+                    )}
+
+                    <!-- Footer Action (Instagram / Detail) -->
+                    <div class="pt-2 border-t border-gray-50 flex items-center justify-between gap-2">
+                      {item.ig_link && item.ig_link !== "-" ? (
+                        <a
+                          href={item.ig_link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="inline-flex items-center gap-1.5 text-[11px] font-semibold text-pink-600 hover:text-pink-700 transition-colors"
+                        >
+                          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                          </svg>
+                          Lihat di Instagram
+                        </a>
+                      ) : (
+                        <span></span>
+                      )}
+
+                      <a
+                        href={`/donasi/report/detail/${slug}`}
+                        class="text-xs font-semibold text-primary-600 hover:text-primary-700 hover:underline inline-flex items-center gap-1"
+                      >
+                        Detail Laporan
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </a>
                     </div>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       )

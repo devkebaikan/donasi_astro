@@ -5,58 +5,34 @@ import MainLayout from "@/layouts/MainLayout.astro";
 
 const stories = [
   {
-    name: "Ibu Sari",
-    location: "Garut, Jawa Barat",
-    category: "Kesehatan",
-    quote:
-      "Berkat bantuan operasi yang terkumpul lewat Beramalbersama, suami saya bisa pulih dan kembali bekerja. Kami tidak akan pernah melupakan kebaikan para donatur.",
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&h=500&fit=crop",
-    impact: "Biaya operasi Rp 18 juta terkumpul dalam 12 hari",
-  },
-  {
-    name: "Ahmad, 12 tahun",
-    location: "Lombok, NTB",
+    name: "Denis Lim Setiawan",
+    location: "Da'i",
     category: "Pendidikan",
     quote:
-      "Sekarang saya bisa sekolah lagi. Tas, buku, dan seragam sudah ada. Saya mau jadi dokter supaya bisa bantu orang lain juga.",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop",
-    impact: "Beasiswa setahun untuk 50 anak di daerah terpencil",
+      "Dengan Beramalbersama.com, kita bisa menyalurakan Al-Quran, Bahkan sampai ke seluruh pelosok nusantara kepada santri penghafal quran dimanapun. Yuk kita wakaf Quran bagi para penghafal Quran di pelosok nusantara.",
+    image: "/assets/story/1.jpeg",
+    impact: "Penyaluran Mushaf Al-Qur'an untuk Santri & Penghafal Qur'an",
   },
   {
-    name: "Keluarga Pak Hendra",
-    location: "Cianjur, Jawa Barat",
+    name: "Ust. Luqmanulhakim",
+    location: "Da'i Nasional",
     category: "Kemanusiaan",
     quote:
-      "Pasca gempa, kami kehilangan segalanya. Bantuan logistik dan bahan bangunan yang datang memberi kami harapan untuk memulai lagi.",
-    image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&h=500&fit=crop",
-    impact: "300+ keluarga terdampak gempa mendapat bantuan darurat",
+      "Ayo Abang kaka ayah bunda, dukung dan support ikut berkontribusi di beramalbersama.com. Ada program kemanusiaan, ada program kepedulian, program pendidikan, program kesehatan dan program kebaikan serta kemaslahatan, berkah selalu.",
+    image: "/assets/story/2.jpeg",
+    impact: "Dukungan Program Kebaikan & Kemaslahatan Ummat",
+    videoUrl:
+      "https://drive.google.com/drive/folders/1i-6fs08bFmyYcQ6KMlFrXZAZGQ-S159t?usp=sharing",
   },
   {
-    name: "Ustazah Fatimah",
-    location: "Aceh",
-    category: "Pendidikan",
-    quote:
-      "Mushaf Al-Quran yang dikirimkan sampai ke pelosok kampung. Anak-anak kini bisa belajar mengaji dengan kitab yang layak.",
-    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=500&h=500&fit=crop",
-    impact: "1.200 Mushaf Al-Quran tersalurkan ke pesantren terpencil",
-  },
-  {
-    name: "Bapak Sukardi",
-    location: "Brebes, Jawa Tengah",
+    name: "Ustadz Salim A. Fillah",
+    location: "Da'i Nasional & Penulis",
     category: "Pemberdayaan",
     quote:
-      "Modal usaha kecil yang saya terima memungkinkan saya membuka warung. Sekarang anak-anak sudah bisa makan tiga kali sehari.",
-    image: "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&h=500&fit=crop",
-    impact: "80 pelaku UMKM mikro mendapat modal usaha bergulir",
-  },
-  {
-    name: "Komunitas Petani Desa Makmur",
-    location: "Sulawesi Selatan",
-    category: "Pemberdayaan",
-    quote:
-      "Program sumur bor yang didanai donatur mengubah hidup kami. Sawah tidak lagi kekeringan dan panen meningkat dua kali lipat.",
-    image: "https://images.unsplash.com/photo-1593113598332-cd288d649433?w=500&h=500&fit=crop",
-    impact: "3 sumur bor baru melayani 240 KK",
+      "Beramalbersama.com bisa memfasilitasi agar amal kita sampai kepada yang berhak menjadi amal terbaik, termasuk bagaimana kita mungkin mau mengatasnamakannya orang tua, hadiah untuk ayah ibu kita bersedekah air untuk saudara2 kita yg kekurangan, untuk berwudhu para santri dan penghafal quran. Dengan begitu seluruh kegiatan mereka pahalanya mengalir kepada kita yang bersedekah melalui beramalbersama.com.",
+    image: "/assets/story/3.jpeg",
+    impact: "Sedekah Air Bersih & Wudhu Santri Penghafal Qur'an",
+    videoUrl: "https://youtu.be/sVNCDbqDrxc?si=qJtq-rU0A_QGXIIe",
   },
 ];
 
@@ -70,7 +46,7 @@ const categoryColors: Record<string, string> = {
 
 <MainLayout
   title="Cerita Inspirasi — Beramalbersama"
-  description="Kisah nyata para penerima manfaat Beramalbersama. Setiap donasi yang kamu berikan meninggalkan jejak perubahan yang berarti."
+  description="Kisah nyata para penerima manfaat dan tokoh pendukung Beramalbersama. Setiap donasi yang kamu berikan meninggalkan jejak perubahan yang berarti."
 >
   <Header />
   <main>
@@ -88,7 +64,7 @@ const categoryColors: Record<string, string> = {
         </h1>
         <p class="text-primary-700/80 text-base md:text-lg leading-relaxed">
           Di balik setiap angka ada wajah, ada harapan, ada kehidupan yang
-          berubah. Inilah kisah-kisah yang menjadi alasan kami terus bergerak.
+          berubah. Inilah kisah dan ajakan kebaikan dari para tokoh serta da'i yang menjadi alasan kami terus bergerak.
         </p>
       </div>
     </section>
@@ -122,22 +98,22 @@ const categoryColors: Record<string, string> = {
               style={`transition-delay:${i * 0.08}s`}
             >
               <!-- Image -->
-              <div class="relative aspect-square overflow-hidden">
+              <div class="relative aspect-square overflow-hidden bg-primary-50">
                 <img
                   src={story.image}
                   alt={story.name}
                   class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                   loading={i < 3 ? "eager" : "lazy"}
                 />
-                <div class="absolute inset-0 bg-linear-to-t from-primary-900/50 to-transparent"></div>
+                <div class="absolute inset-0 bg-linear-to-t from-primary-950/70 via-transparent to-transparent"></div>
                 <span
                   class={`absolute top-3 left-3 text-xs font-semibold px-3 py-1 rounded-full ${categoryColors[story.category] ?? "bg-primary-100 text-primary-700"}`}
                 >
                   {story.category}
                 </span>
                 <div class="absolute bottom-3 left-3 right-3">
-                  <p class="text-white font-semibold text-sm">{story.name}</p>
-                  <p class="text-white/70 text-xs">{story.location}</p>
+                  <p class="text-white font-semibold text-base leading-snug">{story.name}</p>
+                  <p class="text-white/80 text-xs mt-0.5">{story.location}</p>
                 </div>
               </div>
 
@@ -147,10 +123,23 @@ const categoryColors: Record<string, string> = {
                   <span class="text-primary-400 text-2xl leading-none font-display not-italic">"</span>
                   {story.quote}
                 </blockquote>
-                <div class="bg-primary-50 rounded-xl px-4 py-2.5 border border-primary-100">
-                  <p class="text-xs font-semibold text-primary-700">Dampak Program</p>
-                  <p class="text-xs text-primary-600 mt-0.5">{story.impact}</p>
-                </div>
+
+                {story.videoUrl && (
+                  <a
+                    href={story.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold bg-primary-100/80 text-primary-800 hover:bg-primary-600 hover:text-white transition-all duration-200"
+                  >
+                    <svg class="w-4 h-4 text-red-600 fill-current" viewBox="0 0 24 24">
+                      <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                    </svg>
+                    Lihat Video / Dokumentasi
+                    <svg class="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </a>
+                )}
               </div>
             </article>
           ))}
