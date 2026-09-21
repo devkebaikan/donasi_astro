@@ -1,9 +1,8 @@
 ---
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
-import { getServerToken } from "@/lib/auth";
 import CampaignList from "@/components/ui/CampaignList.astro";
-import { getMitraById } from "@/lib/FetchData";
+import { getAllCampaigns, getMitraById } from "@/lib/FetchData";
 
 export const prerender = false;
 
@@ -49,33 +48,16 @@ if (!id) return Astro.redirect("/home");
 
 const search = Astro.url.searchParams.get("q") ?? "";
 
-const token = getServerToken(Astro.cookies);
 const API_URL = import.meta.env.PUBLIC_API_URL;
-const headers = {
-  Accept: "application/json",
-  ...(token ? { Authorization: `Bearer ${token}` } : {}),
-};
-
-const buildProgramUrl = (page: number) => {
-  const params = new URLSearchParams({
-    limit: "6",
-    mode: "pagination",
-    page: String(page),
-    mitra_id: id,
-  });
-  if (search) params.set("search", search);
-  return `${API_URL}/programs?${params.toString()}`;
-};
 
 const fetchPrograms = async (): Promise<ProgramPage | null> => {
-  try {
-    const res = await fetch(buildProgramUrl(1), { headers });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json?.data ?? null;
-  } catch {
-    return null;
-  }
+  return getAllCampaigns({
+    limit: 6,
+    mode: "pagination",
+    page: 1,
+    mitra_id: id,
+    search,
+  });
 };
 
 const [mitra, programData] = await Promise.all([

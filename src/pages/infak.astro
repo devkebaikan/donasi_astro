@@ -14,20 +14,14 @@ import {
   getCampaignDonorInfak,
   getPaymentMethodFilter,
   getCampaignSetUp,
+  qrCodeRekening,
 } from "@/lib/FetchData";
 
 const API_URL = import.meta.env.PUBLIC_API_URL;
 const token = getServerToken(Astro.cookies);
 
-const fetchOpts = (auth = false) => ({
-  headers: {
-    Accept: "application/json",
-    ...(auth && token ? { Authorization: `Bearer ${token}` } : {}),
-  },
-});
-
 const [qrRes, pmData, donors, account, programSetup] = await Promise.all([
-  fetch(`${API_URL}/infaq/qr-code`, fetchOpts()),
+  qrCodeRekening(),
   getPaymentMethodFilter({ status: "true", program_link: "infaq" }),
   getCampaignDonorInfak({ limit: 10 }),
   token ? getUserProfile(token) : Promise.resolve(null),
@@ -35,7 +29,7 @@ const [qrRes, pmData, donors, account, programSetup] = await Promise.all([
 ]);
 
 const infaqId = programSetup?.value ?? 399;
-const qr = qrRes.ok ? (await qrRes.json())?.data : null;
+const qr = qrRes;
 
 const isAuth = !!account;
 const userName = account?.name ?? "";

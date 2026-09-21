@@ -31,6 +31,7 @@ export interface CampaignParams {
   page?: number;
   category?: string | null;
   search?: string | null;
+  mitra_id?: string | number;
 }
 
 export async function getAllCampaigns(params: CampaignParams = {}) {
