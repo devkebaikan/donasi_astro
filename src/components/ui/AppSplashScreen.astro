@@ -1,0 +1,120 @@
+---
+// AppSplashScreen.astro - Splash Screen Video KHUSUS untuk Pintasan PWA (Standalone Mode)
+---
+
+<div
+  id="app-splash-screen"
+  class="fixed inset-0 z-99999 flex flex-col items-center justify-center bg-white px-4 select-none overflow-hidden"
+  style="display: none;"
+  aria-hidden="true"
+>
+  <!-- Background subtle ambient lighting -->
+  <div
+    class="absolute -top-28 -left-28 w-80 h-80 rounded-full bg-primary-100/50 blur-3xl pointer-events-none"
+  >
+  </div>
+  <div
+    class="absolute -bottom-28 -right-28 w-80 h-80 rounded-full bg-primary-200/30 blur-3xl pointer-events-none"
+  >
+  </div>
+
+  <!-- Video Splash Container -->
+  <div class="relative z-10 flex flex-col items-center justify-center max-w-sm sm:max-w-md w-full">
+    <video
+      id="splash-video"
+      src="/assets/loading_splash/loading_splash.mp4"
+      autoplay
+      muted
+      playsinline
+      preload="auto"
+      class="w-full h-auto max-h-[70vh] object-contain rounded-2xl"
+    ></video>
+  </div>
+</div>
+
+<style>
+  #app-splash-screen {
+    transition:
+      opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      visibility 0.45s ease;
+  }
+
+  #app-splash-screen.splash-dismissed {
+    opacity: 0;
+    transform: scale(1.04);
+    visibility: hidden;
+    pointer-events: none;
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    const splash = document.getElementById("app-splash-screen");
+    const video = document.getElementById("splash-video");
+    if (!splash) return;
+
+    // Cek apakah dibuka lewat PWA / Pintasan Terinstall (Standalone Mode)
+    const isStandalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      window.matchMedia("(display-mode: fullscreen)").matches ||
+      window.matchMedia("(display-mode: minimal-ui)").matches ||
+      Boolean(window.navigator && window.navigator.standalone) ||
+      window.location.search.includes("source=pwa");
+
+    // Cek apakah splash sudah pernah ditampilkan dalam sesi ini
+    const alreadyShown = sessionStorage.getItem("pwa_splash_shown") === "true";
+
+    // Jika BUKAN PWA atau SUDAH pernah ditampilkan di sesi ini (pindah halaman):
+    // Langsung hapus splash screen agar tidak mengganggu browsing
+    if (!isStandalone || alreadyShown) {
+      if (splash.parentNode) {
+        splash.parentNode.removeChild(splash);
+      }
+      return;
+    }
+
+    // Tandai bahwa splash sudah tampil pada peluncuran pertama kali
+    sessionStorage.setItem("pwa_splash_shown", "true");
+
+    // Tampilkan splash screen saat peluncuran awal PWA
+    splash.style.display = "flex";
+
+    let isDismissed = false;
+    const MAX_TIMEOUT_MS = 3500; // batas waktu maksimal keamanan
+
+    function hideSplash() {
+      if (isDismissed) return;
+      isDismissed = true;
+
+      splash.classList.add("splash-dismissed");
+      setTimeout(() => {
+        if (splash.parentNode) {
+          splash.parentNode.removeChild(splash);
+        }
+      }, 500);
+    }
+
+    // Putar video jika belum otomatis berjalan
+    if (video) {
+      video.play().catch(() => {
+        // Jika autoplay video terblokir browser, sembunyikan setelah timeout singkat
+        setTimeout(hideSplash, 1200);
+      });
+
+      // Selesai ketika video habis diputar
+      video.addEventListener("ended", () => {
+        // Beri jeda sangat singkat agar frame terakhir terasa halus
+        setTimeout(hideSplash, 150);
+      });
+
+      // Penanganan error video
+      video.addEventListener("error", () => {
+        hideSplash();
+      });
+    }
+
+    // Batas waktu maksimal agar tidak tertahan jika video macet
+    setTimeout(hideSplash, MAX_TIMEOUT_MS);
+  })();
+</script>

@@ -1,13 +1,13 @@
 {
-  "id": "/",
+  "id": "/home",
   "name": "Beramalbersama",
   "short_name": "Beramalbersama",
   "description": "Platform Donasi Online Terpercaya",
-  "start_url": "/",
+  "start_url": "/home?source=pwa",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait-primary",
-  "background_color": "#1eb8b1",
+  "background_color": "#ffffff",
   "theme_color": "#1eb8b1",
   "icons": [
     {

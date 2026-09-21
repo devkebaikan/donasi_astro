@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import Seo from "../components/Seo.astro";
+import AppSplashScreen from "../components/ui/AppSplashScreen.astro";
 import type { SeoProps } from "../lib/seo";
 
 type Props = SeoProps;
@@ -142,6 +143,9 @@ type Props = SeoProps;
   </head>
 
   <body class="min-h-screen bg-neutral-100 text-neutral-700 antialiased">
+    <!-- App Splash & Entrance Loader -->
+    <AppSplashScreen />
+
     <!-- GTM NoScript -->
     <!-- {
       GTM_ID && (

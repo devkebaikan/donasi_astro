@@ -14,7 +14,8 @@ import SliderBanner from "@/components/sections/home/SliderBanner.astro";
 import { storageImg, bannerHref } from "@/lib/home";
 import { getHomeData } from "@/lib/FetchData";
 import DonorNotifSection from "@/components/sections/home/DonorNotifSection.astro";
-import ShowJsonData from "@/components/ui/ShowJsonData.astro";
+
+// import FloatingInstallPrompt from "@/components/ui/FloatingInstallPrompt.astro";
 
 const homeData = await getHomeData();
 
@@ -96,6 +97,9 @@ const secondBannerHref = homeData?.third_banner
 
     <Footer />
   </main>
+
+  <!-- Floating PWA Install Prompt (5 detik) -->
+  <!-- <FloatingInstallPrompt /> -->
 
   <BottomNav active="home" />
 </MainLayout>

@@ -2,6 +2,7 @@ const CACHE_NAME = 'beramalbersama-v1';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
+  '/assets/loading_splash/loading_splash.mp4',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
   '/icons/apple-touch-icon.png'
