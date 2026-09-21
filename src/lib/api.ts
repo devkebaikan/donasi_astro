@@ -2,9 +2,14 @@ import axios from "axios";
 import type { AxiosInstance } from "axios";
 
 const isServer = typeof window === "undefined";
-const BASE_URL = (isServer
-  ? (import.meta.env.INTERNAL_API_URL ?? import.meta.env.PUBLIC_API_URL)
-  : import.meta.env.PUBLIC_API_URL) as string;
+
+const BASE_URL = (
+  isServer
+    ? (process.env.INTERNAL_API_URL ?? import.meta.env.PUBLIC_API_URL)
+    : import.meta.env.PUBLIC_API_URL
+) as string;
+
+
 
 function addErrorInterceptor(instance: AxiosInstance): AxiosInstance {
   instance.interceptors.response.use(
