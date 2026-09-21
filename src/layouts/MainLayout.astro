@@ -28,21 +28,28 @@ type Props = SeoProps;
       media="(prefers-color-scheme: dark)"
     />
 
-    <!-- Favicon & PWA -->
+    <!-- Favicon & PWA Icons -->
     <link
       rel="icon"
       type="image/png"
       sizes="192x192"
-      href="/assets/logo/logo-short-color.png"
+      href="/icons/icon-192x192.png"
     />
     <link
       rel="icon"
       type="image/png"
       sizes="512x512"
-      href="/assets/logo/logo-short-color.png"
+      href="/icons/icon-512x512.png"
     />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
 
-    <!-- PWA installer -->
+    <!-- Mobile & PWA Meta -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Beramalbersama" />
+
+    <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json" />
 
     <!-- SEO -->
@@ -117,20 +124,18 @@ type Props = SeoProps;
       fbq("track", "PageView");
     </script>
 
-    <!-- Service Worker Cleanup -->
+    <!-- Service Worker Registration -->
     <script is:inline>
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (const registration of registrations) {
-            registration.unregister();
-          }
-        });
-      }
-      if ("caches" in window) {
-        caches.keys().then((names) => {
-          for (const name of names) {
-            caches.delete(name);
-          }
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/sw.js")
+            .then((registration) => {
+              // Registration successful
+            })
+            .catch((err) => {
+              console.error("Service Worker registration failed:", err);
+            });
         });
       }
     </script>
