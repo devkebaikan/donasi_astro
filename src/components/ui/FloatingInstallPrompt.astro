@@ -8,13 +8,13 @@
   style="display: none;"
 >
   <div
-    class="pointer-events-auto relative overflow-hidden bg-white/95 backdrop-blur-md rounded-2xl p-3.5 shadow-2xl border border-primary-100 ring-1 ring-black/5 flex items-center justify-between gap-3"
+    class="pointer-events-auto relative overflow-hidden bg-white/95 backdrop-blur-md rounded-xl p-3.5 shadow-2xl border border-primary-100 ring-1 ring-black/5 flex items-center justify-between gap-3"
   >
     <!-- Progress bar 5 detik -->
     <div
       id="install-prompt-progress"
       class="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary-400 to-primary-600 rounded-full"
-      style="width: 100%; transition: width 5s linear;"
+      style="width: 100%; transition: width 8s linear;"
     >
     </div>
 
@@ -32,11 +32,17 @@
         />
       </div>
       <div class="min-w-0">
-        <h4 id="install-prompt-title" class="text-xs sm:text-sm font-bold text-neutral-800 truncate">
-          Pasang Aplikasi Beramal
+        <h4
+          id="install-prompt-title"
+          class="text-xs sm:text-sm font-bold text-neutral-800 truncate"
+        >
+          BB Mobile
         </h4>
-        <p id="install-prompt-desc" class="text-[11px] text-neutral-500 truncate">
-          Akses donasi lebih cepat & mudah
+        <p
+          id="install-prompt-desc"
+          class="text-[11px] text-neutral-500 truncate"
+        >
+          Donasi mudah dengan aplikasi
         </p>
       </div>
     </div>
@@ -48,7 +54,7 @@
         type="button"
         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-secondary-500 active:scale-95 text-white text-xs font-semibold rounded-xl shadow-md shadow-secondary-500/20 hover:bg-secondary-600 transition-all cursor-pointer"
       >
-        <svg
+        <!-- <svg
           id="icon-install"
           class="w-3.5 h-3.5"
           fill="none"
@@ -75,7 +81,7 @@
             stroke-linejoin="round"
             d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
           ></path>
-        </svg>
+        </svg> -->
         <span id="btn-install-text">Install</span>
       </button>
 
@@ -111,8 +117,8 @@
       <div>
         <p class="font-medium text-[11px] leading-relaxed">
           Ketuk ikon <strong>Bagikan (Share)</strong>
-          <span class="inline-block align-middle px-1">⎋ / 📤</span> di browser Anda, lalu
-          pilih <strong>"Tambahkan ke Layar Utama"</strong>.
+          <span class="inline-block align-middle px-1">⎋ / 📤</span> di browser Anda,
+          lalu pilih <strong>"Tambahkan ke Layar Utama"</strong>.
         </p>
       </div>
     </div>
@@ -149,7 +155,7 @@
     let deferredPrompt = null;
     let autoDismissTimer = null;
     let isAppInstalled = false;
-    const DISPLAY_DURATION_MS = 5000; // Melayang selama 5 detik
+    const DISPLAY_DURATION_MS = 8000; // Melayang selama 5 detik
 
     function setOpenAppMode() {
       isAppInstalled = true;
@@ -162,11 +168,14 @@
 
     // Deteksi jika aplikasi sudah terpasang di perangkat
     if ("getInstalledRelatedApps" in navigator) {
-      navigator.getInstalledRelatedApps().then((apps) => {
-        if (apps && apps.length > 0) {
-          setOpenAppMode();
-        }
-      }).catch(() => {});
+      navigator
+        .getInstalledRelatedApps()
+        .then((apps) => {
+          if (apps && apps.length > 0) {
+            setOpenAppMode();
+          }
+        })
+        .catch(() => {});
     }
 
     function showPrompt() {
