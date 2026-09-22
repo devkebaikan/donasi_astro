@@ -247,9 +247,25 @@ const tabs = [
             <ul class="max-h-[1000px] space-y-4">
               <li class="bg-primary-100/50 rounded-lg p-4 md:p-6 border border-primary-100">
                 <div class="flex items-start gap-3 mb-4">
-                  <div class="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-white border-2 border-primary-200">
-                    <img src="${item.mitra?.[0]?.image_url ?? ""}" alt="Mitra" class="w-full h-full object-cover"/>
-                  </div>
+                  
+                      ${
+                        item.mitra?.[0]?.image_url
+                          ? `
+                          <div class="w-12 h-12 flex-shrink-0 rounded-full overflow-hidden bg-white border-2 border-primary-200">
+                            <img
+                              src="${item.mitra[0].image_url}"
+                              alt="${item.mitra[0].name || "Beramalbersama"}"
+                              class="w-10 h-10 rounded-full object-contain border border-gray-200 bg-white shrink-0"
+                              loading="lazy"
+                            />
+                          </div>
+                            `
+                          : `<div class="w-12 h-12 rounded-full bg-primary-500 text-white flex items-center justify-center font-bold shrink-0 shadow-xs">
+                              ${(item.mitra?.[0]?.name || "Beramalbersama").charAt(0).toUpperCase()}
+                            </div>`
+                      }
+                  
+                  
                   <div class="flex-1 min-w-0">
                     <h4 class="font-semibold text-gray-900 text-base">${item.mitra?.[0]?.name ?? "Beramalbersama"}</h4>
                     <p class="text-sm text-gray-600">${fmtDate(item.date)}</p>

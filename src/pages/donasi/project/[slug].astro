@@ -307,7 +307,7 @@ function activityBadgeClass(activity: string): string {
                       <!-- Deskripsi singkat -->
                       {project.description && (
                         <a
-                          href={`/donasi/project/detail/${slug}?project_id=${project.id}`}
+                          href={`/project/${project.id}`}
                           class="w-full"
                         >
                           <p class="text-xs text-gray-500 leading-relaxed mb-2 line-clamp-2">
@@ -326,7 +326,7 @@ function activityBadgeClass(activity: string): string {
                       {project.activity === "active open" && (
                         <button
                           type="button"
-                          class="btn-donate-project block w-full py-3 bg-primary-500 hover:bg-primary-600 active:scale-[0.98] text-white text-sm font-semibold text-center rounded-lg transition-all duration-150 cursor-pointer"
+                          class="btn-donate-project block w-full py-3 bg-secondary-500 hover:bg-secondary-600 active:scale-[0.98] text-white text-sm font-semibold text-center rounded-lg transition-all duration-150 cursor-pointer"
                           data-project-id={project.id}
                           data-program-id={programId}
                           data-program-link={slug}

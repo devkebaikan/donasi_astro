@@ -30,7 +30,10 @@ function activityLabel(item: ProjectItem): string {
       const label = activityLabel(r);
 
       return (
-        <div class="flex gap-3 bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 cursor-pointer">
+        <a
+          href={`/project/${r.id}`}
+          class="flex gap-3 bg-white border border-gray-100 rounded-xl overflow-hidden hover:border-gray-200 hover:shadow-sm transition-all duration-200 cursor-pointer"
+        >
           <div class="shrink-0 w-36 overflow-hidden bg-gray-100 m-2.5 rounded-lg">
             <img
               src={r.image}
@@ -56,7 +59,7 @@ function activityLabel(item: ProjectItem): string {
               {summary}
             </p>
           </div>
-        </div>
+        </a>
       );
     })
   }
