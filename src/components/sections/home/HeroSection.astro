@@ -7,29 +7,6 @@ interface Props {
 }
 
 const { mainBanner, bannerSlides = [] } = Astro.props;
-
-// const slides =
-//   bannerSlides.length > 0
-//     ? bannerSlides.map((b) => ({
-//         src: storageImg(b.image_url, "banner"),
-//         alt: "Banner Beramalbersama",
-//         href: bannerHref(b.link),
-//         newTab: b.is_new_tab,
-//       }))
-//     : [
-//         {
-//           src: "/images/banner/banner-qurban.avif",
-//           alt: "Qurban Pelosok Nusantara",
-//           href: "/donasi/qurban",
-//           newTab: false,
-//         },
-//         {
-//           src: "/images/ramadhan/ramadhan-1.webp",
-//           alt: "Program Sedekah Rutin",
-//           href: "/donasi-rutin",
-//           newTab: false,
-//         },
-//       ];
 ---
 
 <section class="bg-white">
