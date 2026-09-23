@@ -3,7 +3,6 @@
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
 import Footer from "@/components/layouts/Footer.astro";
-import { qrCodeRekening } from "@/lib/FetchData";
 
 const noRek = [
   { label: "BSI", number: "6677889924" },
@@ -32,7 +31,10 @@ const csNumbers = [
   },
 ];
 
-const qrCode = await qrCodeRekening();
+const qrCode = {
+  image_url: "/assets/infak/qris-beramal.avif",
+  name: "QRIS Beramalbersama.com",
+};
 
 const toWaLink = (n: string) =>
   `https://wa.me/${n.replace(/-/g, "").replace(/^0/, "62")}`;
@@ -73,7 +75,7 @@ const offices = [
       <div class="space-y-4">
         <!-- QRIS -->
         <div class="bg-white border-b border-gray-100 shadow-sm p-4">
-          <p class="text-xs font-semibold text-gray-500 mb-3">QRIS</p>
+          <!-- <p class="text-xs font-semibold text-gray-500 mb-3">QRIS</p> -->
           <div
             class="overflow-hidden rounded-xl flex items-center justify-center"
           >

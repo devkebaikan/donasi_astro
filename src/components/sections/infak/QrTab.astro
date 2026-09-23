@@ -3,7 +3,10 @@ interface Props {
   qr: any;
 }
 
-const { qr } = Astro.props;
+const qr = {
+  image_url: "/assets/infak/qris-beramal.avif",
+  name: "QR Code Infaq",
+};
 ---
 
 <div id="tab-qr" class="hidden py-3 flex flex-col items-center">
