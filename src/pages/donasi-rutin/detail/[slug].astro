@@ -291,12 +291,9 @@ const infoRows = [
 
 <script>
   import { showToast } from "@/lib/toast";
-  import { getToken } from "@/lib/auth";
 
   const page    = document.getElementById("detail-rutin-page") as HTMLElement;
-  const API_URL = page?.dataset.apiUrl  ?? "";
   const rutinId = page?.dataset.rutinId ?? "";
-  const token   = getToken();
 
   document.addEventListener("DOMContentLoaded", () => {
     const btnStop    = document.getElementById("btn-stop-rutin")   as HTMLButtonElement | null;
@@ -329,12 +326,8 @@ const infoRows = [
 
       try {
 
-        const headers: Record<string, string> = { "Content-Type": "application/json", Accept: "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
-        const res = await fetch(`${API_URL}/dashboard/my-rutin/${rutinId}/stop`, {
+        const res = await fetch(`/api/dashboard/my-rutin/${rutinId}/stop`, {
           method: "POST",
-          headers,
         });
 
         const json = await res.json();

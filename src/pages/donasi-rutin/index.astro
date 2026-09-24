@@ -17,7 +17,6 @@ const isAuthenticated = getServerToken(Astro.cookies) !== null;
 
   <div
     id="rutin-page"
-    data-api-url={import.meta.env.PUBLIC_API_URL}
     class="container min-h-screen pb-24 bg-gray-50"
   >
     <!-- ── Hero Banner ─────────────────────────────────────────────────────── -->
@@ -277,10 +276,6 @@ const isAuthenticated = getServerToken(Astro.cookies) !== null;
 <script>
   import { showToast } from "@/lib/toast";
   import { formatRupiah, formatTime } from "@/lib/formatter";
-  import { getToken } from "@/lib/auth";
-
-  const page = document.getElementById("rutin-page") as HTMLElement;
-  const API_URL = page?.dataset.apiUrl ?? "";
 
   document.addEventListener("DOMContentLoaded", () => {
     const skeleton = document.getElementById(
@@ -301,8 +296,6 @@ const isAuthenticated = getServerToken(Astro.cookies) !== null;
     // Elemen list hanya ada jika user sudah login (SSR)
     if (!skeleton || !list || !empty || !errorEl || !loadmore || !btnMore)
       return;
-
-    const token = getToken();
 
     type RutinItem = {
       id: string | number;
@@ -422,12 +415,8 @@ const isAuthenticated = getServerToken(Astro.cookies) !== null;
     // ── Fetch list ───────────────────────────────────────────────────────────
     async function fetchList(pg = 1, append = false) {
       try {
-        const headers: Record<string, string> = { Accept: "application/json" };
-        if (token) headers["Authorization"] = `Bearer ${token}`;
-
         const res = await fetch(
-          `${API_URL}/dashboard/donatur/my-rutin?page=${pg}`,
-          { headers },
+          `/api/dashboard/donatur/my-rutin?page=${pg}`,
         );
         const json = await res.json();
 

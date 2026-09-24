@@ -6,7 +6,6 @@ import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 
 const { isAuthenticated } = Astro.locals.auth;
-const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const personalMenus = [
   { href: "/me",            label: "Ubah Data Akun",         icon: "user"        },
@@ -36,7 +35,6 @@ const iconPaths: Record<string, string> = {
 
   <div
     id="akun-page"
-    data-api-url={API_URL}
     class="container bg-neutral-50 min-h-screen pb-28"
   >
     <!-- ── Belum login ──────────────────────────────────────────────────────── -->
@@ -292,8 +290,6 @@ const iconPaths: Record<string, string> = {
   import { showToast } from "@/lib/toast";
 
   (() => {
-    const page    = document.getElementById("akun-page") as HTMLElement;
-    const API_URL = page?.dataset.apiUrl ?? "";
 
     // ── Logout modal ─────────────────────────────────────────────────────────
     const modal      = document.getElementById("logout-modal")!;
@@ -314,7 +310,7 @@ const iconPaths: Record<string, string> = {
       btnConfirm.textContent = "Keluar...";
 
       try {
-        await fetch(`${API_URL}/logout`, {
+        await fetch(`/api/logout`, {
           method: "POST",
           credentials: "include",
         }).catch(() => {});
@@ -396,7 +392,7 @@ const iconPaths: Record<string, string> = {
     // ── Fetch data terbaru dari API ──────────────────────────────────────────
     async function fetchUserData() {
       try {
-        const res = await fetch(`${API_URL}/dashboard/donatur/my-account`, {
+        const res = await fetch(`/api/dashboard/donatur/my-account`, {
           headers: bearerHeaders(token!),
         });
 

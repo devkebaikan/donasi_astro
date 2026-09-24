@@ -10,7 +10,6 @@ import { getUserProfile } from "@/lib/FetchData";
 const token = getServerToken(Astro.cookies);
 if (!token) return Astro.redirect("/login");
 
-const apiUrl = import.meta.env.PUBLIC_API_URL;
 const user = await getUserProfile(token);
 ---
 
@@ -248,15 +247,8 @@ const user = await getUserProfile(token);
         </button>
       </form>
 
-      <div class="hidden" data-config data-api-url={apiUrl}></div>
-
       <script>
         import { showToast } from "@/lib/toast";
-        import { getToken } from "@/lib/auth";
-
-        const config = document.querySelector("[data-config]") as HTMLElement;
-        const apiUrl = config.dataset.apiUrl as string;
-        const token = getToken();
 
         // Toggle password visibility
         document
@@ -310,13 +302,12 @@ const user = await getUserProfile(token);
 
           try {
             const res = await fetch(
-              `${apiUrl}/dashboard/donatur/change-personal-data`,
+              `/api/dashboard/donatur/change-personal-data`,
               {
                 method: "POST",
                 headers: {
                   Accept: "application/json",
                   "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
               },
@@ -378,13 +369,12 @@ const user = await getUserProfile(token);
 
           try {
             const res = await fetch(
-              `${apiUrl}/dashboard/donatur/change-password`,
+              `/api/dashboard/donatur/change-password`,
               {
                 method: "POST",
                 headers: {
                   Accept: "application/json",
                   "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ password, password_confirmation }),
               },

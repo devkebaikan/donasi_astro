@@ -9,7 +9,8 @@ const BASE_URL = (
     : import.meta.env.PUBLIC_API_URL
 ) as string;
 
-
+// Ambil Client Key dari env
+const CLIENT_KEY = import.meta.env.PUBLIC_CLIENT_KEY as string;
 
 function addErrorInterceptor(instance: AxiosInstance): AxiosInstance {
   instance.interceptors.response.use(
@@ -17,7 +18,9 @@ function addErrorInterceptor(instance: AxiosInstance): AxiosInstance {
     (err) => {
       const message =
         err.response?.data?.message ?? err.message ?? "Terjadi kesalahan";
-      return Promise.reject(new Error(message));
+      const error = new Error(message) as Error & { status?: number };
+      error.status = err.response?.status;
+      return Promise.reject(error);
     },
   );
   return instance;
@@ -28,7 +31,10 @@ export const publicApi = addErrorInterceptor(
   axios.create({
     baseURL: BASE_URL,
     timeout: 10_000,
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json",
+      "X-Client-Key": CLIENT_KEY, // <-- TAMBAHKAN INI
+    },
   }),
 );
 
@@ -41,6 +47,7 @@ export function serverApi(token: string): AxiosInstance {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
+        "X-Client-Key": CLIENT_KEY, // <-- TAMBAHKAN INI
       },
     }),
   );
@@ -53,7 +60,7 @@ export function useApi(): AxiosInstance {
   if (_instance) return _instance;
 
   _instance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: "/api",
     timeout: 10_000,
     headers: {
       Accept: "application/json",
@@ -66,6 +73,7 @@ export function useApi(): AxiosInstance {
     const match = document.cookie.match(/(?:^|;\s*)authToken=([^;]+)/);
     const token = match ? decodeURIComponent(match[1]) : null;
     if (token) config.headers.set("Authorization", `Bearer ${token}`);
+    
     return config;
   });
 

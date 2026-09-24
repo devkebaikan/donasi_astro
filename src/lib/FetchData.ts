@@ -123,13 +123,6 @@ export async function getAllReportByLink(link: string | null) {
   );
 }
 
-export async function getReportDetailById(id: number | null) {
-  return safe(
-    () => publicApi.get(`/report/${id}`,),
-    "getReportDetailById",
-  );
-}
-
 export async function getProjectByLink(link: string | null) {
   return safe(
     () => publicApi.get("/projects", { params: { program_link: link } }),

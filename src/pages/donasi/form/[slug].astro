@@ -17,7 +17,6 @@ if (!programId) return Astro.redirect(`/${slug}`);
 const projectIdParam = Astro.url.searchParams.get("project");
 
 const token = getServerToken(Astro.cookies);
-const baseUrl = import.meta.env.PUBLIC_API_URL;
 const utm = Astro.cookies.get("utm_params")?.value ?? null;
 
 const [accountRes, dataPaymentMethods] = await Promise.all([
@@ -56,7 +55,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     data-program-id={programId}
     data-program-link={slug}
     data-project-id={projectIdParam ?? ""}
-    data-base-url={baseUrl}
     data-utm={utm}
     data-is-auth={isAuth}
     data-user-name={userName}
@@ -404,7 +402,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 
 <script>
   import { showToast } from "@/lib/toast";
-  import { getToken } from "@/lib/auth";
   import { getIncomingReffCode } from "@/lib/referral";
   import type { TransactionPayload } from "@/lib/types";
   import { trackAddToCart } from "@/lib/tracking";
@@ -418,9 +415,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   const userName = page?.dataset.userName ?? "";
   const userPhone = page?.dataset.userPhone ?? "";
   const walletBal = Number(page?.dataset.wallet ?? 0);
-  const baseUrl = page?.dataset.baseUrl ?? "";
   const utmParams = page?.dataset.utm ?? null;
-  const token = getToken();
 
   // ── State ─────────────────────────────────────────────────────────────────
   let amount = 0;
@@ -726,14 +721,15 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             ...(utmParams ? { parameter_detail: utmParams } : {}),
             ...(reffCode ? { reff_code: reffCode } : {}),
           };
+    const payloadToSend = cleanPayload(payload);
+    console.log("Data yang akan dikirim:", payloadToSend); // Cek di console browser apakah ada isinya?
 
     try {
-      const res = await fetch(`${baseUrl}/transactions`, {
+      const res = await fetch(`/api/transactions`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(cleanPayload(payload)),
       });

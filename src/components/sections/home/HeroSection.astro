@@ -96,7 +96,6 @@ const { mainBanner, bannerSlides = [] } = Astro.props;
   (() => {
     const track = document.getElementById("banner-track") as HTMLElement | null;
     const dots = document.querySelectorAll<HTMLElement>(".banner-dot");
-    const wallet = document.getElementById("data-wallet") as HTMLElement | null;
     const walletAction = document.getElementById(
       "wallet-action",
     ) as HTMLElement | null;
@@ -109,8 +108,6 @@ const { mainBanner, bannerSlides = [] } = Astro.props;
     const saldoGuest = document.getElementById(
       "saldo-guest",
     ) as HTMLElement | null;
-
-    const API_URL = wallet?.dataset.apiUrl ?? "";
 
     // ── Banner slider ─────────────────────────────────────────────────────────
     const total = dots.length;
@@ -182,7 +179,7 @@ const { mainBanner, bannerSlides = [] } = Astro.props;
 
     async function fetchSaldo() {
       try {
-        const res = await fetch(`${API_URL}/dashboard/donatur/my-account`, {
+        const res = await fetch(`/api/dashboard/donatur/my-account`, {
           headers: bearerHeaders(token!),
         });
 

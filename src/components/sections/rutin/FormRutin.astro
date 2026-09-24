@@ -482,18 +482,15 @@ const defaultCommitment = 3;
 
 <script>
   import { showToast } from "@/lib/toast";
-  import { getToken } from "@/lib/auth";
   import { formatRupiah } from "@/lib/formatter";
   import { getIncomingReffCode } from "@/lib/referral";
 
   const page = document.getElementById("rutin-page") as HTMLElement;
   if (!page) throw new Error("rutin-page not found");
 
-  const API_URL = page.dataset.apiUrl ?? "";
   const programId = page.dataset.programId ?? "";
   const walletBal = Number(page.dataset.wallet ?? 0);
   const isAuth = page.dataset.isAuth === "true";
-  const token = getToken();
 
   let nominal = 0;
   let isCommitment = true;
@@ -867,12 +864,11 @@ const defaultCommitment = 3;
     }
 
     try {
-      const res = await fetch(`${API_URL}/rutin/store`, {
+      const res = await fetch(`/api/rutin/store`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify(payload),
       });
