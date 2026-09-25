@@ -5,9 +5,22 @@ import type { APIRoute } from "astro";
 export const prerender = false;
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  const token = cookies.get("authToken")?.value || null;
-  const clientKey = import.meta.env.CLIENT_KEY;
-  const baseUrl = process.env.INTERNAL_API_URL ?? import.meta.env.PUBLIC_API_URL;
+  const baseUrl =
+    process.env.INTERNAL_API_URL ??
+    import.meta.env.INTERNAL_API_URL ??
+    process.env.PUBLIC_API_URL ??
+    import.meta.env.PUBLIC_API_URL;
+
+  const clientKey =
+    process.env.CLIENT_KEY ??
+    import.meta.env.CLIENT_KEY ??
+    process.env.PUBLIC_CLIENT_KEY ??
+    import.meta.env.PUBLIC_CLIENT_KEY;
+
+  const token =
+    cookies.get("authToken")?.value ||
+    request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "") ||
+    null;
 
   if (!baseUrl || !clientKey) {
     return new Response(

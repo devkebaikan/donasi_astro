@@ -6,6 +6,7 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import CampaignList from "@/components/ui/CampaignList.astro";
 import Footer from "@/components/layouts/Footer.astro";
 import { formatRupiah } from "@/lib/formatter";
+import { getProgramThemeBySlug } from "@/lib/FetchData";
 
 interface Props {
   themeData: any;
@@ -19,28 +20,7 @@ if (!slug) {
 }
 
 // ── 1. Get Data via Helper ──────────────────────────────────────────────────
-let themeData: any = null;
-
-try {
-  const targetUrl = `https://aapi.beramalbersama.com/api/v1/program-themes/slug/${slug}`;
-  const res = await fetch(targetUrl, {
-    method: "GET",
-    headers: {
-      Accept: "application/json",
-    },
-  });
-
-  if (res.ok) {
-    const json = await res.json();
-    themeData = json?.data ?? null;
-  } else {
-    console.error(
-      `[Theme Fetch Error] Status: ${res.status} | URL: ${targetUrl}`,
-    );
-  }
-} catch (error) {
-  console.error("[Theme Fetch Error]:", error);
-}
+const themeData = await getProgramThemeBySlug(slug);
 // const themeData = res?.data ?? res;
 const fallbackProjects = [
   {

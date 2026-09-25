@@ -19,7 +19,6 @@ const tabs = [
 <div
   id="lazy-tab-config"
   data-slug={slug}
-  data-api={import.meta.env.PUBLIC_API_URL}
   hidden
 >
 </div>
@@ -158,7 +157,6 @@ const tabs = [
   // ── Lazy tab loading ──────────────────────────────────────────────────────
   const lazyConfig = document.getElementById("lazy-tab-config") as HTMLElement;
   const programSlug = lazyConfig?.dataset.slug ?? "";
-  const apiBase = lazyConfig?.dataset.api ?? "";
 
   const tabLoaded: Record<string, boolean> = {
     salur: false,
@@ -207,7 +205,7 @@ const tabs = [
     container.innerHTML = skeletonHtml();
     try {
       const res = await fetch(
-        `${apiBase}/report?program_link=${programSlug}&limit=1`,
+        `/api/report?program_link=${programSlug}&limit=1`,
       );
 
       const json = await res.json();
@@ -300,7 +298,7 @@ const tabs = [
     container.innerHTML = skeletonHtml();
     try {
       const res = await fetch(
-        `${apiBase}/programs/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
+        `/api/programs/link/${programSlug}/donors?limit=10&mode=pagination&page=1`,
       );
       const json = await res.json();
       const total: number = json?.data.meta.total ?? 0;
@@ -383,7 +381,7 @@ const tabs = [
     container.innerHTML = skeletonHtml();
     try {
       const res = await fetch(
-        `${apiBase}/programs/link/${programSlug}/fundraisers?limit=6&mode=pagination&page=1`,
+        `/api/programs/link/${programSlug}/fundraisers?limit=6&mode=pagination&page=1`,
       );
       const json = await res.json();
       const total: number = json?.data?.meta.total ?? 0;
@@ -476,7 +474,7 @@ const tabs = [
         this.querySelector(".heart-icon")?.classList.add("text-white");
         localStorage.setItem(`liked_${id}`, "true");
         try {
-          await fetch(`/amin/${id}/like`, {
+          await fetch(`/api/amin/${id}/like`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),

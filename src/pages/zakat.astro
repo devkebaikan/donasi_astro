@@ -6,8 +6,6 @@ import MainLayout from "@/layouts/MainLayout.astro";
 import { getNishabZakat, getCampaignSetUp } from "@/lib/FetchData";
 import { formatDate, formatRupiah } from "@/lib/formatter";
 
-const API_URL = import.meta.env.PUBLIC_API_URL;
-
 const [nishabData, programRaw] = await Promise.all([
   getNishabZakat(),
   getCampaignSetUp("zakat"),
@@ -57,7 +55,6 @@ const menuItems = [
 
   <div
     id="zakat-page"
-    data-api-url={API_URL}
     data-nishab-emas={nishabEmas}
     data-nishab-yearly={nishabYearly}
     data-zakat-id={zakatId}

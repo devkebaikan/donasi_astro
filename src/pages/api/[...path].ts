@@ -3,32 +3,29 @@ import type { APIRoute } from "astro";
 export const prerender = false;
 
 const allowedPaths = [
-  /^auth\/request-otp$/,
-  /^auth\/login$/,
+  /^auth\/.+$/,
   /^otp$/,
-  /^auth\/otp$/,
-  /^auth\/set-password$/,
   /^logout$/,
-  /^dashboard\/donatur\/change-personal-data$/,
-  /^dashboard\/donatur\/change-password$/,
-  /^rutin\/store$/,
-  /^dashboard\/my-rutin\/[^/]+\/stop$/,
-  /^dashboard\/donatur\/my-account$/,
-  /^dashboard\/donatur\/my-rutin$/,
+  /^dashboard\/.+$/,
+  /^rutin\/.+$/,
+  /^programs(\/.*)?$/,
+  /^program-show\/.+$/,
+  /^program-themes\/.+$/,
+  /^program-categories$/,
+  /^program-setup\/.+$/,
+  /^report(\/.*)?$/,
+  /^donors\/.+$/,
+  /^payment\/.+$/,
+  /^projects(\/.*)?$/,
+  /^mitra(\/.*)?$/,
+  /^zakat\/.+$/,
+  /^track\/.+$/,
+  /^amin\/.+$/,
+  /^transactions(\/.*)?$/,
 ];
 
 export const ALL: APIRoute = async ({ params, request, cookies }) => {
   const path = params.path ?? "";
-  const isGetAccountRequest =
-    request.method === "GET" &&
-    (path === "dashboard/donatur/my-account" ||
-      path === "dashboard/donatur/my-rutin");
-  if (request.method !== "POST" && !isGetAccountRequest) {
-    return new Response(JSON.stringify({ message: "Method tidak diizinkan" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    });
-  }
 
   if (!allowedPaths.some((pattern) => pattern.test(path))) {
     return new Response(JSON.stringify({ message: "Endpoint tidak diizinkan" }), {
@@ -37,8 +34,18 @@ export const ALL: APIRoute = async ({ params, request, cookies }) => {
     });
   }
 
-  const baseUrl = process.env.INTERNAL_API_URL ?? import.meta.env.PUBLIC_API_URL;
-  const clientKey = import.meta.env.CLIENT_KEY;
+  const baseUrl =
+    process.env.INTERNAL_API_URL ??
+    import.meta.env.INTERNAL_API_URL ??
+    process.env.PUBLIC_API_URL ??
+    import.meta.env.PUBLIC_API_URL;
+
+  const clientKey =
+    process.env.CLIENT_KEY ??
+    import.meta.env.CLIENT_KEY ??
+    process.env.PUBLIC_CLIENT_KEY ??
+    import.meta.env.PUBLIC_CLIENT_KEY;
+
   if (!baseUrl || !clientKey) {
     return new Response(
       JSON.stringify({ message: "Konfigurasi server belum lengkap" }),
@@ -51,7 +58,14 @@ export const ALL: APIRoute = async ({ params, request, cookies }) => {
     Accept: "application/json",
     "X-Client-Key": clientKey,
   });
-  headers.set("Content-Type", "application/json");
+
+  const contentType = request.headers.get("Content-Type");
+  if (contentType) {
+    headers.set("Content-Type", contentType);
+  } else if (request.method !== "GET" && request.method !== "HEAD") {
+    headers.set("Content-Type", "application/json");
+  }
+
   const authorization = request.headers.get("Authorization");
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
@@ -60,17 +74,37 @@ export const ALL: APIRoute = async ({ params, request, cookies }) => {
   }
 
   const incomingUrl = new URL(request.url);
-  const upstreamUrl = new URL(`${baseUrl}/${path}`);
+  const upstreamUrl = new URL(`${baseUrl.replace(/\/+$/, "")}/${path}`);
   upstreamUrl.search = incomingUrl.search;
 
-  const response = await fetch(upstreamUrl, {
-    method: request.method,
-    headers,
-    body: request.method === "GET" ? undefined : await request.text(),
-  });
+  try {
+    const hasBody = request.method !== "GET" && request.method !== "HEAD";
+    const body = hasBody ? await request.text() : undefined;
 
-  return new Response(response.body, {
-    status: response.status,
-    headers: { "Content-Type": response.headers.get("Content-Type") ?? "application/json" },
-  });
+    const response = await fetch(upstreamUrl, {
+      method: request.method,
+      headers,
+      body,
+    });
+
+    const responseData = await response.text();
+
+    return new Response(responseData, {
+      status: response.status,
+      headers: {
+        "Content-Type":
+          response.headers.get("Content-Type") ?? "application/json",
+      },
+    });
+  } catch (err: any) {
+    return new Response(
+      JSON.stringify({
+        message: err?.message ?? "Gagal terhubung ke server backend",
+      }),
+      {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+      },
+    );
+  }
 };

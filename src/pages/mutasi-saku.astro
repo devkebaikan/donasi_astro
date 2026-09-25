@@ -24,8 +24,6 @@ interface Wallet {
 const token = getServerToken(Astro.cookies);
 if (!token) return Astro.redirect("/login");
 
-const API_URL = import.meta.env.PUBLIC_API_URL;
-
 const wallet = await getMyWallet(token);
 const saldo = Number(wallet?.saldo ?? 0);
 const history = wallet?.history ?? [];

@@ -207,7 +207,7 @@ const total: number = donors?.meta?.total ?? donorList.length;
         localStorage.setItem(`liked_${id}`, "true");
 
         try {
-          await fetch(`/amin/${id}/like`, {
+          await fetch(`/api/amin/${id}/like`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id }),

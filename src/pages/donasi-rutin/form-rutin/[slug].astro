@@ -27,7 +27,6 @@ const CAMPAIGN_KEY_MAP: Record<Slug, string> = {
 };
 
 const token = getServerToken(Astro.cookies);
-const API_URL = import.meta.env.PUBLIC_API_URL;
 
 const [account, paymentMethods, dataPorgamSetup] = await Promise.all([
   token ? getUserProfile(token) : Promise.resolve(null),
@@ -84,7 +83,6 @@ const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
 
   <div
     id="rutin-page"
-    data-api-url={API_URL}
     data-program-id={programId}
     data-wallet={walletBalance}
     data-slug={slug}

@@ -25,7 +25,6 @@ const statusTabs = [
 
   <div
     id="riwayat-page"
-    data-api-url={import.meta.env.PUBLIC_API_URL}
     class="container min-h-screen pb-24 pt-16 bg-gray-50"
   >
 
@@ -149,7 +148,6 @@ const statusTabs = [
   import { getToken } from "@/lib/auth";
 
   const page    = document.getElementById("riwayat-page") as HTMLElement;
-  const API_URL = page?.dataset.apiUrl ?? "";
   const token   = getToken();
 
   let activeFilter = "";
@@ -366,7 +364,7 @@ const statusTabs = [
           params.set("invoice", invoiceParam);
         }
 
-        const res  = await fetch(`${API_URL}/dashboard/donatur/my-donation?${params.toString()}`, { headers });
+        const res  = await fetch(`/api/dashboard/donatur/my-donation?${params.toString()}`, { headers });
         const json = await res.json();
 
         if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");

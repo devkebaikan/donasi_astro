@@ -3,6 +3,9 @@ import { getServerToken } from "@/lib/auth";
 const {
   paymentMethods = [],
   showWallet = true,
+  showEwallet = true,
+  showVa = true,
+  showBank = true,
   defaultWallet = true,
 } = Astro.props;
 
@@ -32,15 +35,12 @@ const walletDisplay =
         type: "dompet_kebaikan",
       };
 
-const API_URL = import.meta.env.PUBLIC_API_URL;
 const currentPath = Astro.url.pathname + Astro.url.search;
 const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
 ---
 
-<!-- Backdrop -->
 <div
   id="payment-modal"
-  data-api-url={API_URL}
   data-show-wallet={showWallet ? "true" : "false"}
   data-default-wallet={defaultWallet ? "true" : "false"}
   data-is-auth={isAuthenticated ? "true" : "false"}
@@ -215,7 +215,7 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
 
       <!-- E-Wallet / Pembayaran Instan -->
       {
-        ewallets.length > 0 && (
+        showEwallet && ewallets.length > 0 && (
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
               Pembayaran Instan
@@ -264,7 +264,7 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
 
       <!-- Virtual Account -->
       {
-        vas.length > 0 && (
+        showVa && vas.length > 0 && (
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
               Virtual Account
@@ -313,7 +313,7 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
 
       <!-- Transfer Bank -->
       {
-        banks.length > 0 && (
+        showBank && banks.length > 0 && (
           <div>
             <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
               Transfer Bank
@@ -379,7 +379,6 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
     "wallet-balance-loading",
   );
 
-  const API_URL = modal?.dataset.apiUrl ?? "";
   const isAuth = modal?.dataset.isAuth === "true" || isLoggedIn();
   const shouldDefaultWallet = isAuth && modal?.dataset.defaultWallet === "true";
 
@@ -412,7 +411,7 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
   }
 
   async function fetchWalletBalance() {
-    if (!walletItem || !API_URL || walletFetched || walletFetching) return;
+    if (!walletItem || walletFetched || walletFetching) return;
     if (!isLoggedIn()) return;
 
     const token = getToken();
@@ -422,7 +421,7 @@ const loginUrl = `/auth/login?from=${encodeURIComponent(currentPath)}`;
     renderWalletBalance(getCachedSaldo(), true);
 
     try {
-      const res = await fetch(`${API_URL}/dashboard/donatur/my-wallet`, {
+      const res = await fetch(`/api/dashboard/donatur/my-wallet`, {
         headers: bearerHeaders(token),
       });
       if (!res.ok) return;

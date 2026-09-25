@@ -48,8 +48,6 @@ if (!id) return Astro.redirect("/home");
 
 const search = Astro.url.searchParams.get("q") ?? "";
 
-const API_URL = import.meta.env.PUBLIC_API_URL;
-
 const fetchPrograms = async (): Promise<ProgramPage | null> => {
   return getAllCampaigns({
     limit: 6,
@@ -253,7 +251,6 @@ const contactPhone =
           data-search={search}
           data-current-page={String(initialPage)}
           data-has-next={String(hasNextInitial)}
-          data-api-url={API_URL}
         >
         </div>
 
@@ -295,7 +292,7 @@ const contactPhone =
   ) as HTMLElement | null;
 
   if (sentinel) {
-    const { mitraId = "", search = "", apiUrl = "" } = sentinel.dataset;
+    const { mitraId = "", search = "" } = sentinel.dataset;
 
     let currentPage = Number(sentinel.dataset.currentPage) || 1;
     let hasNext = sentinel.dataset.hasNext === "true";
@@ -433,7 +430,7 @@ const contactPhone =
         });
         if (search) params.set("search", search);
 
-        const res = await fetch(`${apiUrl}/programs?${params.toString()}`, {
+        const res = await fetch(`/api/programs?${params.toString()}`, {
           headers: { Accept: "application/json" },
         });
         if (!res.ok) throw new Error("fetch failed");
