@@ -111,6 +111,10 @@ html {
   .btn-primary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary-700 text-white rounded-full font-medium hover:bg-primary-800 transition-all duration-300 shadow-sm;
   }
+  
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 px-6 py-3 bg-secondary-500 text-white rounded-full font-medium hover:bg-secondary-700 transition-all duration-300 shadow-sm;
+  }
 
   /* PWA */
   .btn-primary-mobile {

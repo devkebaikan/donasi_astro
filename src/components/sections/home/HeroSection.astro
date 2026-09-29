@@ -57,10 +57,7 @@ const { mainBanner, bannerSlides = [] } = Astro.props;
   </div>
 
   <!-- Wallet / Saldo Card -->
-  <div
-    id="data-wallet"
-    class="relative -mt-5 mx-4 pb-3 z-10"
-  >
+  <div id="data-wallet" class="relative -mt-5 mx-4 pb-3 z-10">
     <div
       class="bg-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-md border border-neutral-100"
     >
@@ -158,8 +155,8 @@ const { mainBanner, bannerSlides = [] } = Astro.props;
 
     if (walletAction) {
       walletAction.innerHTML = loggedIn
-        ? `<a href="/top-up" class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Top Up</a>`
-        : `<a href="/auth/login" class="shrink-0 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Masuk</a>`;
+        ? `<a href="/top-up" class="shrink-0 bg-secondary-500 hover:bg-secondary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Top Up</a>`
+        : `<a href="/auth/login" class="shrink-0 bg-secondary-500 hover:bg-secondary-600 active:scale-95 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-150">Masuk</a>`;
     }
 
     if (!loggedIn || !token) {

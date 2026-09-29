@@ -10,6 +10,7 @@ import StoryImpact from "@/components/sections/landing-page/StoryImpact.astro";
 // import InstallAppCta from "@/components/sections/landing-page/InstallAppCta.astro";
 import Footer from "@/components/sections/landing-page/Footer.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
+import FloatingInstallPrompt from "@/components/ui/FloatingInstallPrompt.astro";
 ---
 
 <MainLayout
@@ -25,6 +26,10 @@ import MainLayout from "@/layouts/MainLayout.astro";
     <FocusArea />
     <KnowledgeHub />
     <StoryImpact />
+    <!-- Floating PWA Install Prompt (5 detik) -->
+    <div class="block md:hidden">
+      <FloatingInstallPrompt />
+    </div>
     <!-- <InstallAppCta /> -->
   </main>
   <Footer />

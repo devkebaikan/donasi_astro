@@ -166,6 +166,9 @@ export function getRemainingDays(targetDateStr?: string | null): number | "∞" 
   // kalau tidak ada nilai
   if (!targetDateStr) return "∞";
 
+  // kalau nilainya minus
+  if (Number(targetDateStr) < 0) return "∞";
+
   const targetDate = new Date(targetDateStr);
 
   // kalau invalid date

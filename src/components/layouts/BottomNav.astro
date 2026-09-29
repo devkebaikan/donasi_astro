@@ -23,8 +23,9 @@ const items = [
     id: "donasiku",
     href: "/donasi-saya",
     label: "Donasiku",
-    imgActive: "/assets/nav/donasiku-active.png",
+    imgActive: "/assets/logo/logo-short-white.png",
     imgInactive: "/assets/nav/donasiku-inactive.png",
+    isCenter: true,
   },
   {
     id: "rutin",
@@ -52,6 +53,50 @@ const items = [
       {
         items.map((item) => {
           const on = item.id === active;
+          const isCenter = "isCenter" in item && item.isCenter;
+
+          if (isCenter) {
+            return (
+              <a
+                href={item.href}
+                class="group relative flex flex-col items-center justify-end pb-2 select-none active:scale-95 transition-transform"
+                aria-current={on ? "page" : undefined}
+              >
+                <!-- Tombol Bulat Menonjol (Floating Action Button) -->
+                <div class="absolute -top-4.5 left-1/2 -translate-x-1/2 flex items-center justify-center">
+                  <div
+                    class={`w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 group-hover:scale-105 ${
+                      on
+                        ? "bg-primary-500 shadow-primary-500/20 ring-1 ring-primary-500/20"
+                        : "bg-primary-500  group-hover:bg-primary-600"
+                    }`}
+                  >
+                    <img
+                      src={item.imgActive}
+                      alt={item.label}
+                      class="w-7 h-7 object-contain brightness-0 invert transition-transform duration-200 group-hover:scale-110"
+                      width="24"
+                      height="24"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                </div>
+
+                <!-- Label Teks -->
+                <span
+                  class={`text-[10px] leading-none transition-colors duration-200 ${
+                    on
+                      ? "text-primary-600 font-semibold"
+                      : "text-neutral-500 font-medium group-hover:text-neutral-700"
+                  }`}
+                >
+                  {item.label}
+                </span>
+              </a>
+            );
+          }
+
           return (
             <a
               href={item.href}
