@@ -25,7 +25,7 @@ const statusTabs = [
 
   <div
     id="riwayat-page"
-    class="container min-h-screen pb-24 pt-16 bg-gray-50"
+    class="container min-h-screen pb-24 pt-16 bg-white"
   >
 
     <!-- ── Status Filter Tabs ────────────────────────────────────────────────── -->
@@ -43,8 +43,8 @@ const statusTabs = [
     </div>
 
     <!-- ── List Riwayat ──────────────────────────────────────────────────────── -->
-    <div class="mt-2 px-4 space-y-3">
-      <div class="bg-white rounded-2xl shadow-sm overflow-hidden">
+    <div class="mt-2 space-y-3">
+      <div class="overflow-hidden">
 
         <!-- Section header -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
@@ -75,23 +75,35 @@ const statusTabs = [
         <!-- State: sudah login -->
         {isAuthenticated && (
           <div>
-            <!-- Skeleton loading -->
-            <div id="riwayat-skeleton" class="divide-y divide-gray-50">
-              {[1, 2, 3, 4].map(() => (
-                <div class="px-4 py-4 flex items-center gap-3">
-                  <div class="w-[120px] h-[70px] bg-gray-200 rounded-xl animate-pulse shrink-0"></div>
-                  <div class="flex-1 space-y-2">
-                    <div class="h-3.5 bg-gray-200 rounded w-3/4 animate-pulse"></div>
-                    <div class="h-3 bg-gray-200 rounded w-1/2 animate-pulse"></div>
-                    <div class="h-3 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+            <!-- Skeleton loading awal -->
+            <div id="riwayat-skeleton" class="p-3 space-y-3">
+              {Array.from({ length: 4 }).map(() => (
+                <div class="flex flex-row items-stretch bg-white rounded border border-gray-100 overflow-hidden w-full animate-pulse">
+                  {/* Image Skeleton */}
+                  <div class="relative flex-shrink-0 w-[120px] h-[70px] m-3 rounded-md overflow-hidden bg-gray-200" />
+
+                  {/* Content */}
+                  <div class="flex flex-col justify-between flex-1 min-w-0 py-3 pr-3 pl-1">
+                    {/* Title */}
+                    <div class="space-y-1 mb-1">
+                      <div class="h-3 bg-gray-200 rounded w-3/4" />
+                    </div>
+
+                    {/* Date */}
+                    <div class="h-2.5 bg-gray-200 rounded w-1/3 mb-2" />
+
+                    {/* Nominal & Status */}
+                    <div class="flex justify-between items-end">
+                      <div class="h-3.5 bg-gray-200 rounded w-20" />
+                      <div class="h-4 bg-gray-200 rounded-full w-16" />
+                    </div>
                   </div>
-                  <div class="h-5 bg-gray-200 rounded-full w-20 animate-pulse shrink-0"></div>
                 </div>
               ))}
             </div>
 
             <!-- List container -->
-            <div id="riwayat-list" class="hidden divide-y divide-gray-50"></div>
+            <div id="riwayat-list" class="hidden py-3 space-y-3"></div>
 
             <!-- Empty state -->
             <div id="riwayat-empty" class="hidden flex-col items-center py-10 text-center px-4">
@@ -121,19 +133,30 @@ const statusTabs = [
                 Coba Lagi
               </button>
             </div>
+
+            <!-- Infinite scroll sentinel -->
+            <div id="scroll-sentinel"></div>
+
+            <!-- Loading more skeleton -->
+            <div id="loading-skeleton" class="hidden px-3 pb-3 space-y-3">
+              {Array.from({ length: 2 }).map(() => (
+                <div class="flex flex-row items-stretch bg-white rounded border border-gray-100 overflow-hidden w-full animate-pulse">
+                  <div class="relative flex-shrink-0 w-[120px] h-[70px] m-3 rounded-md overflow-hidden bg-gray-200" />
+                  <div class="flex flex-col justify-between flex-1 min-w-0 py-3 pr-3 pl-1">
+                    <div class="space-y-1 mb-1">
+                      <div class="h-3 bg-gray-200 rounded w-3/4" />
+                    </div>
+                    <div class="h-2.5 bg-gray-200 rounded w-1/3 mb-2" />
+                    <div class="flex justify-between items-end">
+                      <div class="h-3.5 bg-gray-200 rounded w-20" />
+                      <div class="h-4 bg-gray-200 rounded-full w-16" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
-      </div>
-
-      <!-- Load more -->
-      <div id="riwayat-loadmore" class="hidden pb-2">
-        <button
-          id="btn-loadmore"
-          data-page="2"
-          class="w-full text-primary-500 text-sm font-semibold py-2.5 mt-3 cursor-pointer hover:text-primary-600 transition-colors"
-        >
-          Lihat lebih banyak
-        </button>
       </div>
     </div>
 
@@ -171,18 +194,24 @@ const statusTabs = [
 
   // ── DOM refs ───────────────────────────────────────────────────────────────
 
-  const skeleton  = document.getElementById("riwayat-skeleton") as HTMLElement;
-  const list      = document.getElementById("riwayat-list")     as HTMLElement;
-  const empty     = document.getElementById("riwayat-empty")    as HTMLElement;
-  const errorEl   = document.getElementById("riwayat-error")    as HTMLElement;
-  const loadmore  = document.getElementById("riwayat-loadmore") as HTMLElement;
-  const btnMore   = document.getElementById("btn-loadmore")      as HTMLButtonElement;
-  const btnRetry  = document.getElementById("btn-retry")         as HTMLButtonElement;
-  const listTitle = document.getElementById("list-title")       as HTMLElement;
+  const skeleton        = document.getElementById("riwayat-skeleton") as HTMLElement;
+  const loadmoreSkeleton= document.getElementById("loading-skeleton") as HTMLElement | null;
+  const scrollSentinel  = document.getElementById("scroll-sentinel")  as HTMLElement | null;
+  const list            = document.getElementById("riwayat-list")     as HTMLElement;
+  const empty           = document.getElementById("riwayat-empty")    as HTMLElement;
+  const errorEl         = document.getElementById("riwayat-error")    as HTMLElement;
+  const btnRetry        = document.getElementById("btn-retry")         as HTMLButtonElement;
+  const listTitle       = document.getElementById("list-title")       as HTMLElement;
 
   if (!skeleton) {
     // user belum login — tidak perlu JS lebih lanjut
   } else {
+
+    // ── State ────────────────────────────────────────────────────────────────
+    let currentPage = 2;
+    let hasMore = false;
+    let isLoadingMore = false;
+    let observer: IntersectionObserver | null = null;
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -250,6 +279,14 @@ const statusTabs = [
     // ── Render item ───────────────────────────────────────────────────────────
 
     function renderItem(item: any): string {
+      const isRutin = (item.source || "").toString().toUpperCase().trim() === "RUTIN";
+      const rutinBadge = isRutin
+        ? `<span class="inline-flex items-center gap-1 bg-orange-50 text-orange-600 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border border-orange-200/80 shrink-0 shadow-2xs" title="Donasi Rutin">
+             <img src="/assets/nav/rutin-active.png" alt="Rutin" class="w-3 h-3 object-contain shrink-0" />
+             <span>Rutin</span>
+           </span>`
+        : "";
+
       const image = item.image_url
         ? `<img
              src="${item.image_url}"
@@ -292,15 +329,20 @@ const statusTabs = [
           <!-- Content -->
           <div class="flex flex-col justify-between flex-1 min-w-0 py-3 pr-3 pl-1">
 
-            <!-- Title -->
-            <p class="text-[13px] font-semibold text-gray-800 leading-snug truncate mb-1 group-hover:text-primary-600 transition-colors duration-150">
-              ${item.judul ?? "-"}
-            </p>
+            <!-- Title & Rutin Badge -->
+            <div>
+              <div class="flex items-start justify-between gap-1.5 mb-1">
+                <p class="text-[13px] font-semibold text-gray-800 leading-snug truncate group-hover:text-primary-600 transition-colors duration-150">
+                  ${item.judul ?? "-"}
+                </p>
+                ${rutinBadge}
+              </div>
 
-            <!-- Date -->
-            <p class="text-[11px] text-gray-400 mb-2">
-              ${dateStr}${timeStr ? " · " + timeStr : ""}
-            </p>
+              <!-- Date -->
+              <p class="text-[11px] text-gray-400 mb-2">
+                ${dateStr}${timeStr ? " · " + timeStr : ""}
+              </p>
+            </div>
 
             <!-- Bottom Section -->
             <div class="flex justify-between items-end">
@@ -318,26 +360,120 @@ const statusTabs = [
       `;
     }
 
-    // ── Fetch list (/dashboard/donatur/my-donation) ───────────────────────────
+    // ── Infinite scroll observer ─────────────────────────────────────────────
 
-    async function fetchList(pg = 1, append = false) {
+    function setupObserver() {
+      if (observer) observer.disconnect();
+      if (!hasMore || !scrollSentinel) return;
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          if (entries[0].isIntersecting && hasMore && !isLoadingMore) {
+            loadNextPage();
+          }
+        },
+        { rootMargin: "0px 0px 200px 0px" },
+      );
+      observer.observe(scrollSentinel);
+    }
+
+    async function loadNextPage() {
+      isLoadingMore = true;
+      loadmoreSkeleton?.classList.remove("hidden");
+
       try {
-        hideStates();
-        if (!append) {
-          skeleton.classList.remove("hidden");
-          list.classList.add("hidden");
-          list.innerHTML = "";
-          loadmore.classList.add("hidden");
-        }
-
         const headers: Record<string, string> = { Accept: "application/json" };
         if (token) headers["Authorization"] = `Bearer ${token}`;
 
         const params = new URLSearchParams({
-          page: String(pg),
+          page: String(currentPage),
           limit: String(PAGE_SIZE),
           mode: "pagination",
-          except : 'Canceled'
+          except: "Canceled",
+        });
+
+        if (activeFilter) {
+          const POSISI_ENUM = [
+            "menunggu-pembayaran",
+            "menunggu-salur",
+            "proses",
+            "selesai",
+            "dibatalkan",
+            "proses-refund",
+          ];
+          if (POSISI_ENUM.includes(activeFilter)) {
+            params.set("posisi", activeFilter);
+          } else if (["Paid", "Canceled", "Pending"].includes(activeFilter)) {
+            params.set("status", activeFilter);
+          } else {
+            params.set("posisi", activeFilter);
+          }
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const invoiceParam = urlParams.get("invoice");
+        if (invoiceParam) {
+          params.set("invoice", invoiceParam);
+        }
+
+        const res  = await fetch(`/api/dashboard/donatur/my-donation?${params.toString()}`, { headers });
+        const json = await res.json();
+
+        if (!res.ok) throw new Error(json?.message ?? "Gagal memuat data");
+
+        let items: any[] = [];
+        if (Array.isArray(json?.data)) {
+          items = json.data;
+        } else if (Array.isArray(json?.data?.data)) {
+          items = json.data.data;
+        } else if (Array.isArray(json)) {
+          items = json;
+        }
+
+        const meta = json?.pagination ?? json?.data?.pagination ?? json?.meta ?? json?.data?.meta ?? null;
+        if (meta && meta.current_page != null && meta.last_page != null) {
+          hasMore = Number(meta.current_page) < Number(meta.last_page);
+        } else {
+          hasMore = items.length >= PAGE_SIZE;
+        }
+
+        items.forEach((item) => {
+          list.insertAdjacentHTML("beforeend", renderItem(item));
+        });
+
+        currentPage++;
+        if (!hasMore) observer?.disconnect();
+      } catch {
+        // silent fail — observer tetap aktif agar bisa retry saat scroll
+      } finally {
+        isLoadingMore = false;
+        loadmoreSkeleton?.classList.add("hidden");
+      }
+    }
+
+    // ── Fetch list (/dashboard/donatur/my-donation) ───────────────────────────
+
+    async function fetchList(resetList = true) {
+      if (resetList) {
+        observer?.disconnect();
+        currentPage = 2;
+        hasMore = false;
+        isLoadingMore = false;
+        hideStates();
+        skeleton.classList.remove("hidden");
+        list.classList.add("hidden");
+        list.innerHTML = "";
+      }
+
+      try {
+        const headers: Record<string, string> = { Accept: "application/json" };
+        if (token) headers["Authorization"] = `Bearer ${token}`;
+
+        const params = new URLSearchParams({
+          page: "1",
+          limit: String(PAGE_SIZE),
+          mode: "pagination",
+          except: "Canceled",
         });
 
         if (activeFilter) {
@@ -380,7 +516,6 @@ const statusTabs = [
         }
 
         const meta = json?.pagination ?? json?.data?.pagination ?? json?.meta ?? json?.data?.meta ?? null;
-        let hasMore = false;
         if (meta && meta.current_page != null && meta.last_page != null) {
           hasMore = Number(meta.current_page) < Number(meta.last_page);
         } else {
@@ -389,26 +524,20 @@ const statusTabs = [
 
         skeleton.classList.add("hidden");
 
-        if (items.length === 0 && !append) {
+        if (items.length === 0) {
           showEmpty();
           return;
         }
 
         list.classList.remove("hidden");
-        list.insertAdjacentHTML(
-          "beforeend",
-          items.map((item) => renderItem(item)).join(""),
-        );
+        items.forEach((item) => {
+          list.insertAdjacentHTML("beforeend", renderItem(item));
+        });
 
-        if (hasMore) {
-          loadmore.classList.remove("hidden");
-          btnMore.dataset.page = String(pg + 1);
-        } else {
-          loadmore.classList.add("hidden");
-        }
+        setupObserver();
       } catch (err: any) {
         skeleton.classList.add("hidden");
-        if (!append) showError();
+        showError();
         showToast(err.message ?? "Gagal memuat riwayat donasi", "error");
       }
     }
@@ -445,22 +574,13 @@ const statusTabs = [
         }
         window.history.replaceState({}, "", currentUrl.toString());
 
-        fetchList(1);
+        fetchList(true);
       });
     });
 
-    // ── Retry / Load more ─────────────────────────────────────────────────────
+    // ── Retry ─────────────────────────────────────────────────────────────────
 
-    btnRetry?.addEventListener("click", () => fetchList(1));
-
-    btnMore?.addEventListener("click", async () => {
-      const nextPage = Number(btnMore.dataset.page ?? 2);
-      btnMore.textContent = "Memuat...";
-      btnMore.disabled    = true;
-      await fetchList(nextPage, true);
-      btnMore.textContent = "Lihat lebih banyak";
-      btnMore.disabled    = false;
-    });
+    btnRetry?.addEventListener("click", () => fetchList(true));
 
     // ── Init: baca filter dari URL param ──────────────────────────────────────
     const urlParams = new URLSearchParams(window.location.search);
@@ -488,6 +608,6 @@ const statusTabs = [
 
     updateStatusTabs();
     updateListTitle();
-    fetchList(1);
+    fetchList(true);
   }
 </script>

@@ -218,32 +218,25 @@ const contactPhone =
             </ul>
           )
         }
-        <!--
-          Skeleton
-          for
-          next
-          page
-          loading
-          --
-        >
-          <div id="loading-skeleton" class="hidden flex-col gap-3 mt-3">
-            {
-              Array.from({ length: 2 }).map(() => (
-                <div class="flex gap-3 bg-white rounded-2xl border border-gray-100 p-3 animate-pulse">
-                  <div class="w-[160px] md:w-[180px] h-24 bg-gray-200 rounded-xl shrink-0" />
-                  <div class="flex-1 space-y-2 py-1">
-                    <div class="h-2 bg-gray-200 rounded w-1/4" />
-                    <div class="h-3 bg-gray-200 rounded w-3/4" />
-                    <div class="h-2 bg-gray-200 rounded w-1/2" />
-                    <div class="h-1.5 bg-gray-200 rounded mt-2" />
-                    <div class="h-2 bg-gray-200 rounded w-2/3" />
-                  </div>
+        <!-- Skeleton for next page loading -->
+        <div id="loading-skeleton" class="hidden flex-col gap-3 mt-3">
+          {
+            Array.from({ length: 2 }).map(() => (
+              <div class="flex gap-3 bg-white rounded-2xl border border-gray-100 p-3 animate-pulse">
+                <div class="w-[160px] md:w-[180px] h-24 bg-gray-200 rounded-xl shrink-0" />
+                <div class="flex-1 space-y-2 py-1">
+                  <div class="h-2 bg-gray-200 rounded w-1/4" />
+                  <div class="h-3 bg-gray-200 rounded w-3/4" />
+                  <div class="h-2 bg-gray-200 rounded w-1/2" />
+                  <div class="h-1.5 bg-gray-200 rounded mt-2" />
+                  <div class="h-2 bg-gray-200 rounded w-2/3" />
                 </div>
-              ))
-            }
-          </div>
+              </div>
+            ))
+          }
+        </div>
 
-          <!-- Sentinel + config bridge -->
+        <!-- Sentinel + config bridge -->
         <div
           id="sentinel"
           class="h-4 mt-2"
