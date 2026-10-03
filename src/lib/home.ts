@@ -81,6 +81,7 @@ export interface HomeData {
   third_banner: BannerItem;
   program_category: ProgramCategory[];
   program_list: Program[];
+  program_rutin: Program[];
   project_list: ProjectItem[];
   last_update: LastUpdate[];
 }
