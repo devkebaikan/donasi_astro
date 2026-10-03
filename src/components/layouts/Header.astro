@@ -1,7 +1,7 @@
 ---
 // Header.astro
 interface Props {
-  type?: 'default' | 'title' | 'search' | 'onlytext' | 'notshare' | 'onlyicon';
+  type?: 'default' | 'title' | 'search' | 'form' | 'notshare' | 'onlyicon';
   text?: string;
   link?: string;
 }
@@ -16,6 +16,12 @@ const navItems = [
     href: '/tentang',
     label: 'Tentang Kami',
     desc: 'Profil & visi misi Beramalbersama',
+    icon: 'info',
+  },
+  {
+    href: 'https://blog.beramalbersama.com/',
+    label: 'Blog',
+    desc: 'Artikel & inspirasi kebaikan',
     icon: 'info',
   },
   {
@@ -283,6 +289,35 @@ const navItems = [
       </button>
       
       <h2 id="text-header" class="text-[16px] hidden leading-[19px] my-0 font-semibold flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-start px-4">
+        {text}
+      </h2>
+      
+      <button
+        id="share-button"
+        class="w-10 h-10 flex items-center justify-center rounded-full bg-white/80 hover:bg-white/10 transition-colors hidden"
+      >
+        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z"></path>
+        </svg>
+      </button>
+    </div>
+  </header>
+)}
+
+{type === 'form' && (
+ <header class="fixed top-0 left-0 right-0 z-50 bg-primary-500 text-white">
+    <div class="container mx-auto px-4 h-[65px] flex items-center justify-between">
+      <button
+        id="back-button"
+        data-link={link}
+        class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+      >
+        <svg class="w-6 h-6 font-bold" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      
+      <h2 class="text-[16px] leading-[19px] my-0 font-semibold flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-start px-4">
         {text}
       </h2>
       

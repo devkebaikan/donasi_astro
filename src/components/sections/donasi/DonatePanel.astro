@@ -36,7 +36,9 @@ const displayNominals =
     <div class="bg-white rounded-t-xl shadow-lg p-4 space-y-4">
       <div class="flex justify-between items-center">
         <h3 class="font-semibold text-base">Masukkan Nominal</h3>
-        <button id="close-panel" class="text-gray-500 cursor-pointer p-1">✕</button>
+        <button id="close-panel" class="text-gray-500 cursor-pointer p-1"
+          >✕</button
+        >
       </div>
 
       <div class="grid grid-cols-2 gap-2">
@@ -137,14 +139,22 @@ const displayNominals =
       if (customEvent.detail.projectId !== undefined && submitBtn) {
         submitBtn.setAttribute(
           "data-project-id",
-          customEvent.detail.projectId ? String(customEvent.detail.projectId) : "",
+          customEvent.detail.projectId
+            ? String(customEvent.detail.projectId)
+            : "",
         );
       }
       if (customEvent.detail.programId && submitBtn) {
-        submitBtn.setAttribute("data-program-id", String(customEvent.detail.programId));
+        submitBtn.setAttribute(
+          "data-program-id",
+          String(customEvent.detail.programId),
+        );
       }
       if (customEvent.detail.programLink && submitBtn) {
-        submitBtn.setAttribute("data-program-link", String(customEvent.detail.programLink));
+        submitBtn.setAttribute(
+          "data-program-link",
+          String(customEvent.detail.programLink),
+        );
       }
     }
     openPanel();
@@ -204,6 +214,8 @@ const displayNominals =
     );
 
     const projectQuery = projectId ? `&project=${projectId}` : "";
-    window.location.assign(`/donasi/form/${programLink}/?id=${programId}${projectQuery}`);
+    window.location.assign(
+      `/donasi/form/${programLink}/?id=${programId}${projectQuery}`,
+    );
   });
 </script>

@@ -4,7 +4,11 @@ export const prerender = false;
 import Header from "@/components/layouts/Header.astro";
 import MainLayout from "@/layouts/MainLayout.astro";
 import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
-import { getPaymentMethod, getUserProfile } from "@/lib/FetchData.ts";
+import {
+  getCampaignByLink,
+  getPaymentMethod,
+  getUserProfile,
+} from "@/lib/FetchData.ts";
 import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
 
@@ -19,13 +23,30 @@ const projectIdParam = Astro.url.searchParams.get("project");
 const token = getServerToken(Astro.cookies);
 const utm = Astro.cookies.get("utm_params")?.value ?? null;
 
-const [accountRes, dataPaymentMethods] = await Promise.all([
+const [accountRes, dataPaymentMethods, campaignRes] = await Promise.all([
   token ? getUserProfile(token) : Promise.resolve(null),
   getPaymentMethod(slug),
+  getCampaignByLink(slug).catch(() => null),
 ]);
 
-// ✅ TAMBAHKAN INI UNTUK MELIHAT HASIL API DI TERMINAL
-// console.log("➡️ Hasil API getPaymentMethod:", dataPaymentMethods);
+const campaignData = campaignRes?.data ?? null;
+
+const isZakatServer =
+  campaignData?.type === "zakat" ||
+  campaignData?.program_type === "zakat" ||
+  campaignData?.tipe?.name?.toLowerCase().includes("zakat") ||
+  campaignData?.category?.name?.toLowerCase().includes("zakat") ||
+  slug?.toLowerCase().includes("zakat");
+
+const headerText = isZakatServer
+  ? "Konfirmasi Zakat"
+  : campaignData?.title || "Konfirmasi Donasi";
+
+const pageTitle = isZakatServer
+  ? "Konfirmasi Zakat"
+  : campaignData?.title
+    ? `Konfirmasi Donasi - ${campaignData.title}`
+    : "Konfirmasi Donasi";
 
 const account = accountRes ?? null;
 const isAuth = !!account;
@@ -45,10 +66,10 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 ---
 
 <MainLayout
-  title="Konfirmasi Donasi"
+  title={pageTitle}
   description="Formulir pembayaran donasi untuk program pilihan Anda."
 >
-  <Header type="notshare" text="Konfirmasi Donasi" link={`/${slug}`} />
+  <Header type="form" text={headerText} link={`/${slug}`} />
 
   <div
     id="donation-page"
@@ -437,6 +458,9 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   const nominalInput = document.getElementById(
     "nominal-input",
   ) as HTMLInputElement;
+  const headerFormTitle = document.getElementById(
+    "header-form-title",
+  ) as HTMLElement | null;
   const inputName = document.getElementById(
     "input-name",
   ) as HTMLInputElement | null;
@@ -512,6 +536,9 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 
   // ── Apply zakat UI ────────────────────────────────────────────────────────
   if (isZakat) {
+    if (headerFormTitle) headerFormTitle.textContent = "Konfirmasi Zakat";
+    document.title = "Konfirmasi Zakat";
+
     zakatBanner?.classList.remove("hidden");
 
     const zakatTypeMap: Record<number, string> = {
