@@ -206,6 +206,14 @@ type Props = SeoProps;
       document.addEventListener("astro:page-load", initIncomingReffTracker);
     </script>
 
+    <!-- Traffic Source Attribution -->
+    <script>
+      import { initAttribution } from "@/lib/attribution";
+
+      initAttribution();
+      document.addEventListener("astro:page-load", initAttribution);
+    </script>
+
     <!-- Accessibility -->
     <a
       href="#main-content"

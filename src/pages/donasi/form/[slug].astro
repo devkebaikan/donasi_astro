@@ -21,7 +21,6 @@ if (!programId) return Astro.redirect(`/${slug}`);
 const projectIdParam = Astro.url.searchParams.get("project");
 
 const token = getServerToken(Astro.cookies);
-const utm = Astro.cookies.get("utm_params")?.value ?? null;
 
 const [accountRes, dataPaymentMethods, campaignRes] = await Promise.all([
   token ? getUserProfile(token) : Promise.resolve(null),
@@ -76,7 +75,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     data-program-id={programId}
     data-program-link={slug}
     data-project-id={projectIdParam ?? ""}
-    data-utm={utm}
     data-is-auth={isAuth}
     data-user-name={userName}
     data-user-phone={userPhone}
@@ -424,6 +422,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 <script>
   import { showToast } from "@/lib/toast";
   import { getIncomingReffCode } from "@/lib/referral";
+  import { getAttribution } from "@/lib/attribution";
   import type { TransactionPayload } from "@/lib/types";
   import { trackAddToCart } from "@/lib/tracking";
 
@@ -436,7 +435,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   const userName = page?.dataset.userName ?? "";
   const userPhone = page?.dataset.userPhone ?? "";
   const walletBal = Number(page?.dataset.wallet ?? 0);
-  const utmParams = page?.dataset.utm ?? null;
 
   // ── State ─────────────────────────────────────────────────────────────────
   let amount = 0;
@@ -716,6 +714,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     }
 
     const reffCode = getIncomingReffCode();
+    const { source, parameter_detail } = getAttribution();
 
     const payload: TransactionPayload =
       isZakat && zakatData
@@ -730,7 +729,8 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             phone,
             status: "Pending",
             ...(doa ? { doa } : {}),
-            ...(utmParams ? { parameter_detail: utmParams } : {}),
+            ...(source ? { source } : {}),
+            ...(parameter_detail ? { parameter_detail } : {}),
             ...(reffCode ? { reff_code: reffCode } : {}),
           }
         : {
@@ -745,11 +745,10 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             status: "Pending",
             ...(doa ? { doa } : {}),
             ...(atasNama ? { other_detail: atasNama } : {}),
-            ...(utmParams ? { parameter_detail: utmParams } : {}),
+            ...(source ? { source } : {}),
+            ...(parameter_detail ? { parameter_detail } : {}),
             ...(reffCode ? { reff_code: reffCode } : {}),
           };
-    const payloadToSend = cleanPayload(payload);
-    console.log("Data yang akan dikirim:", payloadToSend); // Cek di console browser apakah ada isinya?
 
     try {
       const res = await fetch(`/api/transactions`, {
