@@ -11,6 +11,9 @@ import {
 } from "@/lib/FetchData.ts";
 import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
+import settings from "@/config/settings.json";
+
+const minDonationAmount = settings.donation.minAmount;
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/");
@@ -75,6 +78,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     data-program-id={programId}
     data-program-link={slug}
     data-project-id={projectIdParam ?? ""}
+    data-min-amount={minDonationAmount}
     data-is-auth={isAuth}
     data-user-name={userName}
     data-user-phone={userPhone}
@@ -161,7 +165,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-          Minimal donasi Rp10.000
+          Minimal donasi {formatRupiah(minDonationAmount)}
         </p>
 
         <!-- Metode Pembayaran -->
@@ -421,6 +425,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 
 <script>
   import { showToast } from "@/lib/toast";
+  import { formatRupiah } from "@/lib/formatter";
   import { getIncomingReffCode } from "@/lib/referral";
   import { getAttribution } from "@/lib/attribution";
   import type { TransactionPayload } from "@/lib/types";
@@ -431,6 +436,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 
   const page = document.getElementById("donation-page") as HTMLElement;
   const programId = page?.dataset.programId ?? "";
+  const minAmount = Number(page?.dataset.minAmount) || 10000;
   const isAuth = page?.dataset.isAuth === "true";
   const userName = page?.dataset.userName ?? "";
   const userPhone = page?.dataset.userPhone ?? "";
@@ -684,8 +690,8 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
       showToast("Nama dan nomor WhatsApp wajib diisi", "error");
       return;
     }
-    if (amount < 10000) {
-      showToast("Minimal donasi Rp10.000", "error");
+    if (amount < minAmount) {
+      showToast(`Minimal donasi ${formatRupiah(minAmount)}`, "error");
       return;
     }
     if (!paymentSelected) {

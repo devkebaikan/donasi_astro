@@ -1,14 +1,22 @@
 ---
 import { formatRupiah } from "@/lib/formatter";
+import settings from "@/config/settings.json";
 
 interface Props {
   nominalOptions?: any[];
   programId: string | number | undefined;
   programLink: string | undefined;
   projectId?: number | null;
+  minAmount?: number;
 }
 
-const { nominalOptions, programId, programLink, projectId } = Astro.props;
+const {
+  nominalOptions,
+  programId,
+  programLink,
+  projectId,
+  minAmount = settings.donation.minAmount,
+} = Astro.props;
 
 const defaultNominals = [
   { nominal: 10000 },
@@ -84,6 +92,7 @@ const displayNominals =
         data-program-id={programId}
         data-program-link={programLink}
         data-project-id={projectId ?? ""}
+        data-min-amount={minAmount}
         class="w-full bg-secondary-500 hover:bg-secondary-600 text-white py-3 rounded-md font-semibold cursor-pointer transition-colors"
       >
         Lanjut Donasi
@@ -194,9 +203,10 @@ const displayNominals =
   submitBtn?.addEventListener("click", () => {
     if (!input) return;
     const raw = parseNumber(input.value);
+    const minAmount = Number(submitBtn.getAttribute("data-min-amount")) || 10000;
 
-    if (!raw || raw < 10000) {
-      showToast("Minimal donasi Rp 10.000", "error");
+    if (!raw || raw < minAmount) {
+      showToast(`Minimal donasi ${formatRupiah(minAmount)}`, "error");
       return;
     }
 

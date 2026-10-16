@@ -1,5 +1,6 @@
 ---
 import { formatCompactNumber, formatRupiah } from "@/lib/formatter";
+import settings from "@/config/settings.json";
 
 interface Props {
   nominalOptions: any[];
@@ -26,7 +27,7 @@ const {
   paketCollected = 0,
   totalCollected = 0,
   totalDonors = 0,
-  minAmount = 10000,
+  minAmount = settings.donation.minAmount,
 } = Astro.props;
 ---
 
