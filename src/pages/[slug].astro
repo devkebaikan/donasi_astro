@@ -58,6 +58,8 @@ if (!slug || RESERVED_SLUGS.has(slug.toLowerCase())) {
 }
 
 const projectId = Astro.url.searchParams.get("project");
+const isAds = Astro.url.searchParams.get("source") === "ads";
+const minAmount = isAds ? 100000 : 10000;
 
 const utm = Astro.url.searchParams.toString();
 if (Astro.url.searchParams.has("utm_source")) {
@@ -188,6 +190,7 @@ const campaignJsonLd = JSON.stringify({
       programId={detailCampaign?.id}
       programLink={detailCampaign?.link}
       projectId={projectId ? Number(projectId) : null}
+      minAmount={minAmount}
     />
   </div>
 </MainLayout>

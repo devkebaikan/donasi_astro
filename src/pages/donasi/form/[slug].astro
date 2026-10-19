@@ -13,13 +13,14 @@ import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
 import settings from "@/config/settings.json";
 
-const minDonationAmount = settings.donation.minAmount;
+const isAds = Astro.url.searchParams.get("source") === "ads";
+const minDonationAmount = isAds ? 100000 : 10000;
 
 const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/");
 
 const programId = Astro.url.searchParams.get("id");
-if (!programId) return Astro.redirect(`/${slug}`);
+if (!programId) return Astro.redirect(isAds ? `/${slug}?source=ads` : `/${slug}`);
 
 const projectIdParam = Astro.url.searchParams.get("project");
 
@@ -71,7 +72,11 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   title={pageTitle}
   description="Formulir pembayaran donasi untuk program pilihan Anda."
 >
-  <Header type="form" text={headerText} link={`/${slug}`} />
+  <Header
+    type="form"
+    text={headerText}
+    link={isAds ? `/${slug}?source=ads` : `/${slug}`}
+  />
 
   <div
     id="donation-page"

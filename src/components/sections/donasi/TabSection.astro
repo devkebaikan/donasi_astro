@@ -16,12 +16,7 @@ const tabs = [
 ];
 ---
 
-<div
-  id="lazy-tab-config"
-  data-slug={slug}
-  hidden
->
-</div>
+<div id="lazy-tab-config" data-slug={slug} hidden></div>
 
 <!-- Tab Navigation -->
 <div
@@ -303,6 +298,7 @@ const tabs = [
       const json = await res.json();
       const total: number = json?.data.meta.total ?? 0;
       const donorList: any[] = json?.data.data ?? [];
+      // console.log(donorList);
       const itemsHtml =
         donorList.length > 0
           ? donorList

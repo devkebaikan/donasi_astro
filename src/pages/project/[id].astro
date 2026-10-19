@@ -188,6 +188,7 @@ const isDonatable =
 >
   <Header type="title" text="Detail Proyek" link={backLink} />
 
+  <!-- <ShowJsonData data={detailCampaign} /> -->
   <div class="bg-gray-50 min-h-screen container pb-32">
     <div class="max-w-120 mx-auto">
       <!-- HERO IMAGE -->
@@ -309,9 +310,7 @@ const isDonatable =
                   Program Induk
                 </p>
                 <p class="text-xs font-semibold text-gray-800 truncate group-hover:text-primary-700">
-                  {primaryProgram?.description ||
-                    detailCampaign?.title ||
-                    programSlug}
+                  {detailCampaign?.title}
                 </p>
               </div>
               <svg
@@ -543,15 +542,17 @@ const isDonatable =
     </div>
 
     <!-- STICKY BOTTOM ACTION BAR -->
-    <div class="fixed bottom-0 left-0 right-0 z-40">
+    <div
+      class="donate-sticky fixed bottom-0 left-0 right-0 z-40 animate-fade-up"
+    >
       <div class="mx-auto max-w-120">
         <div
-          class="bg-white/95 backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.06)] rounded-t-2xl p-3.5 flex gap-3 border-t border-gray-100"
+          class="bg-white/85 backdrop-blur-md shadow-lg rounded-t-2xl p-3.5 flex gap-3 border-t border-gray-100"
         >
           <button
             type="button"
             id="btn-share-project"
-            class="flex items-center justify-center gap-1.5 w-1/3 py-3 px-3 rounded-xl border border-primary-500 text-primary-600 font-semibold hover:bg-primary-50 active:scale-[0.98] transition-all text-xs sm:text-sm cursor-pointer"
+            class="flex items-center justify-center gap-1.5 w-1/3 py-3 px-3 rounded-xl border border-primary-500 text-primary-600 font-semibold bg-white hover:bg-primary-50 active:scale-[0.98] transition-all text-xs sm:text-sm cursor-pointer"
             aria-label="Bagikan Proyek"
           >
             <svg

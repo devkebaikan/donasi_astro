@@ -11,6 +11,8 @@ interface Props {
   defaultMinute?: string;
   defaultRangeType?: string;
   lockedDay?: string | false;
+  defaultCommitment?: number;
+  showAtasNama?: boolean;
 }
 
 const {
@@ -22,6 +24,8 @@ const {
   defaultMinute = "00",
   defaultRangeType = "daily",
   lockedDay = false,
+  defaultCommitment = 3,
+  showAtasNama = false,
 } = Astro.props;
 
 const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, "0"));
@@ -41,8 +45,9 @@ const weeklyDays = [
 ];
 const nominalOptions = [5000, 10000, 25000, 50000, 100000, 250000];
 const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
-const commitmentOptions = [3, 5, 10];
-const defaultCommitment = 3;
+const commitmentOptions = Array.from(
+  new Set([3, 5, 10, defaultCommitment]),
+).sort((a, b) => a - b);
 ---
 
 <!-- Nominal -->
@@ -237,46 +242,65 @@ const defaultCommitment = 3;
   <p class="text-sm font-semibold text-gray-500">Jadwal donasi</p>
 
   <!-- Lama donasi — commitment only -->
-  <div id="commitment-row" class="space-y-1.5">
+  <div
+    id="commitment-row"
+    class="space-y-1.5"
+    data-default-commitment={defaultCommitment}
+  >
     <label class="block text-xs font-semibold text-gray-500">
       Lama donasi
     </label>
-    <div class="space-y-2">
-      <div class="grid grid-cols-4 gap-2">
-        {
-          commitmentOptions.map((val) => (
-            <button
-              type="button"
-              class={`commitment-chip text-xs py-2 px-1 rounded-lg border font-semibold transition-all duration-150 ${
-                val === defaultCommitment
-                  ? "border-primary-500 bg-primary-500 text-white"
-                  : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
-              }`}
-              data-value={val}
-            >
-              {val}x
-            </button>
-          ))
-        }
-        <button
-          type="button"
-          id="commitment-custom-trigger"
-          class="text-xs py-2 px-1 rounded-lg border border-gray-200 bg-white text-gray-600 font-semibold hover:border-primary-300 transition-all duration-150"
-        >
-          Lainnya
-        </button>
-      </div>
 
-      <div id="commitment-custom-row" class="hidden">
-        <input
-          id="commitment-custom-input"
-          type="number"
-          min="1"
-          max="365"
-          placeholder="Tulis sendiri (mis. 12 kali)"
-          class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-        />
-      </div>
+    <div class="space-y-2">
+      {
+        isLocked ? (
+          <input
+            id="commitment-locked-input"
+            value={defaultCommitment}
+            type="number"
+            disabled
+            placeholder="Tulis sendiri (mis. 12 kali)"
+            class="w-full border border-gray-200 rounded-lg py-2.5 px-3 disabled:bg-gray-50 disabled:text-gray-400 text-sm text-gray-700 bg-white"
+          />
+        ) : (
+          <>
+            <div class="grid grid-cols-4 gap-2">
+              {commitmentOptions.map((val) => (
+                <button
+                  type="button"
+                  class={`commitment-chip text-xs py-2 px-1 rounded-lg border font-semibold transition-all duration-150 ${
+                    val === defaultCommitment
+                      ? "border-primary-500 bg-primary-500 text-white"
+                      : "border-gray-200 bg-white text-gray-600 hover:border-primary-300"
+                  }`}
+                  data-value={val}
+                >
+                  {val}x
+                </button>
+              ))}
+
+              <button
+                type="button"
+                id="commitment-custom-trigger"
+                class="text-xs py-2 px-1 rounded-lg border border-gray-200 bg-white text-gray-600 font-semibold hover:border-primary-300 transition-all duration-150"
+              >
+                Lainnya
+              </button>
+            </div>
+
+            <div id="commitment-custom-row" class="hidden">
+              <input
+                id="commitment-custom-input"
+                type="number"
+                min="1"
+                max="365"
+                placeholder="Tulis sendiri (mis. 12 kali)"
+                class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+              />
+            </div>
+          </>
+        )
+      }
 
       <select
         id="commitment-select"
@@ -414,7 +438,7 @@ const defaultCommitment = 3;
   </div>
 
   <!-- Atas nama orang lain -->
-  <div class="space-y-1.5 hidden">
+  <div class={`space-y-1.5 ${showAtasNama ? "" : "hidden"}`}>
     <label
       for="atas-nama-input"
       class="block text-xs font-semibold text-gray-500"
@@ -890,7 +914,8 @@ const defaultCommitment = 3;
     }
   });
 
-  commitmentSelect.value = "3";
+  const defaultCommitmentVal = commitmentRow?.dataset.defaultCommitment || "3";
+  commitmentSelect.value = defaultCommitmentVal;
   syncNotes();
   syncSubmitLabel();
   syncScheduleNote();

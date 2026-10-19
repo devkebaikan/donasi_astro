@@ -12,7 +12,14 @@ import {
 } from "@/lib/FetchData.ts";
 
 const { slug } = Astro.params;
-const VALID_SLUGS = ["dipilihkan", "subuh", "jumat"] as const;
+const VALID_SLUGS = [
+  "dipilihkan",
+  "subuh",
+  "jumat",
+  "30-hari-temani-bertumbuh",
+  "100-hari-menuju-ramadhan",
+  "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu",
+] as const;
 type Slug = (typeof VALID_SLUGS)[number];
 
 if (!slug || !VALID_SLUGS.includes(slug as Slug)) {
@@ -24,6 +31,9 @@ const CAMPAIGN_KEY_MAP: Record<Slug, string> = {
   dipilihkan: "rutin",
   subuh: "subuh",
   jumat: "jumat",
+  "30-hari-temani-bertumbuh": "subuh",
+  "100-hari-menuju-ramadhan": "subuh",
+  "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu": "jumat",
 };
 
 const token = getServerToken(Astro.cookies);
@@ -56,19 +66,61 @@ const BANNER: Record<
     description: "Jangan sampai ketinggalan keberkahan donasi di hari terbaik",
     image: "/assets/rutin/rutin-jumat.png",
   },
+  "30-hari-temani-bertumbuh": {
+    title: "30 Hari Temani Bertumbuh",
+    description: "Rutinkan sedekah subuh selama 30 hari penuh kebaikan",
+    image: "/assets/rutin/pilih-sendiri.png",
+  },
+  "100-hari-menuju-ramadhan": {
+    title: "100 Hari Menuju Ramadhan",
+    description:
+      "Persiapkan hati dan pahala terbaik tiap subuh menyambut Ramadhan",
+    image: "/assets/rutin/pilih-sendiri.png",
+  },
+  "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu": {
+    title: "52 Kirim Hadiah Tiap Jumat Subuh Atas Nama Ortu",
+    description:
+      "Kirim hadiah pahala jariyah terbaik tiap Jumat subuh untuk orang tua",
+    image: "/assets/rutin/pilih-sendiri.png",
+  },
 };
 
 const PAGE_TITLE: Record<Slug, string> = {
   dipilihkan: "Donasi Rutin",
   subuh: "Donasi Tiap Subuh",
   jumat: "Donasi Tiap Jumat",
+  "30-hari-temani-bertumbuh": "30 Hari Temani Bertumbuh",
+  "100-hari-menuju-ramadhan": "100 Hari Menuju Ramadhan",
+  "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu":
+    "52 Kirim Hadiah Tiap Jumat Subuh",
 };
 
 const banner = BANNER[slug as Slug];
-const isLocked = slug === "subuh" || slug === "jumat";
-const defaultHour = slug === "subuh" ? "04" : slug === "jumat" ? "03" : "08";
-const defaultMinute = slug === "subuh" ? "33" : "00";
-const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
+const isSubuh =
+  slug === "subuh" ||
+  slug === "30-hari-temani-bertumbuh" ||
+  slug === "100-hari-menuju-ramadhan" ||
+  slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu";
+const isJumatWeekly =
+  slug === "jumat" ||
+  slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu";
+
+const isLocked = slug !== "dipilihkan";
+const defaultHour = isSubuh ? "04" : slug === "jumat" ? "03" : "08";
+const defaultMinute = isSubuh ? "33" : "00";
+const defaultRangeType = isJumatWeekly ? "weekly" : "daily";
+const lockedDay = isJumatWeekly ? "Jumat" : false;
+
+const defaultCommitment =
+  slug === "30-hari-temani-bertumbuh"
+    ? 30
+    : slug === "100-hari-menuju-ramadhan"
+      ? 100
+      : slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu"
+        ? 52
+        : 3;
+
+const showAtasNama = slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu";
 ---
 
 <MainLayout
@@ -122,7 +174,9 @@ const defaultRangeType = slug === "jumat" ? "weekly" : "daily";
         defaultHour={defaultHour}
         defaultMinute={defaultMinute}
         defaultRangeType={defaultRangeType}
-        lockedDay={slug === "jumat" ? "Jumat" : false}
+        lockedDay={lockedDay}
+        defaultCommitment={defaultCommitment}
+        showAtasNama={showAtasNama}
         isAuthenticated={Boolean(token)}
       />
     </div>

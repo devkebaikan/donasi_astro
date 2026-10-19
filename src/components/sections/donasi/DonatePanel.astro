@@ -224,8 +224,12 @@ const displayNominals =
     );
 
     const projectQuery = projectId ? `&project=${projectId}` : "";
+    const currentParams = new URLSearchParams(window.location.search);
+    const source = currentParams.get("source");
+    const sourceQuery = source ? `&source=${encodeURIComponent(source)}` : "";
+
     window.location.assign(
-      `/donasi/form/${programLink}/?id=${programId}${projectQuery}`,
+      `/donasi/form/${programLink}/?id=${programId}${projectQuery}${sourceQuery}`,
     );
   });
 </script>

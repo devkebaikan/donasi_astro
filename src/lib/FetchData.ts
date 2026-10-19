@@ -57,6 +57,15 @@ export async function getCampaignRamadhan() {
   );
 }
 
+export async function getCampaignRecommended() {
+  return safe(
+    () => publicApi.get("/program-show/recommend"),
+    "getCampaignRecommend",
+  );
+}
+
+
+
 // program theme
 export async function getProgramThemeBySlug(slug: string) {
   return safe(
