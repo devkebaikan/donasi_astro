@@ -11,7 +11,6 @@ import {
 } from "@/lib/FetchData.ts";
 import { getServerToken } from "@/lib/auth";
 import { formatRupiah } from "@/lib/formatter";
-import settings from "@/config/settings.json";
 
 const isAds = Astro.url.searchParams.get("source") === "ads";
 const minDonationAmount = isAds ? 100000 : 10000;
@@ -20,7 +19,8 @@ const { slug } = Astro.params;
 if (!slug) return Astro.redirect("/");
 
 const programId = Astro.url.searchParams.get("id");
-if (!programId) return Astro.redirect(isAds ? `/${slug}?source=ads` : `/${slug}`);
+if (!programId)
+  return Astro.redirect(isAds ? `/${slug}?source=ads` : `/${slug}`);
 
 const projectIdParam = Astro.url.searchParams.get("project");
 

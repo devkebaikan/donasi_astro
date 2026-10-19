@@ -2,7 +2,7 @@
 export const prerender = false;
 
 import Banner from "@/components/sections/donasi/Banner.astro";
-import BoxGuaratee from "@/components/sections/donasi/BoxGuaratee.astro";
+// import BoxGuaratee from "@/components/sections/donasi/BoxGuaratee.astro";
 import ProfileMitra from "@/components/sections/donasi/ProfileMitra.astro";
 import TabSection from "@/components/sections/donasi/TabSection.astro";
 import StickyDonateBar from "@/components/sections/donasi/StickyDonateBar.astro";
@@ -175,7 +175,7 @@ const campaignJsonLd = JSON.stringify({
         programId={detailCampaign?.id}
         projekSalur={detailCampaign?.last_two_projects}
       />
-      <!-- <ShowJsonData data={detailCampaign?.last_two_projects[0].id} /> -->
+      <!-- <ShowJsonData data={nominalOptionsResult} /> -->
       <TabSection slug={slug} detailCampaign={detailCampaign} />
     </div>
 
