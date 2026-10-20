@@ -110,6 +110,8 @@ const isJumatWeekly =
   slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu";
 
 const isLocked = slug !== "dipilihkan";
+const isCommitmentLocked =
+  slug !== "dipilihkan" && slug !== "subuh" && slug !== "jumat";
 const defaultHour = isSubuh ? "04" : slug === "jumat" ? "03" : "08";
 const defaultMinute = isSubuh ? "33" : "00";
 const defaultRangeType = isJumatWeekly ? "weekly" : "daily";
@@ -122,7 +124,7 @@ const defaultCommitment =
       ? 100
       : slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu"
         ? 52
-        : 3;
+        : 1;
 
 const showAtasNama = slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu";
 ---
@@ -188,6 +190,7 @@ const showAtasNama = slug === "52-kirim-hadiah-tiap-jumat-subuh-atas-nama-ortu";
         paymentMethods={paymentMethods}
         walletBalance={walletBalance}
         isLocked={isLocked}
+        isCommitmentLocked={isCommitmentLocked}
         defaultHour={defaultHour}
         defaultMinute={defaultMinute}
         defaultRangeType={defaultRangeType}

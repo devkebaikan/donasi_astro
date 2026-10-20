@@ -7,6 +7,7 @@ interface Props {
   walletBalance: number;
   isAuthenticated?: boolean;
   isLocked?: boolean;
+  isCommitmentLocked?: boolean;
   defaultHour?: string;
   defaultMinute?: string;
   defaultRangeType?: string;
@@ -20,6 +21,7 @@ const {
   walletBalance,
   isAuthenticated = true,
   isLocked = false,
+  isCommitmentLocked = isLocked,
   defaultHour = "08",
   defaultMinute = "00",
   defaultRangeType = "daily",
@@ -46,7 +48,7 @@ const weeklyDays = [
 const nominalOptions = [5000, 10000, 25000, 50000, 100000, 250000];
 const hourlyIntervals = Array.from({ length: 23 }, (_, i) => String(i + 1));
 const commitmentOptions = Array.from(
-  new Set([3, 5, 10, defaultCommitment]),
+  new Set([1, 3, 5, 10, defaultCommitment]),
 ).sort((a, b) => a - b);
 ---
 
@@ -253,7 +255,7 @@ const commitmentOptions = Array.from(
 
     <div class="space-y-2">
       {
-        isLocked ? (
+        isCommitmentLocked ? (
           <input
             id="commitment-locked-input"
             value={defaultCommitment}
@@ -286,17 +288,16 @@ const commitmentOptions = Array.from(
               >
                 Lainnya
               </button>
-            </div>
-
-            <div id="commitment-custom-row" class="hidden">
-              <input
-                id="commitment-custom-input"
-                type="number"
-                min="1"
-                max="365"
-                placeholder="Tulis sendiri (mis. 12 kali)"
-                class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
-              />
+              <div id="commitment-custom-row" class="hidden col-span-3">
+                <input
+                  id="commitment-custom-input"
+                  type="number"
+                  min="1"
+                  max="365"
+                  placeholder="Tulis sendiri (mis. 12 kali)"
+                  class="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all"
+                />
+              </div>
             </div>
           </>
         )
