@@ -175,8 +175,7 @@ function activityBadgeClass(activity?: string): string {
   return "bg-primary-50 text-primary-700 border border-primary-100";
 }
 
-const isDonatable =
-  project.activity === "active open" || project.status === "diterima";
+const isDonatable = project.activity === "active open";
 ---
 
 <MainLayout

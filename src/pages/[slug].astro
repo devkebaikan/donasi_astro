@@ -61,14 +61,6 @@ const projectId = Astro.url.searchParams.get("project");
 const isAds = Astro.url.searchParams.get("source") === "ads";
 const minAmount = isAds ? 100000 : 10000;
 
-const utm = Astro.url.searchParams.toString();
-if (Astro.url.searchParams.has("utm_source")) {
-  Astro.cookies.set("utm_params", utm, {
-    path: "/",
-    maxAge: 60 * 60 * 24,
-  });
-}
-
 let dataDetailCampaign, dataDonors, nominalOptions;
 try {
   dataDetailCampaign = await getCampaignByLink(slug);

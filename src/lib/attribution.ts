@@ -94,6 +94,7 @@ function getAttributionParams(params: URLSearchParams): Record<string, string> {
     const normalizedKey = key.toLowerCase();
     if (
       normalizedKey.startsWith("utm_") ||
+      normalizedKey === "source" ||
       Object.prototype.hasOwnProperty.call(CLICK_IDS, normalizedKey) ||
       /^(gad_|gclid$|dclid$|gbraid$|wbraid$|li_fat_id$|twclid$)/.test(
         normalizedKey,
@@ -252,8 +253,6 @@ export function getAttribution(): { source: string; parameter_detail: string } {
     return { source: "direct", parameter_detail: "" };
   }
 
-  const first = readCookie(FIRST_COOKIE); // pertama kali datang (cookie)
-
   // Cara masuk pada kunjungan ini. Kalau datanya tidak ada, anggap direct.
   const visit: Touch =
     readSessionTouch() ?? {
@@ -266,15 +265,17 @@ export function getAttribution(): { source: string; parameter_detail: string } {
 
   const source = visit.source || "direct";
 
-  const detail: Record<string, string> = {
-    // parameter mentah kunjungan ini (utm_*, gclid, fbclid, dst)
-    ...(visit.attribution_params ?? {}),
-  };
-  addTouchFields(detail, "visit_", visit);
-  addTouchFields(detail, "first_", first);
+  // Parameter mentah (utm_*, gclid, fbclid, source, dst)
+  const params = visit.attribution_params ?? {};
+  const searchParams = new URLSearchParams();
+
+  // Masukkan query parameter sesuai urutan / yang tersedia
+  Object.entries(params).forEach(([k, v]) => {
+    if (v) searchParams.append(k, v);
+  });
 
   return {
     source,
-    parameter_detail: JSON.stringify(detail),
+    parameter_detail: searchParams.toString(),
   };
 }

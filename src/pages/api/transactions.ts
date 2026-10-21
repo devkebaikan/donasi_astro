@@ -49,6 +49,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   }
 
+  console.log("➡️ [API /transactions] Incoming Payload:", JSON.stringify(body, null, 2));
+
   try {
     const res = await fetch(`${baseUrl}/transactions`, {
       method: "POST",

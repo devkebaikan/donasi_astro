@@ -63,9 +63,6 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     m.type,
   );
 });
-
-// ✅ TAMBAHKAN INI UNTUK MELIHAT DATA SETELAH DIFILTER
-// console.log("➡️ Data paymentMethods setelah difilter:", paymentMethods);
 ---
 
 <MainLayout
@@ -761,6 +758,8 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             ...(reffCode ? { reff_code: reffCode } : {}),
           };
 
+    const finalPayload = cleanPayload(payload);
+
     try {
       const res = await fetch(`/api/transactions`, {
         method: "POST",
@@ -768,7 +767,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
           "Content-Type": "application/json",
           Accept: "application/json",
         },
-        body: JSON.stringify(cleanPayload(payload)),
+        body: JSON.stringify(finalPayload),
       });
 
       const data = await res.json();
