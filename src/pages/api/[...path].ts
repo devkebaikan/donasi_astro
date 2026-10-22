@@ -22,6 +22,7 @@ const allowedPaths = [
   /^track\/.+$/,
   /^amin\/.+$/,
   /^transactions(\/.*)?$/,
+  /^notifications\/web-push\/(config|subscriptions)$/,
 ];
 
 export const ALL: APIRoute = async ({ params, request, cookies }) => {
@@ -88,8 +89,13 @@ export const ALL: APIRoute = async ({ params, request, cookies }) => {
     });
 
     const responseData = await response.text();
+    const responseBody =
+      request.method === "HEAD" ||
+      [204, 205, 304].includes(response.status)
+        ? null
+        : responseData;
 
-    return new Response(responseData, {
+    return new Response(responseBody, {
       status: response.status,
       headers: {
         "Content-Type":

@@ -30,6 +30,36 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+self.addEventListener('push', (event) => {
+  if (!event.data) return;
+  const payload = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      data: payload.data,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const clickURL = event.notification.data?.url;
+  let destination = '/';
+
+  if (typeof clickURL === 'string' && clickURL) {
+    try {
+      const url = new URL(clickURL, self.location.origin);
+      if (url.origin === self.location.origin) {
+        destination = url.href;
+      }
+    } catch {
+      // Fall back to the home page when a notification URL is malformed.
+    }
+  }
+
+  event.waitUntil(self.clients.openWindow(destination));
+});
+
 // Fetch: Network-first strategy with cache fallback
 self.addEventListener('fetch', (event) => {
   // Only handle GET requests and skip browser extensions or non-http requests
