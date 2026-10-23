@@ -187,9 +187,15 @@ const nominalOptions = [10000, 25000, 50000, 100000];
   const savedNominal = localStorage.getItem("nominalInfaq");
   if (savedNominal) {
     const n = parseInt(savedNominal, 10);
-    if (!isNaN(n)) {
+    if (!isNaN(n) && n > 0) {
       amount = n;
       nominalInput.value = n.toLocaleString("id-ID");
+      const matchedChip = Array.from(
+        document.querySelectorAll<HTMLButtonElement>(".nominal-chip"),
+      ).find((btn) => Number(btn.dataset.value) === n);
+      if (matchedChip) {
+        setChipActive(matchedChip);
+      }
     }
     localStorage.removeItem("nominalInfaq");
   }

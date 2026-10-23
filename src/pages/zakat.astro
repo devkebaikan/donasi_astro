@@ -398,7 +398,7 @@ const menuItems = [
       : nishabYearly;
   }
 
-  function calculate(): { zakat: number; isWajib: boolean } {
+  function calculate(): { total: number; zakat: number; isWajib: boolean } {
     const nishabPeriod = getNishabPeriod();
     let total = 0;
 
@@ -419,8 +419,9 @@ const menuItems = [
 
     total = Math.max(0, total);
     const isWajib = total >= nishabPeriod;
-    const zakat = isWajib ? total * 0.025 : 0;
-    return { zakat, isWajib };
+    // Jika wajib zakat maka 2.5%, jika belum wajib infaq dihitung 2.5% dari sisa harta / total
+    const zakat = total * 0.025;
+    return { total, zakat, isWajib };
   }
 
   function syncUI() {
@@ -447,7 +448,8 @@ const menuItems = [
     nishabDisplay.textContent = formatRupiah(nishabPeriod);
 
     // bottom bar
-    bottomAmount.textContent = formatRupiah(zakat);
+    const displayAmount = hasInput ? zakat : 0;
+    bottomAmount.textContent = formatRupiah(displayAmount);
     if (isWajib) {
       bottomLabel.textContent = "Total Zakat";
       btnPay.textContent = "Bayar Zakat";
@@ -583,6 +585,11 @@ const menuItems = [
   // ── Pay button ─────────────────────────────────────────────────────────────
   btnPay.addEventListener("click", () => {
     const { zakat, isWajib } = calculate();
+
+    if (zakat <= 0) {
+      showToast("Silakan masukkan nominal terlebih dahulu", "error");
+      return;
+    }
 
     if (isWajib) {
       if (!zakatLink) {
