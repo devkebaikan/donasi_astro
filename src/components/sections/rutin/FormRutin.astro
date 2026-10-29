@@ -510,7 +510,7 @@ const commitmentOptions = Array.from(
 <script>
   import { showToast } from "@/lib/toast";
   import { formatRupiah } from "@/lib/formatter";
-  import { getIncomingReffCode } from "@/lib/referral";
+  import { getIncomingReffCode, getIncomingLeads } from "@/lib/referral";
 
   const page = document.getElementById("rutin-page") as HTMLElement;
   if (!page) throw new Error("rutin-page not found");
@@ -866,6 +866,7 @@ const commitmentOptions = Array.from(
     const doa = doaInput?.value.trim();
 
     const reffCode = getIncomingReffCode();
+    const incomingLeads = getIncomingLeads();
 
     const payload: Record<string, unknown> = {
       program_id: Number(programId),
@@ -878,6 +879,7 @@ const commitmentOptions = Array.from(
       ...(atasNama ? { atas_nama: atasNama } : {}),
       ...(doa ? { doa } : {}),
       ...(reffCode ? { reff_code: reffCode } : {}),
+      ...(incomingLeads ? { leads: incomingLeads } : {}),
     };
 
     if (!isCommitment) {

@@ -66,13 +66,13 @@ const { isRutin, isActive, link, type } = Astro.props;
 </div>
 
 <script>
-  import { appendReffCodeToUrl } from "@/lib/referral";
+  import { appendReffCodeToUrl, saveIncomingLeads } from "@/lib/referral";
   import { showToast } from "@/lib/toast";
 
-  // Simpan parameter leads ke localStorage jika ada
+  // Simpan parameter leads jika ada
   const urlParams = new URLSearchParams(window.location.search);
   const leads = urlParams.get("leads");
-  if (leads) localStorage.setItem("leads", leads);
+  if (leads) saveIncomingLeads(leads);
 
   // Tombol Bagikan
   const shareButton = document.getElementById("btn-share-dp");

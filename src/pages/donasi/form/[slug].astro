@@ -428,7 +428,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
 <script>
   import { showToast } from "@/lib/toast";
   import { formatRupiah } from "@/lib/formatter";
-  import { getIncomingReffCode } from "@/lib/referral";
+  import { getIncomingReffCode, getIncomingLeads } from "@/lib/referral";
   import { getAttribution } from "@/lib/attribution";
   import type { TransactionPayload } from "@/lib/types";
   import { trackAddToCart } from "@/lib/tracking";
@@ -722,6 +722,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
     }
 
     const reffCode = getIncomingReffCode();
+    const incomingLeads = getIncomingLeads();
     const { source, parameter_detail } = getAttribution();
 
     const payload: TransactionPayload =
@@ -740,6 +741,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             ...(source ? { source } : {}),
             ...(parameter_detail ? { parameter_detail } : {}),
             ...(reffCode ? { reff_code: reffCode } : {}),
+            ...(incomingLeads ? { leads: incomingLeads } : {}),
           }
         : {
             type: "donation",
@@ -756,6 +758,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
             ...(source ? { source } : {}),
             ...(parameter_detail ? { parameter_detail } : {}),
             ...(reffCode ? { reff_code: reffCode } : {}),
+            ...(incomingLeads ? { leads: incomingLeads } : {}),
           };
 
     const finalPayload = cleanPayload(payload);

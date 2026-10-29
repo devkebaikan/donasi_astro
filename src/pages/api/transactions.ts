@@ -49,7 +49,31 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     );
   }
 
-  console.log("➡️ [API /transactions] Incoming Payload:", JSON.stringify(body, null, 2));
+  // Cek reff_code dari body atau fallback ke Cookie 12 jam (reff_code)
+  const cookieReffCode = cookies.get("reff_code")?.value?.trim() || null;
+  // Cek leads dari body atau fallback ke Cookie 12 jam (leads)
+  const cookieLeads = cookies.get("leads")?.value?.trim() || null;
+
+  if (typeof body === "object" && body !== null) {
+    const payloadObj = body as Record<string, any>;
+    const effectiveReffCode =
+      payloadObj.reff_code ||
+      cookieReffCode ||
+      null;
+
+    if (effectiveReffCode) {
+      payloadObj.reff_code = String(effectiveReffCode);
+    }
+
+    const effectiveLeads =
+      payloadObj.leads ||
+      cookieLeads ||
+      null;
+
+    if (effectiveLeads) {
+      payloadObj.leads = String(effectiveLeads);
+    }
+  }
 
   try {
     const res = await fetch(`${baseUrl}/transactions`, {

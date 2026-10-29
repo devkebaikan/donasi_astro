@@ -133,7 +133,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
 
 <script>
   import { showToast } from "@/lib/toast";
-  import { getIncomingReffCode } from "@/lib/referral";
+  import { getIncomingReffCode, getIncomingLeads } from "@/lib/referral";
 
   const page = document.getElementById("infaq-page") as HTMLElement;
   const walletBal = Number(page?.dataset.wallet ?? 0);
@@ -351,6 +351,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
     btnSubmit.textContent = "Memproses...";
 
     const reffCode = getIncomingReffCode();
+    const incomingLeads = getIncomingLeads();
 
     const raw: Record<string, unknown> = {
       type: "donation",
@@ -364,6 +365,7 @@ const nominalOptions = [10000, 25000, 50000, 100000];
       ...(doa ? { doa } : {}),
       ...(atasNama ? { atas_nama: atasNama } : {}),
       ...(reffCode ? { reff_code: reffCode } : {}),
+      ...(incomingLeads ? { leads: incomingLeads } : {}),
     };
 
     try {

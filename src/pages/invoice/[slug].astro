@@ -23,7 +23,9 @@ const invoice = await getInvoice(slug);
 const payment = invoice?.payment_method ?? {};
 const thirdPartyDetail = invoice?.third_party_detail ?? {};
 const donationAmount = invoice?.nominal ?? 0;
-const isPaid = invoice?.status === "Paid";
+const status = (invoice?.status ?? "").toString();
+const isPaid = status.toLowerCase() === "paid";
+const isCanceled = status.toLowerCase() === "canceled" || status.toLowerCase() === "cancelled";
 const payment_url = invoice?.payment_url;
 const firstItem = invoice?.items?.[0];
 
@@ -56,7 +58,7 @@ const displayAccountName = isVA ? vaAccountName : payment?.account_behalf;
 // (bukan Qris/OVO/VA) → akan auto-redirect. Jangan render invoice card penuh
 // untuk kasus ini, cukup loading state.
 const willAutoRedirect =
-  !isPaid && !!payment_url && !qrPayload && !isOvo && !isVA;
+  !isPaid && !isCanceled && !!payment_url && !qrPayload && !isOvo && !isVA;
 ---
 
 <MainLayout
@@ -65,12 +67,15 @@ const willAutoRedirect =
 >
   <Header type="notshare" text="Invoice" link="/home" />
 
+  <!-- <ShowJsonData data={invoice} /> -->
+
   <!-- Main Content Wrapper -->
   <section
     id="invoice-page"
     data-slug={slug}
     data-amount={donationAmount}
     data-paid={isPaid}
+    data-canceled={isCanceled}
     data-payment-url={payment_url}
     data-qr-code={qrPayload}
     data-payment-type={isQris ? "qris" : isOvo ? "ovo" : isVA ? "va" : "other"}
@@ -94,32 +99,98 @@ const willAutoRedirect =
       ) : (
         <div class="container bg-neutral-50 min-h-screen">
           <div class="space-y-4">
-            <!-- Payment Deadline Section -->
-            <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
-              <h6 class="text-sm font-semibold mb-2">
-                Batas waktu pembayaran
-              </h6>
-              <div class="flex justify-between items-center text-sm">
-                <p class="font-medium">
-                  {formatDateTime(invoice?.last_payment_time)}
-                </p>
-                <div class="flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fill-rule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
+            {
+              isCanceled ? (
+                <div class="bg-red-500 rounded-b p-4 pt-20 text-white shadow-md">
+                  <div class="flex items-center gap-2 mb-1">
+                    <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                        clip-rule="evenodd"
+                      />
+                    </svg>
+                    <h6 class="text-sm font-semibold">Transaksi Dibatalkan</h6>
+                  </div>
+                  <p class="text-xs text-red-100">
+                    Transaksi ini sudah kedaluwarsa atau dibatalkan dan tidak dapat dilanjutkan.
+                  </p>
                 </div>
-              </div>
-            </div>
+              ) : (
+                <!-- Payment Deadline Section -->
+                <div class="bg-primary-500 rounded-b p-4 pt-20 text-white shadow-md">
+                  <h6 class="text-sm font-semibold mb-2">
+                    Batas waktu pembayaran
+                  </h6>
+                  <div class="flex justify-between items-center text-sm">
+                    <p class="font-medium">
+                      {formatDateTime(invoice?.last_payment_time)}
+                    </p>
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fill-rule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                          clip-rule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              )
+            }
 
             <!-- Payment Details Card -->
             <div class="bg-white rounded-md shadow-md overflow-hidden">
-              {/* qris payment */}
               {
-                isQris ? (
+                isCanceled ? (
+                  <div class="p-6 text-center space-y-4">
+                    <div class="w-16 h-16 mx-auto rounded-full bg-red-50 flex items-center justify-center text-red-500">
+                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </div>
+
+                    <div>
+                      <h4 class="text-base font-semibold text-gray-800 mb-1">
+                        Transaksi Gagal / Dibatalkan
+                      </h4>
+                      <p class="text-xs text-gray-500 leading-relaxed max-w-sm mx-auto">
+                        Pembayaran untuk transaksi ini tidak dapat dilakukan karena waktu pembayaran telah habis atau dibatalkan. Silakan buat donasi baru.
+                      </p>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-xl p-4 text-left border border-gray-100">
+                      <div class="flex justify-between items-center text-xs py-1">
+                        <span class="text-gray-500">Nomor Invoice</span>
+                        <span class="font-mono font-medium text-gray-800">{slug}</span>
+                      </div>
+                      <div class="flex justify-between items-center text-xs py-1">
+                        <span class="text-gray-500">Metode Pembayaran</span>
+                        <span class="font-medium text-gray-800">{payment?.bank || "-"}</span>
+                      </div>
+                      <div class="flex justify-between items-center text-xs py-1">
+                        <span class="text-gray-500">Jumlah Donasi</span>
+                        <span class="font-bold text-gray-800">{formatRupiah(donationAmount)}</span>
+                      </div>
+                      <div class="flex justify-between items-center text-xs py-1">
+                        <span class="text-gray-500">Status</span>
+                        <span class="font-semibold text-red-600">Dibatalkan</span>
+                      </div>
+                    </div>
+
+                    {
+                      firstItem?.program?.link && (
+                        <a
+                          href={firstItem.program.link === "infaq" ? "/infak" : `/donasi/${firstItem.program.link}`}
+                          class="inline-flex items-center justify-center w-full py-2.5 px-4 rounded-xl bg-white border border-gray-200 hover:bg-gray-100 text-gray-800 font-medium text-sm transition-all duration-200 shadow-xs active:scale-[0.99]"
+                        >
+                          Ulangi Donasi
+                        </a>
+                      )
+                    }
+                  </div>
+                ) : isQris ? (
                   <QrisPayment
                     qrPayload={qrPayload}
                     donationAmount={donationAmount}
@@ -241,7 +312,7 @@ const willAutoRedirect =
               {/* Action Buttons */}
               <div class="p-4 space-y-2.5">
                 {
-                  firstItem?.program?.link !== "infaq" &&
+                  firstItem?.program?.link !== "infaq" && !isCanceled &&
                     firstItem?.program != null && (
                       <a
                         id="btn-tracking-donasi"
@@ -254,36 +325,39 @@ const willAutoRedirect =
                 }
 
                 {/* PERBAIKAN: Menambahkan tag <a yang hilang di sini */}
-                <a
-                  id="btn-cara-pembayaran"
-                  href={`/invoice/help/${slug}`}
-                  class="group flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white hover:bg-neutral-50 text-neutral-700 font-medium text-sm border border-neutral-200 hover:border-neutral-300 transition-all duration-200 active:scale-[0.99]"
-                >
-                  <svg
-                    class="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 transition-colors duration-200"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                    />
-                  </svg>
-                  <span>Cara Pembayaran</span>
-                </a>
+                {
+                  !isCanceled && (
+                    <a
+                      id="btn-cara-pembayaran"
+                      href={`/invoice/help/${slug}`}
+                      class="group flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-white hover:bg-neutral-50 text-neutral-700 font-medium text-sm border border-neutral-200 hover:border-neutral-300 transition-all duration-200 active:scale-[0.99]"
+                    >
+                      <svg
+                        class="w-4 h-4 text-neutral-400 group-hover:text-neutral-600 transition-colors duration-200"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+                        />
+                      </svg>
+                      <span>Cara Pembayaran</span>
+                    </a>
+                  )
+                }
               </div>
             </div>
 
             {/* Help Section */}
-            <div class="bg-white rounded-md shadow-md p-4">
+            {/* <div class="bg-white rounded-md shadow-md p-4">
               <h3 class="font-semibold text-gray-900 text-center mb-4">
                 Ada yang ingin ditanyakan?
               </h3>
               <div class="space-y-3">
-                {/* PERBAIKAN: Menambahkan tag <a yang hilang di sini */}
                 <a
                   href="https://api.whatsapp.com/send?phone=6281325521905&text=Assalamu%27alaikum"
                   class="flex items-center justify-center w-full text-sm md:text-base bg-green-500 hover:bg-green-600 text-white font-semibold py-3 px-6 rounded-md transition-colors duration-200 shadow-md hover:shadow-lg"
@@ -296,6 +370,18 @@ const willAutoRedirect =
                   Chat Admin
                 </a>
               </div>
+            </div> */}
+
+            <div class="text-center pt-2">
+              <a
+                href="https://api.whatsapp.com/send?phone=6281325521905&text=Assalamu%27alaikum"
+                class="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <span>Butuh bantuan seputar acara?</span>
+                <span class="text-primary-600 font-semibold underline">Chat Admin</span>
+              </a>
             </div>
           </div>
         </div>
@@ -334,6 +420,10 @@ const willAutoRedirect =
           invoice: slug || "",
           value: donationAmount,
         });
+      }
+
+      if (el.dataset.canceled === "true") {
+        return;
       }
 
       if (isPaid) {
