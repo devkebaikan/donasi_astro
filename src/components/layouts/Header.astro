@@ -123,6 +123,8 @@ const navItems = [
             {navItems.map((item) => (
               <a
                 href={item.href}
+                id={item.label === 'Blog' ? 'nav-blog-link' : undefined}
+                data-blog-link={item.label === 'Blog' ? 'true' : undefined}
                 class="flex items-center justify-between p-2.5 rounded-xl text-white bg-white/5 hover:bg-white/15 border border-white/10 hover:border-white/25 transition-all duration-200 group"
               >
                 <div class="flex items-center gap-3">
@@ -334,7 +336,7 @@ const navItems = [
 )}
 
 <script>
-  import { appendReffCodeToUrl } from "@/lib/referral";
+  import { appendReffCodeToUrl, getUserReffCode } from "@/lib/referral";
   import { showToast } from "@/lib/toast";
 
   function setupHeader() {
@@ -449,6 +451,10 @@ const navItems = [
       if (shouldOpen && searchContainer && !searchContainer.classList.contains("hidden")) {
         searchContainer.classList.add("hidden");
         searchButton?.classList.remove("hidden");
+      }
+
+      if (shouldOpen) {
+        updateBlogReferralLink();
       }
 
       handleHeaderState();
@@ -604,6 +610,39 @@ const navItems = [
 
       type();
     }
+
+    // ========================
+    // Blog Referral Link
+    // ========================
+    async function updateBlogReferralLink() {
+      const blogLinks = document.querySelectorAll<HTMLAnchorElement>(
+        'a[href*="blog.beramalbersama.com"], #nav-blog-link, [data-blog-link]'
+      );
+      if (blogLinks.length === 0) return;
+
+      const userReff = await getUserReffCode();
+      if (userReff) {
+        const blogUrlWithReff = `https://blog.beramalbersama.com?reff_code=${encodeURIComponent(userReff)}`;
+        blogLinks.forEach((link) => {
+          link.href = blogUrlWithReff;
+        });
+      }
+    }
+
+    updateBlogReferralLink();
+
+    const blogLinks = document.querySelectorAll<HTMLAnchorElement>(
+      'a[href*="blog.beramalbersama.com"], #nav-blog-link, [data-blog-link]'
+    );
+    blogLinks.forEach((link) => {
+      link.addEventListener("click", async (e) => {
+        const userReff = await getUserReffCode();
+        if (userReff) {
+          e.preventDefault();
+          window.location.href = `https://blog.beramalbersama.com?reff_code=${encodeURIComponent(userReff)}`;
+        }
+      });
+    });
 
     // ========================
     // Auth Check

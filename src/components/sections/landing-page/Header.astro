@@ -137,6 +137,8 @@ const logoSrc = "/assets/logo/logo-long-custom.png";
 </header>
 
 <script>
+  import { getUserReffCode } from "@/lib/referral";
+
   const btn = document.getElementById("mobile-menu-btn");
   const menu = document.getElementById("mobile-menu");
   const iconOpen = document.getElementById("icon-open");
@@ -147,4 +149,22 @@ const logoSrc = "/assets/logo/logo-long-custom.png";
     iconOpen?.classList.toggle("hidden", !isHidden);
     iconClose?.classList.toggle("hidden", isHidden ?? true);
   });
+
+  async function updateLandingBlogLinks() {
+    const blogLinks = document.querySelectorAll<HTMLAnchorElement>(
+      'a[href*="blog.beramalbersama.com"]'
+    );
+    if (blogLinks.length === 0) return;
+
+    const userReff = await getUserReffCode();
+    if (userReff) {
+      const blogUrlWithReff = `https://blog.beramalbersama.com?reff_code=${encodeURIComponent(userReff)}`;
+      blogLinks.forEach((link) => {
+        link.href = blogUrlWithReff;
+      });
+    }
+  }
+
+  updateLandingBlogLinks();
+  document.addEventListener("astro:page-load", updateLandingBlogLinks);
 </script>
