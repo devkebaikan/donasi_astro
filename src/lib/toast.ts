@@ -49,7 +49,7 @@ export function showToast(message: string, type: ToastType = "default") {
   toastCount++;
 
   toast.className = [
-    "fixed right-6 z-50",
+    "fixed right-6 z-[100000]",
     "flex items-center gap-3",
     "min-w-[260px] max-w-[380px]",
     "px-4 py-3 rounded-xl border",

@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Seo from "../components/Seo.astro";
 import AppSplashScreen from "../components/ui/AppSplashScreen.astro";
+import ShareModal from "../components/ui/ShareModal.astro";
 import type { SeoProps } from "../lib/seo";
 
 type Props = SeoProps;
@@ -226,5 +227,8 @@ type Props = SeoProps;
     <main id="main-content" class="overflow-hidden">
       <slot />
     </main>
+
+    <!-- Global Share Modal -->
+    <ShareModal />
   </body>
 </html>

@@ -76,18 +76,17 @@ const { isRutin, isActive, link, type } = Astro.props;
 
   // Tombol Bagikan
   const shareButton = document.getElementById("btn-share-dp");
-  shareButton?.addEventListener("click", async () => {
+  shareButton?.addEventListener("click", async (e) => {
+    e.preventDefault();
     const shareUrl = await appendReffCodeToUrl(window.location.href);
-
-    try {
-      if (navigator.share) {
-        await navigator.share({ title: document.title, url: shareUrl });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        showToast("Link berhasil disalin!", "success");
-      }
-    } catch (err) {
-      console.error("Error sharing:", err);
+    if (typeof window.openShareModal === "function") {
+      window.openShareModal({ title: document.title, url: shareUrl });
+    } else {
+      document.dispatchEvent(
+        new CustomEvent("share:open", {
+          detail: { title: document.title, url: shareUrl },
+        })
+      );
     }
   });
 

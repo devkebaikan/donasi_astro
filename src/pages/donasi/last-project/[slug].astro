@@ -678,14 +678,17 @@ const tabs = [
     // ── Share button ───────────────────────────────────────────────────────────
     const shareBtn = document.getElementById("btn-share-lp");
     if (shareBtn) {
-      shareBtn.addEventListener("click", async () => {
+      shareBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
         const shareUrl = await appendReffCodeToUrl(window.location.href);
-        if (navigator.share) {
-          navigator.share({ title: document.title, url: shareUrl }).catch(() => {});
+        if (typeof window.openShareModal === "function") {
+          window.openShareModal({ title: document.title, url: shareUrl });
         } else {
-          navigator.clipboard
-            .writeText(shareUrl)
-            .then(() => showToast("Link berhasil disalin!", "success"));
+          document.dispatchEvent(
+            new CustomEvent("share:open", {
+              detail: { title: document.title, url: shareUrl },
+            })
+          );
         }
       });
     }

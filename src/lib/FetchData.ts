@@ -127,7 +127,7 @@ export async function getNominalOptions(link: string) {
 
 export async function getAllReportByLink(link: string | null) {
   return safe(
-    () => publicApi.get("/report", { params: { program_link: link } }),
+    () => publicApi.get("/reports", { params: { program_link: link } }),
     "getAllReportByLink",
   );
 }
@@ -136,6 +136,13 @@ export async function getReportDetailById(id: number | null) {
   return safe(
     () => publicApi.get(`/report/${id}`,),
     "getReportDetailById",
+  );
+}
+
+export async function getKegiatanDetailById(id: number | null) {
+  return safe(
+    () => publicApi.get(`/program/kegiatan/${id}`,),
+    "getKegiatanDetailById",
   );
 }
 

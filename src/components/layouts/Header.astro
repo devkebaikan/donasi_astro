@@ -410,22 +410,23 @@ const navItems = [
     // ========================
     // Share Button
     // ========================
-    shareButton?.addEventListener("click", async () => {
+    const handleShareClick = async (e: Event) => {
+      e.preventDefault();
       const shareUrl = await appendReffCodeToUrl(window.location.href);
-
-      try {
-        if (navigator.share) {
-          await navigator.share({
-            title: document.title,
-            url: shareUrl,
-          });
-        } else {
-          await navigator.clipboard.writeText(shareUrl);
-          showToast("Link berhasil disalin!", "success");
-        }
-      } catch (err) {
-        console.error("Share error:", err);
+      const title = textHeader?.textContent?.trim() || document.title;
+      if (typeof window.openShareModal === "function") {
+        window.openShareModal({ title, url: shareUrl });
+      } else {
+        document.dispatchEvent(
+          new CustomEvent("share:open", {
+            detail: { title, url: shareUrl },
+          })
+        );
       }
+    };
+
+    document.querySelectorAll("#share-button").forEach((btn) => {
+      btn.addEventListener("click", handleShareClick);
     });
 
     // ========================

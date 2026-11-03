@@ -609,20 +609,17 @@ const isDonatable = project.activity === "active open";
   function setupProjectActions() {
     // Share action
     const shareBtn = document.getElementById("btn-share-project");
-    shareBtn?.addEventListener("click", async () => {
+    shareBtn?.addEventListener("click", async (e) => {
+      e.preventDefault();
       const shareUrl = await appendReffCodeToUrl(window.location.href);
-      if (navigator.share) {
-        navigator
-          .share({
-            title: document.title,
-            url: shareUrl,
-          })
-          .catch(() => {});
+      if (typeof window.openShareModal === "function") {
+        window.openShareModal({ title: document.title, url: shareUrl });
       } else {
-        navigator.clipboard
-          .writeText(shareUrl)
-          .then(() => showToast("Link proyek berhasil disalin!", "success"))
-          .catch(() => showToast("Gagal menyalin link", "error"));
+        document.dispatchEvent(
+          new CustomEvent("share:open", {
+            detail: { title: document.title, url: shareUrl },
+          })
+        );
       }
     });
 

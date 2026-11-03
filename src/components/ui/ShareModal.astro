@@ -1,0 +1,710 @@
+---
+/**
+ * ShareModal.astro
+ * Popup modal share custom yang elegan, modern, dan tidak berlebihan.
+ * Mendukung share ke WhatsApp, Facebook, Instagram, X (Twitter), dan Salin Link.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className = "" } = Astro.props;
+---
+
+<!-- Overlay Modal Share -->
+<div
+  id="share-modal-overlay"
+  class:list={[
+    "fixed inset-0 z-[9990] bg-black/50 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4",
+    "opacity-0 pointer-events-none transition-opacity duration-300 ease-out",
+    className,
+  ]}
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="share-modal-title"
+  aria-hidden="true"
+>
+  <!-- Container Modal / Bottom Sheet -->
+  <div
+    id="share-modal-container"
+    class="w-full max-w-120 bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl border border-neutral-100 p-5 sm:p-6 translate-y-full sm:translate-y-4 sm:scale-95 transition-all duration-300 ease-out max-h-[90vh] overflow-y-auto"
+  >
+    <!-- Handle bar untuk mobile bottom sheet -->
+    <div class="w-12 h-1.5 bg-neutral-200 rounded-full mx-auto mb-4 sm:hidden">
+    </div>
+
+    <!-- Header Modal -->
+    <div
+      class="flex items-start justify-between pb-3 border-b border-neutral-100"
+    >
+      <div class="pr-2">
+        <h3
+          id="share-modal-title"
+          class="text-base sm:text-lg font-bold text-neutral-800 leading-snug"
+        >
+          Bagikan Kebaikan
+        </h3>
+        <p class="text-xs text-neutral-500 mt-0.5">
+          Ajak kerabat dan teman untuk berbuat kebaikan bersama
+        </p>
+      </div>
+
+      <button
+        id="share-modal-close"
+        type="button"
+        class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
+        aria-label="Tutup modal bagikan"
+      >
+        <svg
+          class="w-5 h-5 pointer-events-none"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <!-- Preview Ringkas Konten yang Dibagikan -->
+    <div
+      class="my-4 p-3 rounded-xl bg-neutral-50 border border-neutral-200/80 flex items-center gap-3"
+    >
+      <div
+        class="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shrink-0"
+      >
+        <svg
+          class="w-5 h-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+          ></path>
+        </svg>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p
+          id="share-preview-title"
+          class="text-xs font-semibold text-neutral-800 line-clamp-1"
+        >
+          Program Kebaikan
+        </p>
+        <p
+          id="share-preview-url"
+          class="text-[11px] text-neutral-400 truncate mt-0.5"
+        >
+          https://beramalbersama.com
+        </p>
+      </div>
+    </div>
+
+    <!-- Pilihan Platform Bagikan -->
+    <div>
+      <span
+        class="block text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2.5"
+      >
+        Bagikan Ke
+      </span>
+
+      <div class="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+        <!-- WhatsApp -->
+        <button
+          type="button"
+          id="share-btn-wa"
+          class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-[#25D366] text-white flex items-center justify-center shadow-md shadow-[#25D366]/20 transition-transform duration-200 group-hover:scale-110"
+          >
+            <svg
+              class="w-6 h-6 fill-current pointer-events-none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"
+              ></path>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-neutral-700">WhatsApp</span>
+        </button>
+
+        <!-- Facebook -->
+        <button
+          type="button"
+          id="share-btn-fb"
+          class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-[#1877F2] text-white flex items-center justify-center shadow-md shadow-[#1877F2]/20 transition-transform duration-200 group-hover:scale-110"
+          >
+            <svg
+              class="w-6 h-6 fill-current pointer-events-none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
+              ></path>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-neutral-700">Facebook</span>
+        </button>
+
+        <!-- Instagram -->
+        <button
+          type="button"
+          id="share-btn-ig"
+          class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-gradient-to-tr from-[#f09433] via-[#dc2743] to-[#bc1888] text-white flex items-center justify-center shadow-md shadow-[#dc2743]/20 transition-transform duration-200 group-hover:scale-110"
+          >
+            <svg
+              class="w-6 h-6 fill-current pointer-events-none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+              ></path>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-neutral-700">Instagram</span>
+        </button>
+
+        <!-- X (Twitter) -->
+        <button
+          type="button"
+          id="share-btn-x"
+          class="group flex flex-col items-center gap-1.5 p-2 rounded-xl hover:bg-neutral-50 active:scale-95 transition-all cursor-pointer"
+        >
+          <div
+            class="w-12 h-12 rounded-full bg-neutral-900 text-white flex items-center justify-center shadow-md shadow-neutral-900/20 transition-transform duration-200 group-hover:scale-110"
+          >
+            <svg
+              class="w-5 h-5 fill-current pointer-events-none"
+              viewBox="0 0 24 24"
+            >
+              <path
+                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+              ></path>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-neutral-700">X</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Salin Link Section -->
+    <div class="my-4 pt-4 border-t border-neutral-100">
+      <label
+        for="share-copy-input"
+        class="block text-xs font-medium text-neutral-500 mb-1.5"
+      >
+        Salin Tautan
+      </label>
+
+      <div
+        class="flex items-center rounded-xl bg-neutral-50 border border-neutral-200 p-1 pl-3 focus-within:border-primary-500 focus-within:ring-2 focus-within:ring-primary-100 transition-all"
+      >
+        <input
+          id="share-copy-input"
+          type="text"
+          readonly
+          class="w-full bg-transparent text-xs text-neutral-700 outline-none select-all pr-2 truncate font-mono cursor-pointer"
+          value=""
+          placeholder="https://..."
+        />
+
+        <button
+          id="share-btn-copy"
+          type="button"
+          class="shrink-0 flex items-center gap-1.5 px-3.5 py-2 bg-primary-500 hover:bg-primary-600 active:scale-95 text-white text-xs font-semibold rounded-lg transition-all cursor-pointer shadow-xs select-none"
+          aria-label="Salin link"
+        >
+          <svg
+            id="share-copy-icon"
+            class="w-4 h-4 shrink-0 transition-transform pointer-events-none"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
+            ></path>
+          </svg>
+          <span id="share-copy-text" class="pointer-events-none">Salin</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  import { appendReffCodeToUrl } from "@/lib/referral";
+  import { showToast } from "@/lib/toast";
+
+  interface SharePayload {
+    url?: string;
+    title?: string;
+    text?: string;
+  }
+
+  declare global {
+    interface Window {
+      openShareModal?: (data?: SharePayload) => Promise<void>;
+      closeShareModal?: () => void;
+      __shareModalGlobalBound?: boolean;
+    }
+  }
+
+  let activeUrl = "";
+  let activeTitle = "";
+  let activeText = "";
+  let copyTimeoutId: number | null = null;
+
+  function getElements() {
+    return {
+      overlay: document.getElementById("share-modal-overlay"),
+      container: document.getElementById("share-modal-container"),
+      closeBtn: document.getElementById("share-modal-close"),
+      previewTitle: document.getElementById("share-preview-title"),
+      previewUrl: document.getElementById("share-preview-url"),
+      copyInput: document.getElementById(
+        "share-copy-input",
+      ) as HTMLInputElement | null,
+      copyBtn: document.getElementById("share-btn-copy"),
+      copyText: document.getElementById("share-copy-text"),
+      copyIcon: document.getElementById("share-copy-icon"),
+      btnWa: document.getElementById("share-btn-wa"),
+      btnFb: document.getElementById("share-btn-fb"),
+      btnIg: document.getElementById("share-btn-ig"),
+      btnX: document.getElementById("share-btn-x"),
+      btnNative: document.getElementById("share-btn-native"),
+    };
+  }
+
+  /**
+   * Fungsi Salin Teks Multilapis (Multi-fallback):
+   * 1. Mencoba navigator.clipboard.writeText (modern HTTPS).
+   * 2. Fallback menggunakan input nyata yang ada di modal (paling kompatibel di Safari/iOS/HTTP).
+   * 3. Fallback menggunakan elemen textarea dinamis.
+   */
+  async function copyText(text: string): Promise<boolean> {
+    if (!text) return false;
+
+    // 1. Coba Clipboard API modern
+    if (
+      typeof navigator !== "undefined" &&
+      navigator.clipboard &&
+      typeof navigator.clipboard.writeText === "function"
+    ) {
+      try {
+        await navigator.clipboard.writeText(text);
+        return true;
+      } catch (err) {
+        console.warn(
+          "navigator.clipboard.writeText gagal, beralih ke fallback...",
+          err,
+        );
+      }
+    }
+
+    // 2. Gunakan input nyata yang terlihat di modal
+    const input = document.getElementById(
+      "share-copy-input",
+    ) as HTMLInputElement | null;
+    if (input) {
+      try {
+        input.value = text;
+        input.focus();
+        input.select();
+        input.setSelectionRange(0, 99999);
+        const successful = document.execCommand("copy");
+        if (successful) {
+          input.blur();
+          return true;
+        }
+      } catch (err) {
+        console.warn("input execCommand gagal, beralih ke textarea...", err);
+      }
+    }
+
+    // 3. Fallback textarea aman (tanpa offscreen -9999px yang sering diblokir Safari iOS)
+    try {
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.top = "0";
+      textarea.style.left = "0";
+      textarea.style.width = "2em";
+      textarea.style.height = "2em";
+      textarea.style.padding = "0";
+      textarea.style.border = "none";
+      textarea.style.outline = "none";
+      textarea.style.boxShadow = "none";
+      textarea.style.background = "transparent";
+      textarea.style.opacity = "0.01";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      textarea.setSelectionRange(0, textarea.value.length);
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return successful;
+    } catch (err) {
+      console.warn("textarea execCommand gagal", err);
+      return false;
+    }
+  }
+
+  function resetCopyButtonState() {
+    const { copyBtn, copyText, copyIcon } = getElements();
+    if (copyBtn) {
+      copyBtn.classList.remove("bg-emerald-600", "hover:bg-emerald-700");
+      copyBtn.classList.add("bg-primary-500", "hover:bg-primary-600");
+    }
+    if (copyText) {
+      copyText.textContent = "Salin";
+    }
+    if (copyIcon) {
+      copyIcon.innerHTML = `
+        <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+      `;
+    }
+  }
+
+  async function handleCopyAction() {
+    const els = getElements();
+
+    // Dapatkan URL valid: dari input value, activeUrl, atau window.location.href
+    let textToCopy =
+      els.copyInput?.value?.trim() ||
+      activeUrl?.trim() ||
+      (typeof window !== "undefined" ? window.location.href : "");
+
+    if (!textToCopy) {
+      textToCopy = window.location.href;
+    }
+
+    // Pastikan input menampilkan URL yang disalin
+    if (els.copyInput && !els.copyInput.value) {
+      els.copyInput.value = textToCopy;
+    }
+
+    const success = await copyText(textToCopy);
+
+    if (success) {
+      if (els.copyBtn) {
+        els.copyBtn.classList.remove("bg-primary-500", "hover:bg-primary-600");
+        els.copyBtn.classList.add("bg-emerald-600", "hover:bg-emerald-700");
+      }
+      if (els.copyText) els.copyText.textContent = "Tersalin!";
+      if (els.copyIcon) {
+        els.copyIcon.innerHTML = `
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+        `;
+      }
+
+      if (copyTimeoutId) clearTimeout(copyTimeoutId);
+      copyTimeoutId = window.setTimeout(() => {
+        resetCopyButtonState();
+      }, 2000);
+    } else {
+      // Jika browser memblokir total akses clipboard otomatis,
+      // fokuskan input dan seleksi semua teks agar pengguna dapat tekan Ctrl+C / Cmd+C
+      if (els.copyInput) {
+        els.copyInput.focus();
+        els.copyInput.select();
+      }
+      showToast("Tautan dipilih, silakan salin link", "default");
+    }
+  }
+
+  function shareToWhatsApp() {
+    const url = activeUrl || window.location.href;
+    const title = activeTitle || document.title;
+    const waMsg = activeText
+      ? `${activeText}\n\n${url}`
+      : `*${title}*\nMari bantu dan berdonasi bersama melalui link kebaikan berikut:\n${url}`;
+    const waLink = `https://api.whatsapp.com/send?text=${encodeURIComponent(waMsg)}`;
+    window.open(waLink, "_blank", "noopener,noreferrer");
+  }
+
+  function shareToFacebook() {
+    const url = activeUrl || window.location.href;
+    const fbLink = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(fbLink, "_blank", "noopener,noreferrer,width=600,height=500");
+  }
+
+  async function shareToInstagram() {
+    const url = activeUrl || window.location.href;
+    await copyText(url);
+    showToast(
+      "Link disalin! Buka Instagram untuk berbagi di Story atau DM",
+      "success",
+    );
+    window.open("https://www.instagram.com/", "_blank", "noopener,noreferrer");
+  }
+
+  function shareToX() {
+    const url = activeUrl || window.location.href;
+    const title = activeTitle || document.title;
+    const xMsg = activeText || `${title} - Mari bersama bantu sesama:`;
+    const xLink = `https://x.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(xMsg)}`;
+    window.open(xLink, "_blank", "noopener,noreferrer,width=600,height=500");
+  }
+
+  async function shareNative() {
+    const url = activeUrl || window.location.href;
+    const title = activeTitle || document.title;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: activeText || title,
+          url,
+        });
+        closeShareModal();
+      } catch {
+        // User menutup native sheet
+      }
+    }
+  }
+
+  export async function openShareModal(data?: SharePayload) {
+    const els = getElements();
+    if (!els.overlay || !els.container) return;
+
+    // Tentukan URL dengan reff code jika ada
+    const rawUrl = data?.url || window.location.href;
+    activeUrl = await appendReffCodeToUrl(rawUrl);
+
+    // Tentukan Judul
+    activeTitle =
+      data?.title?.trim() ||
+      document.title.replace(/\s*[-|]\s*Beramalbersama.*$/i, "").trim() ||
+      "Program Kebaikan";
+
+    activeText = data?.text?.trim() || "";
+
+    // Update Tampilan Preview & Input
+    if (els.previewTitle) els.previewTitle.textContent = activeTitle;
+    if (els.previewUrl) els.previewUrl.textContent = activeUrl;
+    if (els.copyInput) els.copyInput.value = activeUrl;
+
+    // Tampilkan tombol native share jika browser mendukung
+    if (els.btnNative) {
+      if (
+        typeof navigator !== "undefined" &&
+        typeof navigator.share === "function"
+      ) {
+        els.btnNative.classList.remove("hidden");
+      } else {
+        els.btnNative.classList.add("hidden");
+      }
+    }
+
+    // Reset tombol copy ke status normal
+    resetCopyButtonState();
+
+    // Animasi Buka
+    els.overlay.classList.remove("opacity-0", "pointer-events-none");
+    els.overlay.classList.add("opacity-100", "pointer-events-auto");
+    els.overlay.setAttribute("aria-hidden", "false");
+
+    els.container.classList.remove(
+      "translate-y-full",
+      "sm:translate-y-4",
+      "sm:scale-95",
+    );
+    els.container.classList.add(
+      "translate-y-0",
+      "sm:translate-y-0",
+      "sm:scale-100",
+    );
+
+    document.body.style.overflow = "hidden";
+  }
+
+  export function closeShareModal() {
+    const els = getElements();
+    if (!els.overlay || !els.container) return;
+
+    els.overlay.classList.add("opacity-0", "pointer-events-none");
+    els.overlay.classList.remove("opacity-100", "pointer-events-auto");
+    els.overlay.setAttribute("aria-hidden", "true");
+
+    els.container.classList.add(
+      "translate-y-full",
+      "sm:translate-y-4",
+      "sm:scale-95",
+    );
+    els.container.classList.remove(
+      "translate-y-0",
+      "sm:translate-y-0",
+      "sm:scale-100",
+    );
+
+    document.body.style.overflow = "";
+  }
+
+  /**
+   * Delegasi Klik Global Terpadu:
+   * Menggunakan event delegation pada document agar tahan terhadap perpindahan halaman
+   * atau penggantian DOM oleh Astro View Transitions.
+   */
+  function setupGlobalShareHandler() {
+    if (window.__shareModalGlobalBound) return;
+    window.__shareModalGlobalBound = true;
+
+    // Expose ke window
+    window.openShareModal = openShareModal;
+    window.closeShareModal = closeShareModal;
+
+    // Custom Event Listener
+    document.addEventListener("share:open", (e: Event) => {
+      const customEvent = e as CustomEvent<SharePayload>;
+      openShareModal(customEvent.detail || {});
+    });
+
+    // Keyboard ESC
+    document.addEventListener("keydown", (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        const overlay = document.getElementById("share-modal-overlay");
+        if (overlay && !overlay.classList.contains("pointer-events-none")) {
+          closeShareModal();
+        }
+      }
+    });
+
+    // Delegasi Klik
+    document.addEventListener("click", async (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+
+      // 1. Klik Tombol Salin Link
+      const copyBtn = target.closest("#share-btn-copy");
+      if (copyBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        await handleCopyAction();
+        return;
+      }
+
+      // 2. Klik pada Input Salin Link (auto-select semua teks)
+      const copyInput = target.closest(
+        "#share-copy-input",
+      ) as HTMLInputElement | null;
+      if (copyInput) {
+        copyInput.focus();
+        copyInput.select();
+        copyInput.setSelectionRange(0, 99999);
+        return;
+      }
+
+      // 3. Klik Tombol Close
+      const closeBtn = target.closest("#share-modal-close");
+      if (closeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        closeShareModal();
+        return;
+      }
+
+      // 4. Klik WhatsApp
+      const waBtn = target.closest("#share-btn-wa");
+      if (waBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        shareToWhatsApp();
+        return;
+      }
+
+      // 5. Klik Facebook
+      const fbBtn = target.closest("#share-btn-fb");
+      if (fbBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        shareToFacebook();
+        return;
+      }
+
+      // 6. Klik Instagram
+      const igBtn = target.closest("#share-btn-ig");
+      if (igBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        await shareToInstagram();
+        return;
+      }
+
+      // 7. Klik X (Twitter)
+      const xBtn = target.closest("#share-btn-x");
+      if (xBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        shareToX();
+        return;
+      }
+
+      // 8. Klik Native Share
+      const nativeBtn = target.closest("#share-btn-native");
+      if (nativeBtn) {
+        e.preventDefault();
+        e.stopPropagation();
+        await shareNative();
+        return;
+      }
+
+      // 9. Klik Backdrop (di luar kontainer modal)
+      const overlay = document.getElementById("share-modal-overlay");
+      if (target === overlay) {
+        e.preventDefault();
+        closeShareModal();
+        return;
+      }
+
+      // 10. Klik Trigger Tombol Share di Halaman (Header, StickyDonateBar, Project, dll)
+      const trigger = target.closest(
+        "#share-button, #btn-share-dp, #btn-share-project, #btn-share-lp, [data-share-modal], [data-share-btn], .btn-share",
+      ) as HTMLElement | null;
+
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        const title =
+          trigger.getAttribute("data-share-title") ||
+          document.getElementById("text-header")?.textContent?.trim() ||
+          document.title;
+
+        const text = trigger.getAttribute("data-share-text") || "";
+        const rawUrl =
+          trigger.getAttribute("data-share-url") || window.location.href;
+
+        await openShareModal({ title, text, url: rawUrl });
+      }
+    });
+  }
+
+  // Jalankan inisialisasi delegasi global
+  setupGlobalShareHandler();
+
+  // Pastikan fungsi window selalu tersedia di setiap page-load Astro
+  document.addEventListener("astro:page-load", () => {
+    window.openShareModal = openShareModal;
+    window.closeShareModal = closeShareModal;
+  });
+</script>
