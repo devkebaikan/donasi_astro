@@ -1,0 +1,1114 @@
+---
+export const prerender = false;
+
+import MainLayout from "@/layouts/MainLayout.astro";
+import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
+import { getServerToken } from "@/lib/auth";
+import {
+  getUserProfile,
+  getPaymentMethodFilter,
+  getCampaignSetUp,
+} from "@/lib/FetchData";
+
+const token = getServerToken(Astro.cookies);
+
+const [account, pmData, programSetup] = await Promise.all([
+  token ? getUserProfile(token) : Promise.resolve(null),
+  getPaymentMethodFilter({ status: "true" }),
+  getCampaignSetUp("rutin"),
+]);
+
+const programId = (programSetup?.value ?? "3") as string;
+const isAuth = !!account;
+const userName = account?.name ?? "";
+const userPhone = account?.phone ?? "";
+const userEmail = account?.email ?? "";
+const walletBal = account?.dompet_kebaikan?.saldo ?? 0;
+
+const paymentMethods: any[] = Array.isArray(pmData) ? pmData : [];
+
+// Pilih default payment method (prioritaskan BSI atau QRIS jika ada)
+const defaultPayment =
+  paymentMethods.find((m: any) =>
+    m.name?.toLowerCase().includes("syariah") ||
+    m.name?.toLowerCase().includes("bsi")
+  ) ??
+  paymentMethods.find((m: any) =>
+    m.name?.toLowerCase().includes("qris")
+  ) ??
+  paymentMethods[0] ?? {
+    id: 2,
+    name: "Bank Syariah Indonesia (BSI)",
+    image_url: "https://cdn.beramalbersama.com/bank_refferences/tmpphp0_z_gs_gt.jpeg",
+    type: "bank",
+  };
+
+const routinePackages = [
+  {
+    nominal: 1000,
+    dailyText: "Rp1.000 / hari",
+    monthlyText: "Rp30.000 / 30 hari",
+    days: 30,
+    total: 30000,
+    isPopular: false,
+  },
+  {
+    nominal: 2000,
+    dailyText: "Rp2.000 / hari",
+    monthlyText: "Rp60.000 / 30 hari",
+    days: 30,
+    total: 60000,
+    isPopular: false,
+  },
+  {
+    nominal: 3000,
+    dailyText: "Rp3.000 / hari",
+    monthlyText: "Rp90.000 / 30 hari",
+    days: 30,
+    total: 90000,
+    isPopular: false,
+  },
+  {
+    nominal: 5000,
+    dailyText: "Rp5.000 / hari",
+    monthlyText: "Rp150.000 / 30 hari",
+    days: 30,
+    total: 150000,
+    isPopular: true,
+  },
+  {
+    nominal: 10000,
+    dailyText: "Rp10.000 / hari",
+    monthlyText: "Rp300.000 / 30 hari",
+    days: 30,
+    total: 300000,
+    isPopular: false,
+  },
+];
+
+const faqs = [
+  {
+    q: "Kapan kajian bersama UAS dan bagaimana mengikutinya?",
+    a: "Kajian berlangsung setiap Selasa malam pukul 20.00 WIB melalui Zoom. Link akses dikirimkan ke grup komunitas paling lambat Selasa sore. Jika kamu bergabung Selasa siang, kamu tetap langsung mendapat link kajian malam itu.",
+  },
+  {
+    q: "Apakah semua pertanyaan pasti dijawab UAS?",
+    a: "Member berkesempatan bertanya langsung saat sesi kajian berlangsung. Karena waktu kajian terbatas, pertanyaan diprioritaskan dan disesuaikan selama sesi berlangsung agar manfaatnya merata.",
+  },
+  {
+    q: "Bagaimana cara menyelesaikan pembayaran?",
+    a: "Setelah mengisi form data di atas dan menekan tombol konfirmasi, kamu akan langsung diarahkan ke halaman invoice resmi yang mencantumkan detail pembayaran via Bank Syariah Indonesia (BSI), QRIS, atau metode pembayaran pilihanmu. Konfirmasi otomatis langsung terhubung.",
+  },
+  {
+    q: "Apa saja metode pembayarannya?",
+    a: "Tersedia transfer Bank Syariah Indonesia (BSI), Bank BCA, Mandiri, BRI, QRIS resmi yang bisa dipindai dari semua aplikasi m-banking dan e-wallet (GoPay, OVO, ShopeePay, DANA), serta Saku Kebaikan.",
+  },
+  {
+    q: "Apakah saya akan ditagih otomatis setiap bulan?",
+    a: "Tidak ada potongan otomatis tanpa konfirmasi dari rekeningmu. Setiap paket sedekah rutin ini berlaku 30 hari (1 bulan). Menjelang periode berikutnya, pengingat dikirim via WhatsApp/Email dan kamu bebas memutuskan untuk melanjutkan atau berhenti.",
+  },
+  {
+    q: "Apakah saya wajib belajar ngaji?",
+    a: "Tidak wajib. Belajar ngaji adalah fasilitas dan benefit tambahan khusus bagi member yang berminat mendalami bacaan Qur'an, baik secara privat maupun berjamaah online.",
+  },
+  {
+    q: "Untuk apa donasi saya digunakan?",
+    a: "Donasi rutinmu disalurkan untuk menjaga ekosistem dakwah Al-Qur'an: apresiasi operasional guru ngaji kampung pedalaman, beasiswa santri penghafal Al-Qur'an, penyediaan mushaf layak, dan pemberdayaan rumah Qur'an di pelosok nusantara.",
+  },
+];
+---
+
+<MainLayout
+  title="Teruskan Cahaya | Beramalbersama.com"
+  description="Meneruskan cahaya Alquran melalui kebaikan dan kepedulian untuk sesama."
+>
+  <!-- Top Navigation Bar -->
+  <header class="fixed top-0 left-0 right-0 z-40 ">
+    <div class="container mx-auto max-w-[480px] backdrop-blur-md bg-white/80 border-b border-neutral-200/80 transition-all duration-300 px-4 h-[65px] flex items-center justify-between">
+      <a href="/" class="flex items-center gap-2 group" aria-label="Kembali ke beranda">
+        <img
+          src="/assets/logo/logo-long-custom.png"
+          alt="Beramal Bersama"
+          class="h-9 w-auto object-contain"
+        />
+      </a>
+
+      <div class="flex items-center gap-2">
+        <a
+          href="#form-gabung"
+          class="inline-flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-full bg-secondary-500 text-white shadow-xs hover:bg-secondary-600 active:scale-95 transition-all"
+        >
+          <span>Gabung</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div
+    id="jaga-nyala-page"
+    data-program-id={programId}
+    data-wallet={walletBal}
+    data-is-auth={String(isAuth)}
+    class="min-h-screen bg-neutral-100 text-neutral-800 pt-[65px] pb-28"
+  >
+    <main class="container mx-auto max-w-[480px] bg-white min-h-screen shadow-xs overflow-hidden">
+      <!-- ── 1. Hero Section ─────────────────────────────────────────── -->
+      <section class="relative bg-primary-950 text-white overflow-hidden pb-10">
+        <!-- Background Asset with Overlay -->
+        <div class=" inset-0 z-0">
+          <img
+            src="/assets/landingpage/hero/hero-2.avif"
+            alt="Santri dan Guru Ngaji"
+            class="w-full h-full object-cover opacity-25 filter brightness-75 scale-105"
+          />
+          <div class="absolute inset-0 bg-linear-to-b from-primary-950/90 via-primary-900/80 to-primary-950"></div>
+        </div>
+      </section>
+
+      <!-- ── 2. Sub-Hero CTA Section ──────────────────────────────────── -->
+      <section class="px-5 py-6 bg-white border-b border-neutral-100 text-center space-y-4">
+    
+        <h2 class="text-xl font-bold text-neutral-900 leading-snug">
+          Jaga Guru Ngaji Mulai Rp1.000 Sehari, dan Ikut Kajian Live Bersama UAS
+        </h2>
+
+        <p class="text-xs text-neutral-600 leading-relaxed max-w-md mx-auto">
+          Gabung komunitas Jaga Nyala untuk ikut menjaga guru ngaji kampung, da’i pedalaman, dan santri penghafal. Sebagai member, kamu juga ikut kajian bersama Ustadz Abdul Somad lewat Zoom setiap pekan.
+        </p>
+
+        <div>
+          <a
+            href="#form-gabung"
+            class="inline-flex items-center justify-center gap-2 w-full max-w-sm py-3.5 px-6 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white font-bold text-sm shadow-md shadow-secondary-500/20 active:scale-98 transition-all"
+          >
+            <span>Gabung — mulai Rp1.000/hari</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </a>
+        </div>
+
+        <!-- 3 Trust Badges -->
+        <div class="flex items-center justify-center gap-3 pt-2 text-[11px] text-neutral-500 font-medium">
+          <span class="inline-flex items-center gap-1">
+            Tanpa potongan otomatis
+          </span>
+          <span>•</span>
+          <span class="inline-flex items-center gap-1">
+
+            Rekening resmi
+          </span>
+          <span>•</span>
+          <span class="inline-flex items-center gap-1">
+
+            Berlaku 1 bulan
+          </span>
+        </div>
+      </section>
+
+      <!-- ── 3. Benefit: Kajian Live Bersama UAS ──────────────────────── -->
+      <section class="px-5 py-7 bg-neutral-50/70 border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1.5 py-3">
+          <span class="text-xs font-bold uppercase tracking-wider text-primary-700">Benefit Member</span>
+          <h3 class="text-lg font-bold text-neutral-900 leading-snug">
+            Kajian Live Bersama UAS Setiap Selasa Malam
+          </h3>
+          <p class="text-xs text-neutral-600 leading-relaxed">
+            Punya pertanyaan agama yang selama ini mengganjal? Member berkesempatan bertanya langsung kepada Ustadz Abdul Somad saat kajian berlangsung.
+          </p>
+        </div>
+
+        <!-- 3 Pills Info -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-neutral-800">Setiap Selasa Malam</p>
+              <p class="text-[11px] text-neutral-500">Pukul 20.00 WIB</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-neutral-800">Via Zoom Meeting</p>
+              <p class="text-[11px] text-neutral-500">Link ke grup komunitas</p>
+            </div>
+          </div>
+
+          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+            </div>
+            <div>
+              <p class="text-xs font-bold text-neutral-800">Tanya Langsung</p>
+              <p class="text-[11px] text-neutral-500">Saat kajian berlangsung</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video / Session Card Preview -->
+        <div class="relative rounded-2xl overflow-hidden border border-neutral-200/90 shadow-sm bg-neutral-900 group">
+          <img
+            src="/assets/home/tema-ustman.jpeg"
+            alt="Kajian Live Zoom Bersama UAS"
+            class="w-full h-52 object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-linear-to-t from-neutral-950/90 via-neutral-950/30 to-neutral-950/20"></div>
+
+          <!-- Play Button Overlay -->
+          <div class="absolute inset-0 flex items-center justify-center">
+            <div class="w-13 h-13 rounded-full bg-secondary-500 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M8 5v14l11-7z" />
+              </svg>
+            </div>
+          </div>
+
+          <div class="absolute bottom-0 left-0 right-0 px-3 pb-3 text-left bg-gradient-to-t from-white to-white/80">
+            <p class="text-xs font-bold text-gray-700 line-clamp-1">Cuplikan member bertanya langsung kepada UAS lewat Zoom</p>
+            <p class="text-[11px] text-gray-500">Bergabung Selasa siang pun tetap langsung menerima link kajian malam itu.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 4. Yang Kamu Dapatkan sebagai Member ─────────────────────── -->
+      <section class="px-5 py-7 bg-white border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1 py-3">
+          <h3 class="text-lg font-bold text-neutral-900">Yang Kamu Dapatkan sebagai Member</h3>
+          <p class="text-xs text-neutral-500 leading-relaxed">
+            Komunitas ini bukan hanya soal donasi, tapi juga tempat untuk bertumbuh bersama Al-Qur’an.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Card 1 -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+            <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+              </svg>
+            </div>
+            <h4 class="text-xs font-bold text-neutral-900 mb-1">Kajian Mingguan UAS</h4>
+            <p class="text-[11px] text-neutral-600 leading-relaxed">
+              Setiap Selasa pukul 20.00 WIB via Zoom, dengan kesempatan bertanya langsung mengenai masalah agama.
+            </p>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+            <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+              </svg>
+            </div>
+            <h4 class="text-xs font-bold text-neutral-900 mb-1">Grup Komunitas</h4>
+            <p class="text-[11px] text-neutral-600 leading-relaxed">
+              Grup WhatsApp untuk info kajian, pengingat amalan harian, dan saling menguatkan sesama member pecinta Al-Qur'an.
+            </p>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+            <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </div>
+            <h4 class="text-xs font-bold text-neutral-900 mb-1">Belajar Ngaji (Opsional)</h4>
+            <p class="text-[11px] text-neutral-600 leading-relaxed">
+              Bagi yang berminat, tersedia bimbingan belajar tahsin & tajwid secara privat maupun online bersama asatidz.
+            </p>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+            <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </div>
+            <h4 class="text-xs font-bold text-neutral-900 mb-1">Amal Jariyah Terarah</h4>
+            <p class="text-[11px] text-neutral-600 leading-relaxed">
+              Donasimu disalurkan teratur untuk mengapresiasi guru ngaji pelosok, santri, dan kelangsungan dakwah Al-Qur'an.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 5. FORM GABUNG KOMUNITAS JAGA NYALA (Sedekah Rutin 30 Hari) ── -->
+      <section id="form-gabung" class="px-5 py-7 bg-primary-50/40 border-b border-primary-100/60 scroll-mt-16 space-y-5">
+        <div class="text-center space-y-1.5 py-5">
+          <h3 class="text-xl font-bold text-neutral-900 leading-snug">
+            Gabung Komunitas Jaga Nyala
+          </h3>
+          <p class="text-xs text-neutral-600 leading-relaxed">
+            Pilih paket yang sesuai untukmu. Setelah form dikirim, kamu akan diarahkan ke halaman pembayaran resmi.
+          </p>
+        </div>
+
+        <!-- Rutin Packages Selection -->
+        <div class="space-y-2.5">
+          <label class="block text-xs font-bold text-neutral-700">
+            Pilih Paket Sedekah Rutin Harian (30 Hari)
+          </label>
+
+          <div class="grid grid-cols-1 gap-2.5" id="package-list">
+            {routinePackages.map((pkg) => (
+              <div
+                class={`package-card relative p-3.5 rounded-xl border cursor-pointer transition-all duration-200 flex items-center justify-between ${
+                  pkg.isPopular
+                    ? "border-primary-500 bg-white ring-2 ring-primary-500/20 shadow-xs"
+                    : "border-neutral-200 bg-white hover:border-primary-300"
+                }`}
+                data-nominal={pkg.nominal}
+                data-days={pkg.days}
+                data-total={pkg.total}
+              >
+                {pkg.isPopular && (
+                  <span class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-secondary-500 text-white text-[10px] font-bold shadow-xs">
+                    ★ Direkomendasikan
+                  </span>
+                )}
+                <div class="flex items-center gap-3">
+                  <div class="radio-indicator w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors">
+                    <span class="radio-dot w-2 h-2 rounded-full bg-primary-600 hidden"></span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-neutral-900 leading-tight">
+                      {pkg.dailyText}
+                    </p>
+                    <p class="text-xs font-semibold text-primary-700 mt-0.5">
+                      Total: {pkg.monthlyText}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="text-right">
+                  <span class="text-[11px] font-medium text-neutral-400 bg-neutral-100 px-2 py-1 rounded-md">
+                    30 Hari
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <!-- Custom Nominal Option -->
+          <div class="pt-1">
+            <button
+              id="btn-toggle-custom"
+              type="button"
+              class="text-xs text-primary-700 hover:text-primary-800 font-semibold underline underline-offset-2 flex items-center gap-1"
+            >
+              <span>Atau masukkan nominal lainnya</span>
+            </button>
+
+            <div id="custom-nominal-wrap" class="hidden mt-2.5 p-3 rounded-xl bg-white border border-neutral-200 shadow-xs space-y-2">
+              <label for="input-custom-nominal" class="block text-xs font-semibold text-neutral-600">
+                Nominal Sedekah per Hari (Minimal Rp1.000)
+              </label>
+              <div class="relative">
+                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-neutral-400">Rp</span>
+                <input
+                  type="text"
+                  id="input-custom-nominal"
+                  inputmode="numeric"
+                  placeholder="Contoh: 15.000"
+                  class="w-full pl-9 pr-3 py-2.5 text-sm font-semibold rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                />
+              </div>
+              <p id="custom-total-preview" class="text-xs text-primary-700 font-semibold">
+                Total 30 hari: Rp0
+              </p>
+            </div>
+          </div>
+
+          <!-- Detail Jadwal Info -->
+          <div class="p-3 rounded-xl bg-white/80 border border-primary-200/70 text-xs text-neutral-600 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div>
+                <p class="font-bold text-neutral-800">Rutin Harian (Setiap Hari)</p>
+                <p class="text-[11px] text-neutral-500">Pukul 05.00 WIB (Waktu Subuh)</p>
+              </div>
+            </div>
+            <span class="text-[11px] font-bold text-primary-700 bg-primary-50 px-2.5 py-1 rounded-full border border-primary-200">
+              30 Kali
+            </span>
+          </div>
+        </div>
+
+        <!-- Form Identitas Donatur -->
+        <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3.5">
+          <p class="text-xs font-bold uppercase tracking-wider text-neutral-500">Data Diri Member</p>
+
+          <div>
+            <label for="donor-name" class="block text-xs font-semibold text-neutral-700 mb-1">
+              Nama Lengkap <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="donor-name"
+              value={userName}
+              placeholder="Masukkan nama lengkap Anda"
+              class="w-full px-3 py-2.5 text-sm rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+          </div>
+
+          <div>
+            <label for="donor-phone" class="block text-xs font-semibold text-neutral-700 mb-1">
+              Nomor WhatsApp / HP <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="tel"
+              id="donor-phone"
+              value={userPhone}
+              placeholder="Contoh: 081234567890"
+              class="w-full px-3 py-2.5 text-sm rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              required
+            />
+            <p class="text-[11px] text-neutral-400 mt-1">
+              Untuk konfirmasi, pengiriman link kajian Zoom, dan tanda terima resmi.
+            </p>
+          </div>
+
+          <div>
+            <label for="donor-email" class="block text-xs font-semibold text-neutral-700 mb-1">
+              Email <span class="text-neutral-400 font-normal">(disarankan)</span>
+            </label>
+            <input
+              type="email"
+              id="donor-email"
+              value={userEmail}
+              placeholder="nama@email.com"
+              class="w-full px-3 py-2.5 text-sm rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+            <p class="text-[11px] text-neutral-400 mt-1">
+              Agar jadwal kajian & laporan amalan tidak terlewat.
+            </p>
+          </div>
+
+          <div>
+            <label for="donor-atas-nama" class="block text-xs font-semibold text-neutral-700 mb-1">
+              Atas Nama Donasi <span class="text-neutral-400 font-normal">(opsional)</span>
+            </label>
+            <input
+              type="text"
+              id="donor-atas-nama"
+              placeholder="Contoh: Orang tua / Keluarga"
+              class="w-full px-3 py-2.5 text-sm rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+
+          <div>
+            <label for="donor-doa" class="block text-xs font-semibold text-neutral-700 mb-1">
+              Doa & Harapan <span class="text-neutral-400 font-normal">(opsional)</span>
+            </label>
+            <textarea
+              id="donor-doa"
+              rows="2"
+              placeholder="Tuliskan doa atau hajat kebaikan Anda..."
+              class="w-full px-3 py-2.5 text-sm rounded-lg border border-neutral-300 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Metode Pembayaran Picker -->
+        <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-xs space-y-3">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-bold text-neutral-800">Metode Pembayaran</p>
+              <p class="text-[11px] text-neutral-500">Pilih bank transfer, QRIS, atau e-wallet</p>
+            </div>
+            <button
+              id="btn-open-payment"
+              type="button"
+              class="text-xs font-semibold text-primary-700 hover:text-primary-800 px-2 py-1 rounded bg-primary-50 hover:bg-primary-100 transition-colors"
+            >
+              Ganti
+            </button>
+          </div>
+
+          <!-- Selected Method Card -->
+          <div
+            id="selected-payment-card"
+            class="flex items-center justify-between p-3 rounded-lg border border-neutral-200 bg-neutral-50/70 cursor-pointer hover:bg-neutral-50 transition-colors"
+          >
+            <div class="flex items-center gap-3">
+              <img
+                id="selected-payment-img"
+                src={defaultPayment.image_url}
+                alt={defaultPayment.name}
+                class="w-10 h-7 object-contain rounded bg-white p-0.5 border border-neutral-200 shrink-0"
+              />
+              <div>
+                <p id="selected-payment-name" class="text-xs font-bold text-neutral-800">
+                  {defaultPayment.name}
+                </p>
+                <p class="text-[11px] text-neutral-500">Otomatis terverifikasi di invoice</p>
+              </div>
+            </div>
+
+            <svg class="w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Total & Submit Card -->
+        <div class="bg-white p-4 rounded-xl border border-neutral-200 shadow-sm space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-neutral-100">
+            <div>
+              <p class="text-xs text-neutral-500">Total Komitmen Sedekah (30 Hari)</p>
+              <p id="summary-total-display" class="text-lg font-extrabold text-primary-700">
+                Rp150.000
+              </p>
+            </div>
+            <div class="text-right">
+              <span class="inline-block text-[11px] font-semibold text-primary-800 bg-primary-100 px-2.5 py-1 rounded-md">
+                Rp5.000 / hari
+              </span>
+            </div>
+          </div>
+
+          <button
+            id="btn-submit-donasi"
+            type="button"
+            class="w-full py-3.5 px-4 rounded-xl bg-secondary-500 hover:bg-secondary-600 active:scale-98 text-white font-bold text-sm shadow-md shadow-secondary-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            <span>Gabung Jaga Nyala Sekarang</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          </button>
+
+          <p class="text-[11px] text-center text-neutral-500 flex items-center justify-center gap-1.5">
+            <!-- <svg class="w-3.5 h-3.5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg> -->
+            <span>Rekening resmi terverifikasi. Tanda terima dikirim via WhatsApp.</span>
+          </p>
+        </div>
+
+        <!-- 3 Langkah Sederhana -->
+        <div class="grid grid-cols-3 gap-2 pt-1 text-center py-5">
+          <div class="p-2.5">
+            <div class="w-6 h-6 mx-auto rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center mb-1">
+              1
+            </div>
+            <p class="text-[11px] font-semibold text-neutral-800 leading-tight">Pilih Paket</p>
+            <p class="text-[10px] text-neutral-400 mt-0.5">Isi data diri</p>
+          </div>
+
+          <div class="p-2.5">
+            <div class="w-6 h-6 mx-auto rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center mb-1">
+              2
+            </div>
+            <p class="text-[11px] font-semibold text-neutral-800 leading-tight">Transfer Resmi</p>
+            <p class="text-[10px] text-neutral-400 mt-0.5">BSI / QRIS</p>
+          </div>
+
+          <div class="p-2.5">
+            <div class="w-6 h-6 mx-auto rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center mb-1">
+              3
+            </div>
+            <p class="text-[11px] font-semibold text-neutral-800 leading-tight">Masuk Grup</p>
+            <p class="text-[10px] text-neutral-400 mt-0.5">Terima link UAS</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 6. Apa yang Kita Jaga? (Story & Impact) ──────────────────── -->
+      <section class="px-5 py-7 bg-white border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1 py-5">
+          <h3 class="text-lg font-bold text-neutral-900 leading-snug">Apa yang Kita Jaga?</h3>
+          <p class="text-xs text-neutral-500 leading-relaxed">
+            Ada banyak orang dan ruang yang membuat Al-Qur’an tetap hidup di tengah masyarakat.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Card 1 -->
+          <div class="rounded-xl border border-neutral-200/90 overflow-hidden bg-neutral-50 group hover:shadow-sm transition-all">
+            <div class="h-28 overflow-hidden bg-neutral-200">
+              <img
+                src="/assets/landingpage/galeri/galeri-1.avif"
+                alt="Menjaga Mereka yang Mengajarkan"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-neutral-900 leading-tight mb-1">
+                Menjaga yang Mengajar
+              </h4>
+              <p class="text-[11px] text-neutral-600 leading-relaxed line-clamp-3">
+                Guru ngaji di pelosok yang mengajar penuh keikhlasan dengan keterbatasan sarana.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="rounded-xl border border-neutral-200/90 overflow-hidden bg-neutral-50 group hover:shadow-sm transition-all">
+            <div class="h-28 overflow-hidden bg-neutral-200">
+              <img
+                src="/assets/landingpage/galeri/galeri-2.avif"
+                alt="Menemani Generasi Belajar"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-neutral-900 leading-tight mb-1">
+                Menemani Santri
+              </h4>
+              <p class="text-[11px] text-neutral-600 leading-relaxed line-clamp-3">
+                Menjaga semangat generasi muda penghafal Qur'an agar fokus menuntut ilmu agama.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="rounded-xl border border-neutral-200/90 overflow-hidden bg-neutral-50 group hover:shadow-sm transition-all">
+            <div class="h-28 overflow-hidden bg-neutral-200">
+              <img
+                src="/assets/landingpage/galeri/galeri-3.avif"
+                alt="Menghidupkan Ruang Belajar"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-neutral-900 leading-tight mb-1">
+                Ruang Belajar Qur'an
+              </h4>
+              <p class="text-[11px] text-neutral-600 leading-relaxed line-clamp-3">
+                Rumah Qur'an dan surau menjadi ruang bertumbuh bagi anak-anak untuk dekat Al-Qur'an.
+              </p>
+            </div>
+          </div>
+
+          <!-- Card 4 -->
+          <div class="rounded-xl border border-neutral-200/90 overflow-hidden bg-neutral-50 group hover:shadow-sm transition-all">
+            <div class="h-28 overflow-hidden bg-neutral-200">
+              <img
+                src="/assets/landingpage/galeri/galeri-4.avif"
+                alt="Menyebarkan Akses Al-Qur'an"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+            </div>
+            <div class="p-3">
+              <h4 class="text-xs font-bold text-neutral-900 leading-tight mb-1">
+                Akses Mushaf Layak
+              </h4>
+              <p class="text-[11px] text-neutral-600 leading-relaxed line-clamp-3">
+                Menyalurkan mushaf Al-Qur’an ke wilayah pelosok yang masih kekurangan sarana.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 7. Quote Statement Section ──────────────────────────────── -->
+      <section class="px-5 py-7 bg-primary-50/50 border-b border-primary-100 text-center space-y-3">
+        <span class="text-xs font-bold uppercase tracking-wider text-primary-700">
+          Apa Itu Gerakan Jaga Nyala?
+        </span>
+
+        <blockquote class="text-sm font-semibold text-neutral-900 leading-relaxed px-2 italic">
+          “Jika kita ingin Al-Qur’an terus hidup di tengah masyarakat, maka kita juga harus menjaga mereka yang selama ini menjaga nyalanya.”
+        </blockquote>
+
+        <p class="text-xs text-neutral-600 leading-relaxed">
+          Gerakan Jaga Nyala Al-Qur’an adalah ikhtiar bersama untuk menjaga orang-orang, tempat, dan program yang membuat Al-Qur’an terus dipelajari, diajarkan, dan dihidupkan di tengah masyarakat.
+        </p>
+      </section>
+
+      <!-- ── 8. Bagian dari Gerakan SIDAQ ────────────────────────────── -->
+      <section class="p-5 bg-white border-b border-neutral-100">
+        <div class="bg-primary-900 rounded-2xl p-5 text-white space-y-3.5 relative overflow-hidden">
+          <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-primary-800/40 rounded-full"></div>
+
+          <div class="relative z-10 space-y-2">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary-800 border border-primary-700 text-primary-200 text-[10px] font-semibold">
+              <span>Kolaborasi Dakwah</span>
+            </div>
+            <h4 class="text-base font-bold text-white leading-snug">
+              Bagian dari Gerakan Jaga Nyala Bersama SIDAQ
+            </h4>
+            <p class="text-xs text-neutral-200 leading-relaxed">
+              SIDAQ — Surgakan Indonesia Dengan Al-Qur’an adalah gerakan yang berikhtiar menjadikan Al-Qur’an sebagai pusat perbaikan diri, keluarga, dan masyarakat di Indonesia.
+            </p>
+          </div>
+
+          <div class="relative z-10 pt-2 border-t border-primary-800">
+            <p class="text-[11px] font-semibold text-primary-200 mb-2">Hadir di berbagai wilayah:</p>
+            <div class="flex flex-wrap gap-1.5">
+              {["Pontianak", "Sukabumi", "Bandung", "Lombok", "Malang", "Kubu Raya"].map((city) => (
+                <span class="text-[11px] bg-primary-800/80 px-2.5 py-1 rounded-md text-white border border-primary-700/60 font-medium">
+                  {city}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 9. FAQ Accordion ─────────────────────────────────────────── -->
+      <section class="px-5 py-7 bg-neutral-50/70 border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1">
+          <span class="text-xs font-bold uppercase tracking-wider text-primary-700">Tanya Jawab</span>
+          <h3 class="text-lg font-bold text-neutral-900">Pertanyaan yang Sering Ditanyakan</h3>
+        </div>
+
+        <div class="space-y-2" id="faq-accordion">
+          {faqs.map((faq, idx) => (
+            <div class="faq-item rounded-xl border border-neutral-200 bg-white overflow-hidden transition-all duration-200">
+              <button
+                type="button"
+                class="faq-header w-full px-4 py-3.5 text-left text-xs font-bold text-neutral-800 flex items-center justify-between gap-3 hover:text-primary-700 transition-colors"
+                data-index={idx}
+              >
+                <span>{faq.q}</span>
+                <svg class="faq-icon w-4 h-4 text-neutral-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <div class="faq-body hidden px-4 pb-3.5 pt-0 text-xs text-neutral-600 leading-relaxed border-t border-neutral-100/80">
+                {faq.a}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- ── 10. Final Call To Action ─────────────────────────────────── -->
+      <section class="px-5 py-8 bg-white text-center space-y-4">
+        <div class="w-12 h-12 rounded-full bg-secondary-50 text-secondary-600 flex items-center justify-center mx-auto">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z" />
+          </svg>
+        </div>
+
+        <div class="space-y-1.5">
+          <h3 class="text-xl font-bold text-neutral-900">
+            Jaga nyalanya, mulai hari ini.
+          </h3>
+          <p class="text-xs text-neutral-600 max-w-sm mx-auto leading-relaxed">
+            Mari menjadi bagian dari gerakan yang menjaga Al-Qur’an tetap hidup dari generasi ke generasi.
+          </p>
+        </div>
+
+        <div class="pt-1">
+          <a
+            href="#form-gabung"
+            class="inline-flex items-center justify-center gap-2 w-full max-w-sm py-3.5 px-6 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white font-bold text-sm shadow-md shadow-secondary-500/20 active:scale-98 transition-all"
+          >
+            <span>Gabung Jaga Nyala — Mulai Rp1.000/hari</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Floating Sticky Bottom Bar for Mobile -->
+    <div id="sticky-bottom-bar" class="fixed bottom-0 left-0 right-0 z-30 ">
+      <div class="container mx-auto max-w-[480px] flex items-center bg-white/95 backdrop-blur-md border-t border-neutral-200 px-4 py-3 shadow-lg justify-between gap-3">
+        <div>
+          <p class="text-[11px] text-neutral-500 font-medium">Sedekah Rutin Harian</p>
+          <p id="floating-total-display" class="text-sm font-extrabold text-primary-700">
+            Rp150.000 <span class="text-[11px] font-normal text-neutral-400">/ 30 hari</span>
+          </p>
+        </div>
+        <a
+          href="#form-gabung"
+          class="px-5 py-2.5 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold shadow-md shadow-secondary-500/20 active:scale-95 transition-all flex items-center gap-1.5"
+        >
+          <span>Gabung Sekarang</span>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Payment Method Modal -->
+  <PaymentMethodModal
+    paymentMethods={paymentMethods}
+    showWallet={isAuth}
+    defaultWallet={false}
+    showVa={true}
+    showBank={true}
+    showEwallet={true}
+  />
+</MainLayout>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { formatRupiah } from "@/lib/formatter";
+  import { getIncomingReffCode, getIncomingLeads } from "@/lib/referral";
+
+  const page = document.getElementById("jaga-nyala-page") as HTMLElement;
+  if (!page) throw new Error("jaga-nyala-page element not found");
+
+  const programId = page.dataset.programId || "3";
+  const isAuth = page.dataset.isAuth === "true";
+
+  // Selected State
+  let selectedNominal = 5000;
+  let commitmentDays = 30;
+  let totalAmount = selectedNominal * commitmentDays;
+  let selectedPaymentId = "2"; // Default BSI or fallback
+  let isCustom = false;
+  let isSubmitting = false;
+
+  // DOM Elements
+  const packageCards = document.querySelectorAll<HTMLElement>(".package-card");
+  const summaryTotalDisplay = document.getElementById("summary-total-display");
+  const floatingTotalDisplay = document.getElementById("floating-total-display");
+  const btnToggleCustom = document.getElementById("btn-toggle-custom");
+  const customNominalWrap = document.getElementById("custom-nominal-wrap");
+  const inputCustomNominal = document.getElementById("input-custom-nominal") as HTMLInputElement;
+  const customTotalPreview = document.getElementById("custom-total-preview");
+
+  const donorNameInput = document.getElementById("donor-name") as HTMLInputElement;
+  const donorPhoneInput = document.getElementById("donor-phone") as HTMLInputElement;
+  const donorEmailInput = document.getElementById("donor-email") as HTMLInputElement;
+  const donorAtasNamaInput = document.getElementById("donor-atas-nama") as HTMLInputElement;
+  const donorDoaInput = document.getElementById("donor-doa") as HTMLTextAreaElement;
+
+  const btnOpenPayment = document.getElementById("btn-open-payment");
+  const selectedPaymentCard = document.getElementById("selected-payment-card");
+  const selectedPaymentName = document.getElementById("selected-payment-name");
+  const selectedPaymentImg = document.getElementById("selected-payment-img") as HTMLImageElement;
+  const btnSubmit = document.getElementById("btn-submit-donasi") as HTMLButtonElement;
+
+  // Package Card Selection
+  function updateSelection(nominal: number, isCustomOption = false) {
+    selectedNominal = nominal;
+    isCustom = isCustomOption;
+    totalAmount = selectedNominal * commitmentDays;
+
+    packageCards.forEach((card) => {
+      const cardNominal = Number(card.dataset.nominal);
+      const isCardActive = !isCustom && cardNominal === selectedNominal;
+      const dot = card.querySelector(".radio-dot");
+
+      if (isCardActive) {
+        card.classList.add("border-primary-500", "ring-2", "ring-primary-500/20", "bg-primary-50/20");
+        card.classList.remove("border-neutral-200", "bg-white");
+        dot?.classList.remove("hidden");
+      } else {
+        card.classList.remove("border-primary-500", "ring-2", "ring-primary-500/20", "bg-primary-50/20");
+        card.classList.add("border-neutral-200", "bg-white");
+        dot?.classList.add("hidden");
+      }
+    });
+
+    if (summaryTotalDisplay) {
+      summaryTotalDisplay.textContent = formatRupiah(totalAmount);
+    }
+    if (floatingTotalDisplay) {
+      floatingTotalDisplay.innerHTML = `${formatRupiah(totalAmount)} <span class="text-[11px] font-normal text-neutral-400">/ 30 hari</span>`;
+    }
+  }
+
+  packageCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      const nominal = Number(card.dataset.nominal);
+      if (customNominalWrap) customNominalWrap.classList.add("hidden");
+      updateSelection(nominal, false);
+    });
+  });
+
+  // Toggle Custom Nominal
+  btnToggleCustom?.addEventListener("click", () => {
+    if (!customNominalWrap) return;
+    const isHidden = customNominalWrap.classList.contains("hidden");
+    customNominalWrap.classList.toggle("hidden", !isHidden);
+    if (isHidden && inputCustomNominal) {
+      inputCustomNominal.focus();
+    }
+  });
+
+  // Custom Input Handler
+  inputCustomNominal?.addEventListener("input", (e) => {
+    const raw = (e.target as HTMLInputElement).value.replace(/\D/g, "");
+    const num = Number(raw) || 0;
+    (e.target as HTMLInputElement).value = num > 0 ? num.toLocaleString("id-ID") : "";
+
+    if (num >= 1000) {
+      updateSelection(num, true);
+      if (customTotalPreview) {
+        customTotalPreview.textContent = `Total 30 hari: ${formatRupiah(num * commitmentDays)}`;
+      }
+    } else {
+      if (customTotalPreview) {
+        customTotalPreview.textContent = "Minimal nominal Rp1.000 / hari";
+      }
+    }
+  });
+
+  // Payment Selection Modal
+  const openModal = () => {
+    (window as any).openPaymentModal?.();
+  };
+  btnOpenPayment?.addEventListener("click", openModal);
+  selectedPaymentCard?.addEventListener("click", openModal);
+
+  window.addEventListener("payment:selected", (e: Event) => {
+    const { id, name, image } = (e as CustomEvent).detail;
+    selectedPaymentId = String(id);
+    if (selectedPaymentName) selectedPaymentName.textContent = name;
+    if (selectedPaymentImg && image) {
+      selectedPaymentImg.src = image;
+      selectedPaymentImg.classList.remove("hidden");
+    }
+  });
+
+  // FAQ Accordion
+  const faqItems = document.querySelectorAll(".faq-item");
+  faqItems.forEach((item) => {
+    const header = item.querySelector(".faq-header");
+    const body = item.querySelector(".faq-body");
+    const icon = item.querySelector(".faq-icon");
+
+    header?.addEventListener("click", () => {
+      const isOpen = !body?.classList.contains("hidden");
+
+      // Close other faqs
+      faqItems.forEach((other) => {
+        other.querySelector(".faq-body")?.classList.add("hidden");
+        other.querySelector(".faq-icon")?.classList.remove("rotate-180");
+      });
+
+      if (!isOpen) {
+        body?.classList.remove("hidden");
+        icon?.classList.add("rotate-180");
+      }
+    });
+  });
+
+  // Form Submission
+  btnSubmit?.addEventListener("click", async () => {
+    if (isSubmitting) return;
+
+    const name = donorNameInput?.value.trim() ?? "";
+    const rawPhone = donorPhoneInput?.value.trim() ?? "";
+    const phone = rawPhone.startsWith("0") ? rawPhone : rawPhone ? `0${rawPhone}` : "";
+    const email = donorEmailInput?.value.trim() ?? "";
+    const atasNama = donorAtasNamaInput?.value.trim() ?? "";
+    const doa = donorDoaInput?.value.trim() ?? "";
+
+    if (!name || !phone) {
+      showToast("Nama lengkap dan nomor WhatsApp wajib diisi", "error");
+      donorNameInput?.focus();
+      return;
+    }
+
+    if (phone.length < 9) {
+      showToast("Nomor WhatsApp tidak valid", "error");
+      donorPhoneInput?.focus();
+      return;
+    }
+
+    if (selectedNominal < 1000) {
+      showToast("Minimal sedekah Rp1.000 per hari", "error");
+      return;
+    }
+
+    if (!selectedPaymentId) {
+      showToast("Silakan pilih metode pembayaran terlebih dahulu", "error");
+      openModal();
+      return;
+    }
+
+    isSubmitting = true;
+    btnSubmit.disabled = true;
+    btnSubmit.innerHTML = `
+      <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span>Memproses Pendaftaran...</span>
+    `;
+
+    const reffCode = getIncomingReffCode();
+    const incomingLeads = getIncomingLeads();
+
+    const payload: Record<string, unknown> = {
+      program_id: Number(programId),
+      range_type: "daily",
+      range: "1",
+      time: "05:00",
+      nominal: selectedNominal,
+      commitment: commitmentDays,
+      type: "commitment",
+      payment_method_id: Number(selectedPaymentId),
+      status: "Pending",
+      name,
+      phone,
+      ...(email ? { email } : {}),
+      ...(atasNama ? { atas_nama: atasNama } : {}),
+      ...(doa ? { doa } : {}),
+      ...(reffCode ? { reff_code: reffCode } : {}),
+      ...(incomingLeads ? { leads: incomingLeads } : {}),
+    };
+
+    try {
+      const res = await fetch(`/api/rutin/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Gagal memproses donasi rutin");
+      }
+
+      const invoice = data?.data?.invoice;
+      if (invoice) {
+        window.location.href = `/invoice/${invoice}`;
+      } else {
+        showToast("Pendaftaran berhasil dicatat", "success");
+        window.location.href = "/donasi-saya";
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan, silakan coba lagi";
+      showToast(msg, "error");
+      isSubmitting = false;
+      btnSubmit.disabled = false;
+      btnSubmit.innerHTML = `
+        <span>🔥 Gabung Jaga Nyala Sekarang</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+        </svg>
+      `;
+    }
+  });
+
+  // Initial State Setup
+  updateSelection(5000, false);
+</script>
+
