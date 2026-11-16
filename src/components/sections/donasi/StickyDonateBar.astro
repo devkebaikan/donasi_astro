@@ -4,9 +4,10 @@ interface Props {
   isActive: boolean;
   link?: string;
   type?: string;
+  idButton?: string;
 }
 
-const { isRutin, isActive, link, type } = Astro.props;
+const { isRutin, isActive, link, type, idButton } = Astro.props;
 ---
 
 <div
@@ -50,7 +51,8 @@ const { isRutin, isActive, link, type } = Astro.props;
       }
 
       <button
-        id="btn-donasi-sekarang"
+        id={idButton ?? "btn-donasi-sekarang"}
+        data-action-donate="true"
         data-active={isActive}
         class:list={[
           "btn w-2/3 py-2.5 px-4 rounded-lg font-semibold transition-all duration-300 text-sm md:text-base",
@@ -69,32 +71,39 @@ const { isRutin, isActive, link, type } = Astro.props;
   import { appendReffCodeToUrl, saveIncomingLeads } from "@/lib/referral";
   import { showToast } from "@/lib/toast";
 
-  // Simpan parameter leads jika ada
-  const urlParams = new URLSearchParams(window.location.search);
-  const leads = urlParams.get("leads");
-  if (leads) saveIncomingLeads(leads);
+  function initStickyDonateBar() {
+    // Simpan parameter leads jika ada
+    const urlParams = new URLSearchParams(window.location.search);
+    const leads = urlParams.get("leads");
+    if (leads) saveIncomingLeads(leads);
 
-  // Tombol Bagikan
-  const shareButton = document.getElementById("btn-share-dp");
-  shareButton?.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const shareUrl = await appendReffCodeToUrl(window.location.href);
-    if (typeof window.openShareModal === "function") {
-      window.openShareModal({ title: document.title, url: shareUrl });
-    } else {
-      document.dispatchEvent(
-        new CustomEvent("share:open", {
-          detail: { title: document.title, url: shareUrl },
-        })
-      );
-    }
-  });
+    // Tombol Bagikan
+    const shareButton = document.getElementById("btn-share-dp");
+    shareButton?.addEventListener("click", async (e) => {
+      e.preventDefault();
+      const shareUrl = await appendReffCodeToUrl(window.location.href);
+      if (typeof window.openShareModal === "function") {
+        window.openShareModal({ title: document.title, url: shareUrl });
+      } else {
+        document.dispatchEvent(
+          new CustomEvent("share:open", {
+            detail: { title: document.title, url: shareUrl },
+          })
+        );
+      }
+    });
 
-  // Tombol Donasi Sekarang — membuka DonatePanel via custom event
-  const openBtn = document.getElementById("btn-donasi-sekarang");
-  openBtn?.addEventListener("click", () => {
-    const active = openBtn.getAttribute("data-active") === "true";
-    if (!active) return;
-    document.dispatchEvent(new CustomEvent("donate:open"));
-  });
+    // Tombol Donasi Sekarang — membuka DonatePanel / memicu submit donasi via custom event
+    const openBtns = document.querySelectorAll('[data-action-donate="true"]');
+    openBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const active = btn.getAttribute("data-active") === "true";
+        if (!active) return;
+        document.dispatchEvent(new CustomEvent("donate:open"));
+      });
+    });
+  }
+
+  initStickyDonateBar();
+  document.addEventListener("astro:page-load", initStickyDonateBar);
 </script>

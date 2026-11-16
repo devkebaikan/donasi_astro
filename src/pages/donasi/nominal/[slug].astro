@@ -1,0 +1,292 @@
+---
+export const prerender = false;
+
+import Header from "@/components/layouts/Header.astro";
+import MainLayout from "@/layouts/MainLayout.astro";
+import { getCampaignByLink, getNominalOptions } from "@/lib/FetchData";
+import { formatRupiah } from "@/lib/formatter";
+import settings from "@/config/settings.json";
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect("/404");
+
+const programIdParam = Astro.url.searchParams.get("id");
+const projectIdParam = Astro.url.searchParams.get("project");
+const fromParam = Astro.url.searchParams.get("from") || "detail3";
+
+let campaignData: any = null;
+let nominalOptions: any[] = [];
+
+try {
+  const [campaignRes, nominalRes] = await Promise.all([
+    getCampaignByLink(slug),
+    getNominalOptions(slug),
+  ]);
+  campaignData = campaignRes?.data ?? null;
+  nominalOptions = Array.isArray(nominalRes)
+    ? nominalRes
+    : (nominalRes?.data ?? []);
+} catch (e) {
+  return Astro.redirect("/404");
+}
+
+if (!campaignData) return Astro.redirect("/404");
+
+const programId = programIdParam || campaignData.id;
+const campaignTitle = campaignData.title || "Nominal Donasi";
+const minAmount = settings?.donation?.minAmount ?? 10000;
+
+// Menentukan back link untuk Header bawaan
+let backLink = `/${slug}`;
+if (fromParam === "detail3") {
+  backLink = `/detail3/${slug}${projectIdParam ? `?project=${projectIdParam}` : ""}`;
+} else if (fromParam === "detail2") {
+  backLink = `/detail2/${slug}${projectIdParam ? `?project=${projectIdParam}` : ""}`;
+}
+---
+
+<MainLayout
+  title={`Pilih Nominal - ${campaignTitle}`}
+  description={`Pilih nominal donasi untuk program ${campaignTitle}`}
+>
+  <Header
+    type="form"
+    text={campaignTitle}
+    link={backLink}
+  />
+
+  <main
+    id="nominal-page"
+    data-slug={slug}
+    data-program-id={programId}
+    data-project-id={projectIdParam ?? ""}
+    data-from={fromParam}
+    data-min-amount={minAmount}
+    class="min-h-screen bg-linear-to-br from-slate-50 to-primary-100 pt-20 pb-28"
+  >
+    <div class="container px-3 md:px-0 space-y-4">
+
+      <!-- Section Title -->
+      <div class="pt-1">
+        <h2 class="text-sm md:text-base font-bold text-gray-800 text-center">
+          Masukkan Nominal Donasi
+        </h2>
+      </div>
+
+      <!-- List Opsi Nominal -->
+      <div class="space-y-2.5">
+        {
+          nominalOptions && nominalOptions.length > 0 ? (
+            nominalOptions.map((opt: any, idx: number) => {
+              const nominalVal = Number(opt.nominal ?? opt);
+              return (
+                <button
+                  type="button"
+                  data-amount={nominalVal}
+                  class="btn-select-nominal w-full bg-white rounded-xl p-3.5 flex items-center justify-between border border-gray-200/80 shadow-xs hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer group"
+                >
+                  <div class="flex flex-col items-start">
+                    <span class="font-bold text-gray-800 text-sm mb-1 group-hover:text-primary-600 transition-colors">
+                      {formatRupiah(nominalVal)}
+                    </span>
+                    <span class="text-xs text-gray-500">{opt.nama_pilihan}</span>
+                  </div>
+                  <svg
+                    class="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              );
+            })
+          ) : (
+            <>
+              {[30000, 50000, 95000, 100000].map((nominalVal, idx) => (
+                <button
+                  type="button"
+                  data-amount={nominalVal}
+                  class="btn-select-nominal w-full bg-white rounded-xl p-3.5 flex items-center justify-between border border-gray-200/80 shadow-xs hover:border-primary-500 hover:bg-primary-50/50 transition-all cursor-pointer group"
+                >
+                  <div class="flex items-center gap-3">
+                    <span class="font-bold text-gray-800 text-base group-hover:text-primary-600 transition-colors">
+                      {formatRupiah(nominalVal)}
+                    </span>
+                  </div>
+                  <svg
+                    class="w-5 h-5 text-gray-400 group-hover:text-primary-600 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              ))}
+            </>
+          )
+        }
+      </div>
+
+      <!-- Card Input Donasi Lainnya -->
+      <div
+        class="bg-white rounded-xl p-4 border border-gray-200/80 shadow-xs space-y-2.5"
+      >
+        <label
+          for="custom-donation-input"
+          class="block text-xs font-semibold text-gray-700"
+        >
+          Masukkan Donasi Lainnya
+        </label>
+        <div
+          class="flex items-center bg-gray-50 rounded-lg px-4 py-3 border border-gray-200 focus-within:ring-2 focus-within:ring-primary-400 focus-within:border-transparent transition-all"
+        >
+          <span class="text-base font-bold text-gray-700 mr-2">Rp</span>
+          <input
+            id="custom-donation-input"
+            type="text"
+            inputmode="numeric"
+            placeholder="0"
+            class="w-full bg-transparent text-right font-extrabold text-xl text-gray-800 outline-none placeholder:text-gray-300 placeholder:font-normal"
+          />
+        </div>
+        <p class="text-[11px] text-gray-500 flex items-center gap-1.5">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="text-gray-400"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          Min. donasi sebesar {formatRupiah(minAmount)}
+        </p>
+      </div>
+    </div>
+
+    <!-- Sticky Bottom Bar -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-40 bg-white/90 backdrop-blur-md border-t border-gray-200/80 p-3 shadow-lg"
+    >
+      <div class="container px-3 md:px-0">
+        <button
+          id="btn-submit-nominal"
+          type="button"
+          disabled
+          class="btn w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 text-sm md:text-base text-gray-400 bg-gray-200 cursor-not-allowed"
+        >
+          Lanjut pembayaran
+        </button>
+      </div>
+    </div>
+  </main>
+</MainLayout>
+
+<script>
+  import { formatRupiah } from "@/lib/formatter";
+  import { showToast } from "@/lib/toast";
+
+  const root = document.getElementById("nominal-page");
+  if (root) {
+    const slug = root.getAttribute("data-slug") || "";
+    const programId = root.getAttribute("data-program-id") || "";
+    const projectId = root.getAttribute("data-project-id") || "";
+    const fromSource = root.getAttribute("data-from") || "detail3";
+    const minAmount = Number(root.getAttribute("data-min-amount") || 10000);
+
+    const input = document.getElementById(
+      "custom-donation-input",
+    ) as HTMLInputElement | null;
+    const submitBtn = document.getElementById(
+      "btn-submit-nominal",
+    ) as HTMLButtonElement | null;
+    const nominalButtons =
+      root.querySelectorAll<HTMLButtonElement>(".btn-select-nominal");
+
+    let currentAmount = 0;
+
+    function parseNumber(val: string) {
+      return Number(val.replace(/\D/g, "")) || 0;
+    }
+
+    function updateSubmitButton(amount: number) {
+      currentAmount = amount;
+      if (!submitBtn) return;
+      if (amount >= minAmount) {
+        submitBtn.disabled = false;
+        submitBtn.className =
+          "btn w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 text-sm md:text-base bg-secondary-500 hover:bg-secondary-600 text-white cursor-pointer shadow-md";
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.className =
+          "btn w-full py-3 px-4 rounded-lg font-semibold transition-all duration-300 text-sm md:text-base text-gray-400 bg-gray-200 cursor-not-allowed";
+      }
+    }
+
+    function proceedToForm(amount: number) {
+      if (amount < minAmount) {
+        showToast(`Minimal donasi sebesar ${formatRupiah(minAmount)}`, "error");
+        return;
+      }
+
+      localStorage.setItem(
+        "nominal_donation",
+        JSON.stringify({
+          amount,
+          updatedAt: Date.now(),
+          projectId: projectId || null,
+        }),
+      );
+
+      const queryParams = new URLSearchParams();
+      if (programId) queryParams.set("id", programId);
+      if (projectId) queryParams.set("project", projectId);
+      if (fromSource) queryParams.set("from", fromSource);
+
+      window.location.assign(
+        `/donasi/form/${slug}?${queryParams.toString()}`,
+      );
+    }
+
+    nominalButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const val = Number(btn.getAttribute("data-amount") || 0);
+        if (!val) return;
+        proceedToForm(val);
+      });
+    });
+
+    input?.addEventListener("input", (e) => {
+      const target = e.target as HTMLInputElement;
+      const raw = parseNumber(target.value);
+      target.value = raw ? formatRupiah(raw, { withSymbol: false }) : "";
+      updateSubmitButton(raw);
+    });
+
+    submitBtn?.addEventListener("click", () => {
+      if (currentAmount >= minAmount) {
+        proceedToForm(currentAmount);
+      }
+    });
+  }
+</script>

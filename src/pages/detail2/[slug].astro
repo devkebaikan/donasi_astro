@@ -14,6 +14,7 @@ import {
 import MainLayout from "@/layouts/MainLayout.astro";
 import Header from "@/components/layouts/Header.astro";
 import NominalInput from "@/components/sections/donasi/NominalInput.astro";
+import BoxGuaratee from "@/components/sections/donasi/BoxGuaratee.astro";
 
 const { slug } = Astro.params;
 
@@ -32,6 +33,7 @@ const [dataDetailCampaign, dataDonors, nominalOptions] = await Promise.all([
 const detailCampaign = dataDetailCampaign?.data ?? {};
 const donors = dataDonors?.data ?? [];
 
+const type = detailCampaign?.tipe.name ?? "DONASI";
 const isRutin = detailCampaign?.is_rutin === true;
 const isActive = detailCampaign?.status === "PUBLISH";
 
@@ -97,6 +99,8 @@ const campaignJsonLd = JSON.stringify({
 
   <script is:inline type="application/ld+json" set:html={campaignJsonLd} />
 
+  <!-- <ShowJsonData data={detailCampaign} /> -->
+
   <div class="bg-white min-h-screen container">
     <div class="mx-auto mb-24 max-w-120">
       <Banner
@@ -105,7 +109,7 @@ const campaignJsonLd = JSON.stringify({
         donors={donors}
         projectId={projectId ? Number(projectId) : null}
       />
-      <NominalInput
+      <!-- <NominalInput
         nominalOptions={nominalOptions}
         programId={detailCampaign?.id}
         programLink={detailCampaign?.link}
@@ -115,7 +119,19 @@ const campaignJsonLd = JSON.stringify({
         paketCollected={detailCampaign?.paket_terkumpul ?? 0}
         totalCollected={detailCampaign?.nominal_achieved ?? 0}
         totalDonors={detailCampaign?.total_donors ?? 0}
+      /> -->
+
+      <NominalInput
+        nominalOptions={nominalOptions}
+        programId={detailCampaign?.id}
+        programLink={detailCampaign?.link}
+        projectId={projectId ? Number(projectId) : null}
+        totalCollected={detailCampaign?.nominal_achieved ?? 0}
+        totalDonors={detailCampaign?.total_donors ?? 0}
       />
+
+      <BoxGuaratee />
+
       <ProfileMitra
         programLink={detailCampaign?.link}
         programId={detailCampaign?.id}
@@ -124,6 +140,6 @@ const campaignJsonLd = JSON.stringify({
       <TabSection slug={slug} detailCampaign={detailCampaign} />
     </div>
 
-    <StickyDonateBar isRutin={isRutin} link={slug} isActive={isActive} />
+    <StickyDonateBar isRutin={isRutin} link={slug} isActive={isActive} type={type} idButton="btn-donasi-detail2" />
   </div>
 </MainLayout>

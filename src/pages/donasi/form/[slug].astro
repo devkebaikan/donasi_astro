@@ -23,6 +23,20 @@ if (!programId)
   return Astro.redirect(isAds ? `/${slug}?source=ads` : `/${slug}`);
 
 const projectIdParam = Astro.url.searchParams.get("project");
+const fromParam = Astro.url.searchParams.get("from");
+
+let backLink = isAds ? `/${slug}?source=ads` : `/${slug}`;
+if (fromParam === "detail3") {
+  const q = new URLSearchParams();
+  if (programId) q.set("id", programId);
+  if (projectIdParam) q.set("project", projectIdParam);
+  q.set("from", "detail3");
+  backLink = `/donasi/nominal/${slug}?${q.toString()}`;
+} else if (fromParam === "detail2") {
+  backLink = `/detail2/${slug}${projectIdParam ? `?project=${projectIdParam}` : ""}`;
+} else if (fromParam === "detail1") {
+  backLink = `/${slug}${projectIdParam ? `?project=${projectIdParam}` : ""}`;
+}
 
 const token = getServerToken(Astro.cookies);
 
@@ -72,7 +86,7 @@ const paymentMethods = (dataPaymentMethods ?? []).filter((m: any) => {
   <Header
     type="form"
     text={headerText}
-    link={isAds ? `/${slug}?source=ads` : `/${slug}`}
+    link={backLink}
   />
 
   <div
