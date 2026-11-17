@@ -1,0 +1,2432 @@
+---
+export const prerender = false;
+
+import MainLayout from "@/layouts/MainLayout.astro";
+import PaymentMethodModal from "@/components/ui/PaymentMethod.astro";
+import { getServerToken } from "@/lib/auth";
+import {
+  getUserProfile,
+  getPaymentMethodFilter,
+  getCampaignSetUp,
+} from "@/lib/FetchData";
+
+const token = getServerToken(Astro.cookies);
+
+const [account, pmData, programSetup] = await Promise.all([
+  token ? getUserProfile(token) : Promise.resolve(null),
+  getPaymentMethodFilter({ status: "true" }),
+  getCampaignSetUp("rutin"),
+]);
+
+const programId = (programSetup?.value ?? "3") as string;
+const isAuth = !!account;
+const userName = account?.name ?? "";
+const userPhone = account?.phone ?? "";
+const userEmail = account?.email ?? "";
+const walletBal = account?.dompet_kebaikan?.saldo ?? 0;
+
+const paymentMethods: any[] = Array.isArray(pmData) ? pmData : [];
+
+// Default payment method (prioritas BSI atau QRIS)
+const defaultPayment =
+  paymentMethods.find((m: any) =>
+    m.name?.toLowerCase().includes("syariah") ||
+    m.name?.toLowerCase().includes("bsi")
+  ) ??
+  paymentMethods.find((m: any) =>
+    m.name?.toLowerCase().includes("qris")
+  ) ??
+  paymentMethods[0] ?? {
+    id: 2,
+    name: "Bank Syariah Indonesia (BSI)",
+    image_url: "https://cdn.beramalbersama.com/bank_refferences/tmpphp0_z_gs_gt.jpeg",
+    type: "bank",
+  };
+
+// 5 Pilihan Paket Sedekah Rutin Harian (30 Hari)
+const routinePackages = [
+  {
+    nominal: 1000,
+    dailyText: "Rp1.000 / hari",
+    monthlyText: "Rp30.000 / 30 hari",
+    days: 30,
+    total: 30000,
+    label: "1.000 x 30",
+    isPopular: false,
+  },
+  {
+    nominal: 2000,
+    dailyText: "Rp2.000 / hari",
+    monthlyText: "Rp60.000 / 30 hari",
+    days: 30,
+    total: 60000,
+    label: "2.000 x 30",
+    isPopular: false,
+  },
+  {
+    nominal: 3000,
+    dailyText: "Rp3.000 / hari",
+    monthlyText: "Rp90.000 / 30 hari",
+    days: 30,
+    total: 90000,
+    label: "3.000 x 30",
+    isPopular: false,
+  },
+  {
+    nominal: 5000,
+    dailyText: "Rp5.000 / hari",
+    monthlyText: "Rp150.000 / 30 hari",
+    days: 30,
+    total: 150000,
+    label: "5.000 x 30",
+    isPopular: true,
+  },
+  {
+    nominal: 10000,
+    dailyText: "Rp10.000 / hari",
+    monthlyText: "Rp300.000 / 30 hari",
+    days: 30,
+    total: 300000,
+    label: "10.000 x 30",
+    isPopular: false,
+  },
+];
+---
+
+<MainLayout
+  title="Sedekah 1000 Sehari | Beramal Bersama"
+  description="Sedekah subuh rutin mulai Rp1.000 sehari bersama Beramal Bersama. Cukup sekali transfer untuk 30 subuh, disalurkan untuk pendidikan, kesehatan, dakwah, ekonomi, dan kemanusiaan."
+>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500;1,9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+
+  <div id="landing-page" class="sedekah-subuh-theme min-h-screen text-neutral-800 antialiased" data-program-id={programId} data-wallet={walletBal} data-is-auth={String(isAuth)}>
+    <!-- ── Nav ───────────────────────────────────────────────────────── -->
+    <nav class="nav">
+      <div class="nav-container">
+        <a href="/" class="flex items-center gap-2" aria-label="Beranda Beramal Bersama">
+          <img
+            src="/assets/logo/logo-long-custom.png"
+            alt="Beramal Bersama"
+            class="h-9 w-auto object-contain"
+          />
+        </a>
+        <a href="#form-section" class="btn btn-p btn-sm">Gabung</a>
+      </div>
+    </nav>
+
+    <div class="main-body-container">
+      <!-- ── Hero Section ────────────────────────────────────────────── -->
+      <header class="hero">
+        <div class="hero-inner">
+          <div class="hero-content">
+            <span class="pill rv">
+              <b>Sedekah Subuh</b>
+              <span>Program Beramal Bersama</span>
+            </span>
+
+            <h1 class="rv d1">
+              Seribu rupiah setiap subuh, <br class="hidden sm:inline" />
+              <span class="u">
+                pahala tak putus
+                <svg viewBox="0 0 300 20" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M3 14 C 70 4, 150 4, 297 12"></path>
+                </svg>
+              </span>.
+            </h1>
+
+            <p class="lead rv d2">
+              <strong>Cukup sekali transfer</strong>, sedekah Anda tercatat sebagai sedekah subuh selama <strong>30 hari berturut-turut</strong>, lalu disalurkan amil untuk mustahik dan mereka yang membutuhkan.
+            </p>
+
+            <div class="cta-row rv d3">
+              <a href="#form-section" class="btn btn-p" id="hero-cta">
+                <span>Mulai dari Rp1.000 Sehari</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h14M13 6l6 6-6 6"></path>
+                </svg>
+              </a>
+              <a href="#cara" class="btn btn-o">Cara Kerjanya</a>
+            </div>
+
+            <div class="assure rv d4">
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                Lembaga resmi terverifikasi
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6L9 17l-5-5"></path>
+                </svg>
+                Tanpa tagihan otomatis
+              </span>
+              <span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6L9 17l-5-5"></path>
+                </svg>
+                Berhenti kapan saja
+              </span>
+            </div>
+          </div>
+
+          <!-- Arch Visual Frame & Floating Badges -->
+          <div class="visual rv d2">
+            <div class="arch">
+              <img
+                src="/assets/landingpage/hero/hero-2.avif"
+                alt="Seorang nenek belajar membaca Al-Quran dalam Gerakan Berantas Buta Huruf Quran"
+                fetchpriority="high"
+              />
+              <p class="arch-cap">Gerakan Berantas Buta Huruf Quran</p>
+            </div>
+
+            <!-- Floating Badge 1 (1K) -->
+            <div class="float f1">
+              <span class="coin">1K</span>
+              <div>
+                <small>Setiap subuh</small>
+                <b>Rp1.000</b>
+              </div>
+            </div>
+
+            <!-- Floating Badge 2 (Hari ke-20 dari 30 Dots) -->
+            <div class="float f2">
+              <small>Sedekah subuh</small>
+              <b>Hari ke-20 dari 30</b>
+              <div class="dots" aria-hidden="true">
+                {Array.from({ length: 30 }).map((_, i) => (
+                  <i></i>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- ── Marquee Ticker ─────────────────────────────────────────── -->
+      <div class="marquee" aria-hidden="true">
+        <div class="track">
+          <span>Beasiswa Pendidikan</span>
+          <span>Peduli Kesehatan</span>
+          <span>Peduli Guru</span>
+          <span>Renovasi Rumah Lansia</span>
+          <span>Dakwah Pelosok</span>
+          <span>Pemberdayaan Ekonomi</span>
+          <span>Air Bersih Pelosok</span>
+          <span>Tanggap Bencana</span>
+          <span>Program Kebaikan Lainnya</span>
+          <span>Beasiswa Pendidikan</span>
+          <span>Peduli Kesehatan</span>
+          <span>Peduli Guru</span>
+          <span>Renovasi Rumah Lansia</span>
+          <span>Dakwah Pelosok</span>
+          <span>Pemberdayaan Ekonomi</span>
+          <span>Air Bersih Pelosok</span>
+          <span>Tanggap Bencana</span>
+          <span>Program Kebaikan Lainnya</span>
+        </div>
+      </div>
+
+      <!-- ── Cara Kerjanya Section ──────────────────────────────────── -->
+      <section class="sec" id="cara">
+        <div class="container-content">
+          <div class="sec-h center rv">
+            <span class="eyebrow">Cara Kerjanya</span>
+            <h2>Sekali niat, <em class="g">tiga puluh subuh</em> terjaga</h2>
+            <p>Sedekah rutin yang anti lupa dan anti ribet. Anda cukup memulai, amil yang menjaga istiqamahnya.</p>
+          </div>
+
+          <div class="steps">
+            <div class="step rv">
+              <span class="n">01</span>
+              <h3>Pilih nominal</h3>
+              <p>Mulai Rp1.000 hingga Rp10.000 per hari, sesuai kelapangan Anda.</p>
+            </div>
+            <div class="step rv d1">
+              <span class="n">02</span>
+              <h3>Transfer sekali</h3>
+              <p>Bayar satu kali untuk 30 hari ke rekening resmi Beramal Bersama.</p>
+            </div>
+            <div class="step rv d2">
+              <span class="n">03</span>
+              <h3>30 subuh tercatat</h3>
+              <p>Sedekah Anda tercatat setiap subuh dan disalurkan bertahap oleh amil.</p>
+            </div>
+          </div>
+
+          <!-- Interactive Calendar Card -->
+          <div class="cal rv" id="cal">
+            <div class="cal-h">
+              <div>
+                <h3>Kalender sedekah subuh Anda</h3>
+                <p>Satu kali transfer, tiga puluh pagi penuh keberkahan.</p>
+              </div>
+              <div class="count">
+                <span id="calN">0</span><small>/ 30 subuh</small>
+              </div>
+            </div>
+            <div class="days" id="days"></div>
+            <p class="cal-f">Ilustrasi: setiap kotak adalah satu subuh saat sedekah Anda tercatat.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Hadith Section ─────────────────────────────────────────── -->
+      <section class="sec hadith">
+        <div class="container-content text-center">
+          <span class="eyebrow rv">Kenapa rutin, walau sedikit?</span>
+          <p class="ar rv d1" lang="ar">أَحَبُّ الأَعْمَالِ إِلَى اللَّهِ أَدْوَمُهَا وَإِنْ قَلَّ</p>
+          <blockquote class="rv d2">
+            “Amalan yang paling dicintai oleh Allah Ta’ala adalah amalan yang kontinu walaupun itu sedikit.”
+          </blockquote>
+          <p class="src rv d3">HR. Muslim</p>
+
+          <div class="hd-sep"></div>
+
+          <span class="eyebrow rv">Kenapa setiap pagi?</span>
+          <blockquote class="sm rv d1">
+            “Tidak ada satu hari pun di mana pada pagi harinya seorang hamba berada padanya, melainkan dua malaikat turun kepadanya. Salah satu di antara keduanya berkata: ‘Ya Allah, berikanlah ganti bagi orang yang berinfak.’ Dan yang lainnya berkata: ‘Ya Allah, hancurkanlah (harta) orang yang kikir.’”
+          </blockquote>
+          <p class="src rv d2">HR. Bukhari & Muslim</p>
+        </div>
+      </section>
+
+      <!-- ── Hitung Kebaikan Anda (Kalkulator) ───────────────────────── -->
+      <section class="sec">
+        <div class="container-content">
+          <div class="sec-h center rv">
+            <span class="eyebrow">Hitung Kebaikan Anda</span>
+            <h2>Kecil di hari ini, <em class="g">besar di catatan amal</em></h2>
+          </div>
+
+          <div class="calc rv">
+            <div>
+              <p class="calc-label">Sedekah per subuh</p>
+              <div class="chips" id="chips">
+                <label class="chip"><input type="radio" name="calc" value="1000" /><span>Rp1.000</span></label>
+                <label class="chip"><input type="radio" name="calc" value="2000" /><span>Rp2.000</span></label>
+                <label class="chip"><input type="radio" name="calc" value="3000" /><span>Rp3.000</span></label>
+                <label class="chip"><input type="radio" name="calc" value="5000" checked /><span>Rp5.000</span></label>
+                <label class="chip"><input type="radio" name="calc" value="10000" /><span>Rp10.000</span></label>
+              </div>
+              <p class="hint" style="margin-top:16px">Nominal bisa dipilih ulang di formulir pendaftaran.</p>
+            </div>
+
+            <div>
+              <div class="res">
+                <div>
+                  <small>Cukup transfer sekali sebulan</small>
+                  <b id="cMonth">Rp150.000</b>
+                </div>
+                <div>
+                  <small>Subuh bersedekah / tahun</small>
+                  <b>360 kali</b>
+                </div>
+                <div>
+                  <small>Total sedekah / tahun</small>
+                  <b id="cYear">Rp1.800.000</b>
+                </div>
+              </div>
+
+              <a href="#form-section" class="btn btn-p full" id="calcGo" style="margin-top:14px">
+                Pilih Nominal Ini
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Yang Anda Dapatkan (Benefits) ──────────────────────────── -->
+      <section class="sec" style="padding-top:0">
+        <div class="container-content">
+          <div class="sec-h center rv">
+            <span class="eyebrow">Yang Anda Dapatkan</span>
+            <h2>Lebih dari sekadar <em class="g">sedekah</em></h2>
+          </div>
+
+          <div class="bens">
+            <article class="ben rv">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="18" rx="3"></rect>
+                  <path d="M16 2v4M8 2v4M3 10h18M8 15l2.5 2.5L16 13"></path>
+                </svg>
+              </div>
+              <h3>Rutin tanpa lupa</h3>
+              <p>Sekali transfer di awal bulan, 30 subuh tercatat. Tidak ada hari yang terlewat meski sedang sibuk.</p>
+            </article>
+
+            <article class="ben rv d1">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 3v2M5.6 5.6l1.4 1.4M3 12h2M19 12h2M17 7l1.4-1.4M7 17a5 5 0 1110 0"></path>
+                  <path d="M3 21h18"></path>
+                </svg>
+              </div>
+              <h3>Pengingat subuh</h3>
+              <p>Pesan hikmah singkat dan ajakan bersedekah via WhatsApp, agar istiqamah tak bergantung pada <em>mood</em>.</p>
+            </article>
+
+            <article class="ben rv d2">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+                  <path d="M14 2v6h6M8 13h8M8 17h5"></path>
+                </svg>
+              </div>
+              <h3>Kabar penyaluran</h3>
+              <p>Beramal Bersama rutin menerbitkan kabar penyaluran, <em>news letter</em>, dan laporan tahunan.</p>
+            </article>
+
+            <article class="ben rv">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M2 4h7a3 3 0 013 3v14a2 2 0 00-2-2H2zM22 4h-7a3 3 0 00-3 3v14a2 2 0 012-2h8z"></path>
+                </svg>
+              </div>
+              <h3>Edukasi ZIS</h3>
+              <p>Materi zakat, infak, dan sedekah dari amil: dari menghitung zakat profesi hingga adab bersedekah.</p>
+            </article>
+
+            <article class="ben wide rv d1">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 00-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 000-7.8z"></path>
+                </svg>
+              </div>
+              <h3>Amal jariyah untuk sesama</h3>
+              <p>Sedekah Anda disalurkan bertahap oleh amil untuk program Beramal Bersama yang menyentuh langsung kehidupan mustahik, serta program kebaikan lainnya.</p>
+              <div class="tags">
+                <span>Pendidikan & Beasiswa</span>
+                <span>Peduli Kesehatan</span>
+                <span>Peduli Guru</span>
+                <span>Dakwah Pelosok</span>
+                <span>Ekonomi Mandiri</span>
+                <span>Peduli Sosial</span>
+                <span>Kemanusiaan</span>
+                <span>& program kebaikan lainnya</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Alur Penyaluran Section ────────────────────────────────── -->
+      <section class="sec flow-sec" id="alur">
+        <div class="container-content">
+          <div class="sec-h center rv">
+            <span class="eyebrow">Alur Penyaluran</span>
+            <h2>Dari transfer Anda, <em class="g">sampai ke tangan penerima</em></h2>
+            <p>Setiap rupiah melewati alur yang jelas dan dikelola amil resmi, bukan perorangan.</p>
+          </div>
+
+          <div class="flow rv">
+            <!-- Animated Vertical Track & Travelling Coin -->
+            <div class="flow-track" aria-hidden="true">
+              <span class="flow-fill"></span>
+              <span class="flow-coin"></span>
+            </div>
+
+            <!-- Node 1 -->
+            <div class="node">
+              <span class="dot">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <path d="M2 10h20M6 15h4"></path>
+                </svg>
+                <i>1</i>
+              </span>
+              <div>
+                <h3>Donatur bersedekah</h3>
+                <p>Anda transfer sekali untuk 30 subuh ke salah satu rekening resmi a.n. Yayasan Sahabat Beramal Bersama.</p>
+              </div>
+            </div>
+
+            <!-- Node 2 -->
+            <div class="node">
+              <span class="dot">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  <path d="M9 12l2 2 4-4"></path>
+                </svg>
+                <i>2</i>
+              </span>
+              <div>
+                <h3>Diterima & dicatat amil</h3>
+                <p>Dana dikonfirmasi sistem dan dicatat sebagai sedekah subuh harian selama 30 hari.</p>
+              </div>
+            </div>
+
+            <!-- Node 3 -->
+            <div class="node">
+              <span class="dot">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <path d="M21 21l-4.3-4.3M8 11h6M11 8v6"></path>
+                </svg>
+                <i>3</i>
+              </span>
+              <div>
+                <h3>Penentuan penerima</h3>
+                <p>Amil memetakan kebutuhan mustahik dan memilih program yang paling mendesak.</p>
+              </div>
+            </div>
+
+            <!-- Node 4 -->
+            <div class="node">
+              <span class="dot">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"></path>
+                </svg>
+                <i>4</i>
+              </span>
+              <div>
+                <h3>Disalurkan bertahap</h3>
+                <p>Bantuan sampai ke penerima: pendidikan, kesehatan, dakwah, ekonomi, serta program kebaikan lainnya.</p>
+              </div>
+            </div>
+
+            <!-- Node 5 -->
+            <div class="node">
+              <span class="dot">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"></path>
+                  <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"></path>
+                </svg>
+                <i>5</i>
+              </span>
+              <div>
+                <h3>Kabar & laporan</h3>
+                <p>Kabar penyaluran dipublikasikan di beramalbersama.com, lengkap dengan dokumentasinya.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="flow-foot rv">
+            <p>Transparan sejak awal. Lihat sendiri kabar penyaluran terbaru Beramal Bersama.</p>
+            <a href="/story" class="btn btn-o">Lihat Kabar Penyaluran</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Kabar Penyaluran Stories ───────────────────────────────── -->
+      <section class="sec" style="background:var(--sand)">
+        <div class="container-content">
+          <div class="sec-h center rv">
+            <span class="eyebrow">Kabar Penyaluran</span>
+            <h2>Sedekah yang sudah <em class="g">sampai</em> ke penerima</h2>
+            <p>Kisah nyata penyaluran terbaru Beramal Bersama, serta program kebaikan lainnya. Sedekah subuh Anda akan menyusul menjadi bagian dari kebaikan seperti ini.</p>
+          </div>
+
+          <div class="stories">
+            <a class="story rv" href="/story" target="_blank" rel="noopener">
+              <div class="im">
+                <img src="/assets/landingpage/galeri/galeri-1.avif" alt="Bantuan renovasi rumah lansia" loading="lazy" />
+                <span class="tag">Peduli Lansia</span>
+              </div>
+              <div class="bd">
+                <h3>Bantuan renovasi rumah Mak Emis, lansia sebatang kara dan dhuafa</h3>
+                <span class="more">Baca kabarnya →</span>
+              </div>
+            </a>
+
+            <a class="story rv d1" href="/story" target="_blank" rel="noopener">
+              <div class="im">
+                <img src="/assets/landingpage/galeri/galeri-2.avif" alt="Pelatihan santri dan bekal keterampilan" loading="lazy" />
+                <span class="tag">Pemberdayaan</span>
+              </div>
+              <div class="bd">
+                <h3>Pelatihan menjahit, bekal keterampilan agar ibu-ibu mandiri secara ekonomi</h3>
+                <span class="more">Lihat programnya →</span>
+              </div>
+            </a>
+
+            <a class="story rv d2" href="/story" target="_blank" rel="noopener">
+              <div class="im">
+                <img src="/assets/landingpage/story-impact/sumber-air-bersih.avif" alt="Akses air bersih pelosok" loading="lazy" />
+                <span class="tag">Peduli Pelosok</span>
+              </div>
+              <div class="bd">
+                <h3>Akses sarana air bersih & wudhu bantu masyarakat surau pelosok</h3>
+                <span class="more">Lihat programnya →</span>
+              </div>
+            </a>
+
+            <!-- Mosaic Card Serta Program Kebaikan Lainnya -->
+            <div class="mc rv">
+              <div class="mc-ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+              </div>
+              <div class="mc-k">Dan masih banyak lagi</div>
+              <h3>Serta program kebaikan lainnya</h3>
+              <p>Penerima manfaat tidak terbatas pada tiga kisah tadi. Amil menyalurkan sedekah ke kebutuhan yang paling mendesak.</p>
+              <div class="mc-tags">
+                <span>Pendidikan</span>
+                <span>Dakwah</span>
+                <span>Ekonomi</span>
+                <span>Kebencanaan</span>
+                <span>Kemanusiaan</span>
+              </div>
+              <a href="/story" class="btn btn-p" style="margin-top:auto;width:fit-content">Lihat Program Beramal →</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Tentang Pengelola Section ──────────────────────────────── -->
+      <section class="sec about">
+        <div class="container-content">
+          <div class="about-card rv">
+            <img class="about-logo" src="/assets/logo/logo-long-custom.png" alt="Logo Beramal Bersama" loading="lazy" />
+            <div>
+              <span class="eyebrow">Tentang Pengelola</span>
+              <h2>Dikelola oleh <em class="g">Beramalbersama.com</em></h2>
+              <p style="color:var(--mut)">Yayasan Sahabat Beramal Bersama. Lembaga filantropi sosial kemasyarakatan yang profesional dan terpercaya dalam memberikan pelayanan dan pemberdayaan masyarakat.</p>
+
+              <ul class="misi">
+                <li>Beasiswa untuk pemerataan kesempatan pendidikan</li>
+                <li>Pelayanan sosial, kesehatan, spiritual, dan kemanusiaan</li>
+                <li>Membangkitkan kesadaran umat untuk beramal</li>
+                <li>Pemberdayaan menuju kemandirian masyarakat</li>
+              </ul>
+
+              <div class="facts">
+                <div><small>Status</small><b>Yayasan Berizin Resmi</b></div>
+                <div><small>Rekening</small><b>a.n. Sahabat Beramal Bersama</b></div>
+                <div><small>Situs</small><b><a href="https://beramalbersama.com" target="_blank" rel="noopener" style="text-decoration:none">beramalbersama.com</a></b></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── FORMULIR PENDAFTARAN SEDEKAH 1000 SEHARI ────────────────── -->
+      <section class="sec join" id="offer">
+        <div class="container-content join-grid">
+          <div class="join-copy rv">
+            <span class="eyebrow">Mulai Hari Ini</span>
+            <h2>Mulai dari <em class="g">Rp1.000</em>, mulai subuh esok hari</h2>
+            <p>Pilih nominal sesuai kelapangan. Makin besar nominal, makin luas manfaat yang sampai ke mustahik.</p>
+            <div class="ayah">
+              “Perumpamaan orang yang menginfakkan hartanya di jalan Allah seperti sebutir biji yang menumbuhkan tujuh tangkai, pada setiap tangkai ada seratus biji.”
+              <small>QS. Al-Baqarah: 261</small>
+            </div>
+          </div>
+
+          <form id="form-section" class="form rv d1" novalidate>
+            <h3>Gabung Sedekah 1000 Sehari</h3>
+            <p class="hint">Pilih nominal, isi data, lalu lanjut ke invoice pembayaran.</p>
+
+            <div id="err" class="err" role="alert"></div>
+
+            <fieldset>
+              <legend>Pilih nominal sedekah</legend>
+              <div class="tiers" id="tier-grid">
+                {routinePackages.map((pkg) => (
+                  <label class={`tier ${pkg.isPopular ? "on pop" : ""}`} data-nominal={pkg.nominal} data-days={pkg.days} data-total={pkg.total}>
+                    <input type="radio" name="tier" value={pkg.total} checked={pkg.isPopular} />
+                    <span>
+                      <b>Rp{pkg.total.toLocaleString("id-ID")}</b>
+                      <span>{pkg.dailyText}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            <!-- Custom Nominal Toggle & Field -->
+            <div style="margin-top:12px">
+              <button
+                id="btn-toggle-custom"
+                type="button"
+                style="background:none;border:none;padding:0;font-size:.78rem;font-weight:700;color:var(--teal-primary);cursor:pointer;text-decoration:underline;"
+              >
+                Atau masukkan nominal lainnya
+              </button>
+
+              <div id="custom-wrap" class="hidden" style="margin-top:10px;padding:12px;background:var(--cream);border:1px solid var(--line);border-radius:14px;">
+                <label for="input-custom-nominal" style="display:block;font-size:.74rem;font-weight:700;color:var(--mut);margin-bottom:6px;">
+                  Nominal Sedekah per Subuh (Minimal Rp1.000)
+                </label>
+                <div style="position:relative">
+                  <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;font-size:.85rem;color:var(--mut)">Rp</span>
+                  <input
+                    type="text"
+                    id="input-custom-nominal"
+                    inputmode="numeric"
+                    placeholder="Contoh: 15.000"
+                    style="width:100%;padding:10px 12px 10px 36px;border:1.5px solid var(--line);border-radius:10px;font-weight:700;font-size:.9rem;outline:none;"
+                  />
+                </div>
+                <p id="custom-total-preview" style="font-size:.75rem;font-weight:700;color:var(--teal-primary);margin:6px 0 0">
+                  Total 30 hari: Rp0
+                </p>
+              </div>
+            </div>
+
+            <!-- Schedule Info Box -->
+            <div style="margin-top:14px;padding:12px 14px;background:var(--sand);border-radius:14px;display:flex;align-items:center;justify-content:space-between;font-size:.78rem;color:var(--ink);">
+              <div style="display:flex;align-items:center;gap:8px">
+                <span style="width:8px;height:8px;border-radius:50%;background:var(--teal-primary)"></span>
+                <b>Rutin Harian Subuh (04.30 WIB)</b>
+              </div>
+              <span style="font-weight:700;color:var(--teal-primary)">30 Kali</span>
+            </div>
+
+            <!-- Input Fields -->
+            <div class="fld" style="margin-top:16px">
+              <label class="lbl" for="f-name">Nama lengkap <span style="color:#B5242C">*</span></label>
+              <input id="f-name" name="name" type="text" autocomplete="name" placeholder="Nama Anda" value={userName} required />
+            </div>
+
+            <div class="fld">
+              <label class="lbl" for="f-phone">Nomor HP / WhatsApp <span style="color:#B5242C">*</span></label>
+              <input id="f-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="08xxxxxxxxxx" value={userPhone} required />
+            </div>
+
+            <div class="fld">
+              <label class="lbl" for="f-email">Email <span style="font-weight:500;color:var(--mut)">(opsional)</span></label>
+              <input id="f-email" name="email" type="email" autocomplete="email" placeholder="email@contoh.com" value={userEmail} />
+            </div>
+
+            <div class="fld">
+              <label class="lbl" for="f-atas-nama">Atas nama donasi <span style="font-weight:500;color:var(--mut)">(opsional)</span></label>
+              <input id="f-atas-nama" name="atas_nama" type="text" placeholder="Contoh: Ayah / Ibu tercinta" />
+            </div>
+
+            <div class="fld">
+              <label class="lbl" for="f-doa">Doa & harapan <span style="font-weight:500;color:var(--mut)">(opsional)</span></label>
+              <textarea id="f-doa" name="doa" rows="2" placeholder="Tuliskan hajat atau doa terbaik Anda..." style="width:100%;padding:10px 14px;border:1.5px solid var(--line);border-radius:12px;font:inherit;font-size:.9rem;resize:none;"></textarea>
+            </div>
+
+            <div style="margin-top:6px">
+              <label style="display:flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;color:var(--ink);cursor:pointer">
+                <input type="checkbox" id="f-anon" style="width:16px;height:16px;accent-color:var(--teal-primary)" />
+                <span>Sembunyikan nama saya (Hamba Allah)</span>
+              </label>
+            </div>
+
+            <!-- Payment Method Selection Trigger -->
+            <div style="margin-top:16px;padding:12px 14px;border:1.5px solid var(--line);border-radius:14px;background:#fff;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+                <span style="font-size:.78rem;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.06em">Metode Pembayaran</span>
+                <button type="button" id="btn-open-payment" style="background:none;border:none;color:var(--teal-primary);font-size:.76rem;font-weight:700;cursor:pointer">Ganti</button>
+              </div>
+
+              <div id="selected-payment-box" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <img id="selected-payment-img" src={defaultPayment.image_url} alt={defaultPayment.name} style="width:40px;height:26px;object-fit:contain;background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px" />
+                  <div>
+                    <b id="selected-payment-name" style="display:block;font-size:.84rem;color:var(--ink)">{defaultPayment.name}</b>
+                    <small style="display:block;font-size:.7rem;color:var(--mut)">Terverifikasi otomatis</small>
+                  </div>
+                </div>
+                <span style="font-size:.75rem;color:var(--mut)">›</span>
+              </div>
+            </div>
+
+            <button type="submit" id="btn-submit" class="btn btn-p full" style="margin-top:18px">
+              Lanjut ke Pembayaran - Rp150.000
+            </button>
+
+            <p class="secure">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="11" width="16" height="10" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 018 0v4"></path>
+              </svg>
+              <span>Pembayaran hanya melalui rekening resmi atas nama Yayasan Sahabat Beramal Bersama.</span>
+            </p>
+
+            <div class="bank-chips" aria-label="Bank yang tersedia">
+              <span>BSI</span>
+              <span>QRIS</span>
+              <span>Muamalat</span>
+              <span>Mandiri</span>
+              <span>BCA</span>
+              <span>BRI</span>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ── FAQ Section ────────────────────────────────────────────── -->
+      <section class="sec">
+        <div class="container-content">
+          <div class="sec-h center rv">
+            <span class="eyebrow">FAQ</span>
+            <h2>Pertanyaan yang sering diajukan</h2>
+          </div>
+
+          <div class="faq rv">
+            <details>
+              <summary>Apa itu Sedekah 1000 Sehari?</summary>
+              <p>Gerakan sedekah subuh rutin bersama Beramal Bersama. Anda cukup transfer sekali untuk 30 hari, lalu sedekah Anda tercatat sebagai sedekah subuh setiap hari dan disalurkan untuk program kebaikan Beramal Bersama.</p>
+            </details>
+
+            <details>
+              <summary>Siapa yang mengelola program ini?</summary>
+              <p>Yayasan Sahabat Beramal Bersama, lembaga filantropi sosial kemasyarakatan berizin resmi. Semua pembayaran hanya melalui rekening resmi atas nama Yayasan Sahabat Beramal Bersama.</p>
+            </details>
+
+            <details>
+              <summary>Apakah ini langganan otomatis?</summary>
+              <p>Tidak. Anda transfer sekali untuk 30 hari. Tidak ada tagihan otomatis, dan Anda sendiri yang memutuskan untuk melanjutkan bulan berikutnya.</p>
+            </details>
+
+            <details>
+              <summary>Ke mana sedekah saya disalurkan?</summary>
+              <p>Ke program Beramal Bersama: pendidikan dan beasiswa, peduli kesehatan, dakwah, pemberdayaan ekonomi, peduli sosial dan kemanusiaan, serta program kebaikan lainnya sesuai kebutuhan mustahik yang paling mendesak. Kabar penyalurannya dipublikasikan di beramalbersama.com.</p>
+            </details>
+
+            <details>
+              <summary>Bolehkah nominalnya lebih dari Rp10.000 sehari?</summary>
+              <p>Boleh. Anda dapat memilih opsi 'masukkan nominal lainnya' pada formulir, atau hubungi admin Beramal Bersama lewat WhatsApp untuk donasi khusus.</p>
+            </details>
+
+            <details>
+              <summary>Apakah saya akan dihubungi lewat WhatsApp?</summary>
+              <p>Ya, seperlunya saja: invoice resmi, konfirmasi donasi, dan pengingat sebelum masa sedekah berakhir. Jika tidak ingin menerima pesan lagi, cukup balas pesan kami.</p>
+            </details>
+
+            <details>
+              <summary>Bagaimana cara membayar dan konfirmasi?</summary>
+              <p>Setelah mengisi formulir, Anda diarahkan ke halaman invoice berisi rincian pembayaran Bank Syariah Indonesia (BSI), bank lainnya, atau QRIS atas nama Yayasan Sahabat Beramal Bersama. Status pembayaran terkonfirmasi otomatis.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── Closing CTA Section ────────────────────────────────────── -->
+      <section class="sec closing">
+        <div class="container-content rv">
+          <span class="eyebrow" style="color:var(--gold)">Amal kecil, dampak besar</span>
+          <h2>Esok subuh, biarkan <i>seribu rupiah</i> Anda bekerja untuk akhirat</h2>
+          <p>Satu kali transfer. Tiga puluh subuh. Pahala yang terus mengalir untuk Anda dan keluarga.</p>
+          <a href="#form-section" class="btn btn-gd">Gabung Sedekah 1000 Sehari</a>
+        </div>
+      </section>
+
+      <!-- ── Footer ─────────────────────────────────────────────────── -->
+      <footer>
+        <div class="footer-container">
+          <div>
+            <div class="flogo">
+              <img src="/assets/logo/logo-long-custom.png" alt="Beramal Bersama" loading="lazy" style="height:36px;width:auto;mix-blend-mode:multiply" />
+            </div>
+            <p style="margin-top:14px;font-size:.82rem;color:var(--mut)">
+              Yayasan Sahabat Beramal Bersama · Mitra Pengelola Resmi ZISWAF
+            </p>
+            <p style="font-size:.8rem;color:var(--mut)">
+              © {new Date().getFullYear()} Beramal Bersama · <a href="https://beramalbersama.com" target="_blank" rel="noopener">beramalbersama.com</a>
+            </p>
+          </div>
+          <p style="font-family:var(--serif);font-style:italic;color:var(--teal-primary);font-size:.95rem">
+            Istiqamah dalam kebaikan, sekecil apa pun.
+          </p>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ── Floating Bottom Bar (Mobile) ────────────────────────────── -->
+    <div id="sticky-bottom-bar" class="fixed-bar">
+      <div class="fixed-bar-inner">
+        <div>
+          <small style="display:block;font-size:.68rem;color:var(--mut);text-transform:uppercase;font-weight:700">Sedekah Subuh Rutin</small>
+          <b id="sticky-amount" style="font-size:.95rem;color:var(--teal-primary);font-family:var(--serif)">Rp150.000</b>
+        </div>
+        <a href="#form-section" class="btn btn-p btn-sm">Mulai Sekarang</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Payment Method Modal -->
+  <PaymentMethodModal
+    paymentMethods={paymentMethods}
+    showWallet={isAuth}
+    defaultWallet={false}
+    showVa={true}
+    showBank={true}
+    showEwallet={true}
+  />
+</MainLayout>
+
+<style>
+  :root {
+    --red: #fd6542;
+    --red-d: #eb4b26;
+    --wine: #174f4e;
+    --wine-dd: #0f3837;
+    --teal-primary: #167874;
+    --gold: #F9C922;
+    --gold-d: #B8890A;
+    --gold-l: #FCE48A;
+    --ink: #262626;
+    --mut: #6E605C;
+    --line: #EADFD3;
+    --cream: #FFFAF2;
+    --sand: #F7EFE3;
+    --blush: #FCEEEE;
+    --serif: 'Fraunces', Georgia, serif;
+    --sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --r: 22px;
+    --shadow: 0 24px 60px -24px rgba(23, 79, 78, .35);
+    --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23C99A06' stroke-width='1' opacity='.55'%3E%3Cpath d='M32 6l7.5 18.5L58 32l-18.5 7.5L32 58l-7.5-18.5L6 32l18.5-7.5z'/%3E%3Crect x='19' y='19' width='26' height='26' transform='rotate(45 32 32)'/%3E%3Crect x='19' y='19' width='26' height='26'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .sedekah-subuh-theme {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--cream);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .main-body-container {
+    max-width: 480px;
+    margin: 0 auto;
+    background: var(--cream);
+    box-shadow: 0 0 40px rgba(0,0,0,0.06);
+    position: relative;
+  }
+
+  .container-content {
+    width: 100%;
+    padding: 0 20px;
+  }
+
+  /* Navigation */
+  .nav {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    background: rgba(255, 250, 242, 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(234, 223, 211, 0.8);
+  }
+  .nav-container {
+    max-width: 480px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 66px;
+    padding: 0 20px;
+  }
+
+  /* Typography */
+  h1, h2, h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.015em;
+    margin: 0;
+    color: var(--wine);
+  }
+  p { margin: 0 0 1rem; }
+  em.g {
+    font-style: italic;
+    color: var(--red);
+    font-weight: 500;
+  }
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gold-d);
+    margin-bottom: 14px;
+  }
+  .eyebrow:before {
+    content: '';
+    width: 26px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+  .center { text-align: center; }
+  .center .eyebrow { justify-content: center; }
+  .sec { padding: 60px 0; position: relative; }
+  .sec-h { margin: 0 auto 34px; }
+  .sec-h h2 { font-size: clamp(1.75rem, 5vw, 2.3rem); }
+  .sec-h p { color: var(--mut); margin-top: 10px; font-size: 0.95rem; }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 52px;
+    padding: 0 26px;
+    border-radius: 999px;
+    font: 700 0.95rem var(--sans);
+    text-decoration: none;
+    border: 0;
+    cursor: pointer;
+    transition: transform .2s, box-shadow .2s, background .2s;
+  }
+  .btn-sm {
+    min-height: 40px;
+    padding: 0 18px;
+    font-size: 0.85rem;
+  }
+  .btn-p {
+    background: linear-gradient(135deg, var(--red), var(--red-d));
+    color: #fff;
+    box-shadow: 0 14px 30px -10px rgba(253, 101, 66, 0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+  }
+  .btn-p:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 36px -10px rgba(253, 101, 66, 0.65);
+  }
+  .btn-gd {
+    background: var(--gold);
+    color: var(--wine-dd);
+    box-shadow: 0 14px 30px -12px rgba(249, 201, 34, 0.7);
+  }
+  .btn-gd:hover { transform: translateY(-2px); }
+  .btn-o {
+    background: transparent;
+    color: var(--wine);
+    border: 1.5px solid var(--wine);
+  }
+  .btn svg { width: 18px; height: 18px; }
+  .full { width: 100%; }
+
+  /* Hero Section */
+  .hero {
+    position: relative;
+    padding: 36px 0 54px;
+    overflow: hidden;
+  }
+  .hero:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--star);
+    background-size: 64px;
+    opacity: 0.16;
+    mask-image: radial-gradient(ellipse at 80% 30%, #000 10%, transparent 65%);
+    -webkit-mask-image: radial-gradient(ellipse at 80% 30%, #000 10%, transparent 65%);
+    pointer-events: none;
+  }
+  .hero-inner {
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 8px;
+    border-radius: 999px;
+    background: #fff;
+    border: 1px solid var(--line);
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--wine);
+    box-shadow: 0 6px 18px -10px rgba(23, 79, 78, 0.25);
+  }
+  .pill b {
+    background: var(--wine);
+    color: var(--gold);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+  }
+  .hero h1 {
+    font-size: clamp(2.1rem, 6.8vw, 3.2rem);
+    margin: 18px 0 16px;
+    font-weight: 600;
+  }
+  .hero h1 .u {
+    position: relative;
+    white-space: nowrap;
+    font-style: italic;
+    color: var(--red);
+  }
+  .hero h1 .u svg {
+    position: absolute;
+    left: -2%;
+    bottom: -0.18em;
+    width: 104%;
+    height: 0.38em;
+    overflow: visible;
+  }
+  .hero h1 .u path {
+    stroke: var(--gold);
+    stroke-width: 7;
+    fill: none;
+    stroke-linecap: round;
+    stroke-dasharray: 420;
+    stroke-dashoffset: 420;
+    animation: draw 1.3s 0.5s cubic-bezier(0.6, 0.1, 0.2, 1) forwards;
+  }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  .lead {
+    font-size: 1rem;
+    color: var(--mut);
+    margin-bottom: 22px;
+  }
+  .lead strong { color: var(--ink); }
+  .cta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+  }
+  .assure {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 18px;
+    font-size: 0.82rem;
+    color: var(--mut);
+    font-weight: 500;
+  }
+  .assure span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .assure svg { width: 16px; height: 16px; color: var(--red); }
+
+  /* Visual Arch & Float */
+  .visual {
+    position: relative;
+    max-width: 360px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  .arch {
+    position: relative;
+    aspect-ratio: 4/5;
+    border-radius: 999px 999px 28px 28px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    border: 6px solid #fff;
+    outline: 1px solid var(--gold-l);
+    outline-offset: 8px;
+  }
+  .arch img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.04);
+  }
+  .arch:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(15, 56, 55, 0.65), transparent 45%);
+  }
+  .arch-cap {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 20px;
+    z-index: 2;
+    text-align: center;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    opacity: 0.95;
+    margin: 0;
+  }
+  .float {
+    position: absolute;
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: 0 20px 40px -18px rgba(15, 56, 55, 0.45);
+    padding: 12px 14px;
+    animation: bob 6s ease-in-out infinite;
+    z-index: 3;
+  }
+  .float.f1 {
+    left: -8px;
+    top: 18%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .float.f2 {
+    right: -8px;
+    bottom: 16%;
+    animation-delay: -3s;
+    text-align: left;
+  }
+  .f1 .coin {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #FFE680, var(--gold) 55%, #D9A70A);
+    display: grid;
+    place-items: center;
+    font: 700 0.72rem var(--sans);
+    color: var(--wine-dd);
+    box-shadow: inset 0 -3px 0 rgba(0,0,0,0.12);
+  }
+  .f1 small, .f2 small {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--mut);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .f1 b {
+    font: 600 1.12rem var(--serif);
+    color: var(--wine);
+  }
+  .f2 b {
+    font: 600 0.95rem var(--serif);
+    color: var(--wine);
+  }
+  .f2 .dots {
+    display: grid;
+    grid-template-columns: repeat(10, 8px);
+    gap: 4px;
+    margin-top: 8px;
+  }
+  .f2 .dots i {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    display: block;
+  }
+  .f2 .dots i:nth-child(n+21) {
+    background: var(--line);
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  /* Marquee */
+  .marquee {
+    background: var(--wine);
+    color: var(--gold-l);
+    overflow: hidden;
+    padding: 14px 0;
+    border-block: 1px solid rgba(249, 201, 34, 0.25);
+  }
+  .marquee .track {
+    display: flex;
+    gap: 36px;
+    width: max-content;
+    animation: scroll 38s linear infinite;
+  }
+  .marquee span {
+    display: inline-flex;
+    align-items: center;
+    gap: 36px;
+    font: 500 0.98rem var(--serif);
+    font-style: italic;
+    white-space: nowrap;
+  }
+  .marquee span:after {
+    content: '✦';
+    color: var(--gold);
+    font-style: normal;
+    font-size: 0.75rem;
+  }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+
+  /* Steps */
+  .steps { display: grid; gap: 16px; }
+  .step {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 24px 20px;
+    box-shadow: 0 10px 30px -22px rgba(23, 79, 78, 0.3);
+  }
+  .step .n {
+    font: 600 2.8rem/1 var(--serif);
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--gold-d);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .step h3 { font-size: 1.25rem; margin-bottom: 6px; }
+  .step p { color: var(--mut); margin: 0; font-size: 0.92rem; }
+
+  /* Calendar */
+  .cal {
+    margin-top: 30px;
+    background: linear-gradient(160deg, var(--wine), var(--wine-dd));
+    border-radius: 26px;
+    padding: 26px 20px;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .cal:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--star);
+    background-size: 56px;
+    opacity: 0.12;
+  }
+  .cal-h {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .cal-h h3 { color: #fff; font-size: 1.35rem; }
+  .cal-h p { margin: 0; color: rgba(255,255,255,0.7); font-size: 0.85rem; }
+  .cal-h .count { font: 600 2.2rem/1 var(--serif); color: var(--gold); }
+  .cal-h .count small { font: 600 0.8rem var(--sans); color: rgba(255,255,255,0.7); margin-left: 4px; }
+  .days {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+  .days i {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    border: 1px solid rgba(249, 201, 34, 0.25);
+    display: grid;
+    place-items: center;
+    font: 600 0.78rem var(--sans);
+    font-style: normal;
+    color: rgba(255,255,255,0.45);
+    transition: background .35s, color .35s, transform .35s, box-shadow .35s;
+  }
+  .days i.on {
+    background: var(--gold);
+    color: var(--wine-dd);
+    border-color: var(--gold);
+    box-shadow: 0 0 18px rgba(249, 201, 34, 0.55);
+    transform: scale(1.05);
+  }
+  .cal-f {
+    position: relative;
+    margin: 16px 0 0;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* Hadith */
+  .hadith {
+    background: var(--wine-dd);
+    color: #fff;
+    overflow: hidden;
+  }
+  .hadith:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--star);
+    background-size: 72px;
+    opacity: 0.1;
+  }
+  .hadith .eyebrow { color: var(--gold); }
+  .ar {
+    font-family: 'Amiri', serif;
+    font-size: clamp(1.6rem, 5vw, 2.3rem);
+    line-height: 1.9;
+    color: var(--gold-l);
+    direction: rtl;
+    margin: 6px 0 16px;
+  }
+  .hadith blockquote {
+    margin: 0 auto;
+    font: 500 clamp(1.15rem, 3.4vw, 1.5rem)/1.45 var(--serif);
+    font-style: italic;
+    color: #fff;
+  }
+  .hadith .src {
+    margin: 16px 0 0;
+    color: var(--gold);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .hd-sep {
+    width: 1px;
+    height: 48px;
+    margin: 36px auto;
+    background: linear-gradient(transparent, var(--gold), transparent);
+  }
+  .hadith .sm {
+    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+    line-height: 1.6;
+    color: rgba(255,255,255,0.9);
+  }
+
+  /* Calculator */
+  .calc {
+    display: grid;
+    gap: 20px;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    padding: 24px 20px;
+    box-shadow: var(--shadow);
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { position: relative; }
+  .chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .chip span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 999px;
+    border: 1.5px solid var(--line);
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: var(--wine);
+    background: var(--cream);
+    transition: .2s;
+    cursor: pointer;
+  }
+  .chip input:checked + span {
+    background: var(--wine);
+    border-color: var(--wine);
+    color: var(--gold);
+    box-shadow: 0 10px 22px -10px rgba(23, 79, 78, 0.6);
+  }
+  .calc-label {
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--mut);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .hint { font-size: 0.78rem; color: var(--mut); margin: 0; }
+  .res { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .res div { background: var(--sand); border-radius: 16px; padding: 14px; }
+  .res div:first-child {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--red), var(--wine));
+    color: #fff;
+  }
+  .res small {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--mut);
+    margin-bottom: 4px;
+  }
+  .res div:first-child small { color: rgba(255,255,255,0.8); }
+  .res b { font: 600 1.35rem var(--serif); color: var(--wine); }
+  .res div:first-child b { color: #fff; font-size: 1.9rem; }
+
+  /* Benefits */
+  .bens { display: grid; gap: 14px; }
+  .ben {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: var(--r);
+    padding: 22px 20px;
+    transition: transform .3s, box-shadow .3s;
+    position: relative;
+    overflow: hidden;
+  }
+  .ben:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 36px -22px rgba(23, 79, 78, 0.4);
+  }
+  .ben .ic {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: var(--blush);
+    color: var(--red);
+    margin-bottom: 16px;
+  }
+  .ben .ic svg { width: 24px; height: 24px; }
+  .ben h3 { font-size: 1.18rem; margin-bottom: 6px; }
+  .ben p { color: var(--mut); margin: 0; font-size: 0.9rem; }
+  .ben.wide {
+    background: linear-gradient(150deg, var(--wine), var(--wine-dd));
+    color: #fff;
+    border: 0;
+  }
+  .ben.wide h3 { color: #fff; }
+  .ben.wide p { color: rgba(255,255,255,0.8); }
+  .ben.wide .ic {
+    background: rgba(249, 201, 34, 0.15);
+    color: var(--gold);
+  }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .tags span {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 5px 11px;
+    border-radius: 999px;
+    border: 1px solid rgba(249, 201, 34, 0.4);
+    color: var(--gold-l);
+  }
+
+  /* Flow Penyaluran */
+  .flow-sec {
+    background: linear-gradient(180deg, var(--cream), #fff 60%, var(--cream));
+  }
+  .flow {
+    position: relative;
+    display: grid;
+    gap: 22px;
+    margin: 0 auto;
+  }
+  .flow-track {
+    position: absolute;
+    left: 27px;
+    top: 28px;
+    bottom: 28px;
+    width: 3px;
+    border-radius: 3px;
+    background: var(--line);
+  }
+  .flow-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 0;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--red), var(--gold));
+    transition: height 2.2s cubic-bezier(0.5, 0.1, 0.2, 1) 0.3s;
+  }
+  .flow.in .flow-fill { height: 100%; }
+  .flow-coin {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #FFE680, var(--gold) 60%, #D9A70A);
+    box-shadow: 0 0 0 5px rgba(249,201,34,0.25), 0 0 18px rgba(249,201,34,0.8);
+    opacity: 0;
+  }
+  .flow.in .flow-coin {
+    animation: coinY 4.5s 2.6s ease-in-out infinite;
+  }
+  @keyframes coinY {
+    0% { top: 0; opacity: 0; }
+    8% { opacity: 1; }
+    92% { opacity: 1; }
+    100% { top: 100%; opacity: 0; }
+  }
+  .node {
+    position: relative;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .dot {
+    position: relative;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--gold-l);
+    display: grid;
+    place-items: center;
+    color: var(--red);
+    box-shadow: 0 12px 24px -14px rgba(23, 79, 78, 0.4);
+    z-index: 1;
+    transition: background .4s, color .4s, border-color .4s;
+  }
+  .dot svg { width: 22px; height: 22px; }
+  .dot i {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--wine);
+    color: var(--gold);
+    font: 700 0.65rem/20px var(--sans);
+    font-style: normal;
+    text-align: center;
+    border: 2px solid #fff;
+  }
+  .flow.in .node .dot {
+    background: var(--blush);
+    border-color: var(--red);
+  }
+  .flow.in .node:nth-of-type(2) .dot { transition-delay: .4s; }
+  .flow.in .node:nth-of-type(3) .dot { transition-delay: .8s; }
+  .flow.in .node:nth-of-type(4) .dot { transition-delay: 1.2s; }
+  .flow.in .node:nth-of-type(5) .dot { transition-delay: 1.6s; }
+  .flow.in .node:nth-of-type(6) .dot { transition-delay: 2s; }
+  .flow.in .node:last-of-type .dot {
+    background: var(--gold);
+    color: var(--wine-dd);
+    border-color: var(--gold);
+  }
+  .node h3 { font-size: 1.1rem; margin: 4px 0 4px; }
+  .node p { color: var(--mut); font-size: 0.88rem; margin: 0; }
+  .flow-foot {
+    margin: 32px auto 0;
+    text-align: center;
+    background: #fff;
+    border: 1px dashed var(--gold-d);
+    border-radius: 20px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+  .flow-foot p { margin: 0; font-size: 0.88rem; color: var(--mut); }
+
+  /* Stories */
+  .stories { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
+  .story {
+    background: #fff;
+    border-radius: var(--r);
+    overflow: hidden;
+    border: 1px solid var(--line);
+    text-decoration: none;
+    box-shadow: 0 18px 36px -24px rgba(23, 79, 78, 0.35);
+    display: flex;
+    flex-direction: column;
+    transition: transform .3s;
+  }
+  .story:hover { transform: translateY(-4px); }
+  .story .im { aspect-ratio: 16/9; overflow: hidden; position: relative; background: var(--sand); }
+  .story .im img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s; }
+  .story:hover .im img { transform: scale(1.05); }
+  .story .tag {
+    position: absolute;
+    left: 12px;
+    top: 12px;
+    background: var(--gold);
+    color: var(--wine-dd);
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .story .bd { padding: 16px 18px 18px; display: flex; flex-direction: column; flex: 1; }
+  .story h3 { font-size: 1.05rem; line-height: 1.35; margin-bottom: 10px; }
+  .story .more {
+    margin-top: auto;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--red);
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .mc {
+    background: linear-gradient(150deg, var(--wine), var(--wine-dd));
+    color: #fff;
+    border-radius: var(--r);
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .mc:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--star);
+    background-size: 56px;
+    opacity: 0.1;
+  }
+  .mc-ic {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    background: rgba(249, 201, 34, 0.16);
+    color: var(--gold);
+    margin-bottom: 14px;
+  }
+  .mc-k {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 6px;
+  }
+  .mc h3 { color: #fff; font-size: 1.25rem; margin-bottom: 8px; }
+  .mc p { color: rgba(255,255,255,0.8); font-size: 0.88rem; }
+  .mc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .mc-tags span {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(249, 201, 34, 0.4);
+    color: var(--gold-l);
+  }
+
+  /* About */
+  .about { background: var(--sand); }
+  .about-card {
+    display: grid;
+    gap: 22px;
+    background: #fff;
+    border-radius: 28px;
+    padding: 28px 20px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  .about-card:after {
+    content: '';
+    position: absolute;
+    right: -60px;
+    bottom: -60px;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    border: 32px solid rgba(249, 201, 34, 0.12);
+  }
+  .about-logo { max-width: 200px; height: auto; }
+  .misi {
+    list-style: none;
+    padding: 0;
+    margin: 18px 0 0;
+    display: grid;
+    gap: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .misi li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.9rem;
+  }
+  .misi li:before {
+    content: '';
+    flex: 0 0 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin-top: 2px;
+    background: var(--gold) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230f3837' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12l5 5L20 7'/%3E%3C/svg%3E") center/12px no-repeat;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin-top: 18px;
+    position: relative;
+    z-index: 1;
+  }
+  .facts div {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .facts small {
+    display: block;
+    font-size: 0.68rem;
+    color: var(--mut);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .facts b { font: 600 0.95rem var(--serif); color: var(--wine); }
+
+  /* Join & Form */
+  .join { background: linear-gradient(180deg, var(--cream), var(--blush)); }
+  .join-grid { display: grid; gap: 28px; }
+  .ayah {
+    margin-top: 18px;
+    padding: 16px 18px;
+    border-left: 3px solid var(--gold);
+    background: #fff;
+    border-radius: 0 16px 16px 0;
+    font: 500 0.95rem/1.5 var(--serif);
+    font-style: italic;
+    color: var(--wine);
+  }
+  .ayah small {
+    display: block;
+    margin-top: 6px;
+    font: 700 0.68rem var(--sans);
+    font-style: normal;
+    color: var(--gold-d);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .form {
+    background: #fff;
+    border-radius: 28px;
+    padding: 24px 18px;
+    box-shadow: 0 30px 60px -30px rgba(23, 79, 78, 0.45);
+    border: 1px solid var(--line);
+    scroll-margin-top: 80px;
+    position: relative;
+  }
+  .form:before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 6px;
+    border-radius: 28px 28px 0 0;
+    background: linear-gradient(90deg, var(--red), var(--gold), var(--red));
+  }
+  .form h3 { font-size: 1.35rem; margin-bottom: 4px; }
+  fieldset { border: 0; padding: 0; margin: 16px 0 0; }
+  legend {
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: var(--mut);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+  .tiers { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tier {
+    position: relative;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    border: 1.5px solid var(--line);
+    border-radius: 14px;
+    cursor: pointer;
+    background: var(--cream);
+    transition: .2s;
+  }
+  .tier input { position: absolute; opacity: 0; pointer-events: none; }
+  .tier:last-child { grid-column: 1 / -1; }
+  .tier b { display: block; font: 600 1.05rem var(--serif); color: var(--wine); }
+  .tier span span { font-size: 0.72rem; color: var(--mut); font-weight: 600; display: block; }
+  .tier:before {
+    content: '';
+    flex: 0 0 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid #D7C8BA;
+    background: #fff;
+    transition: .2s;
+  }
+  .tier.on {
+    border-color: var(--red);
+    background: var(--blush);
+    box-shadow: 0 8px 20px -12px rgba(253, 101, 66, 0.6);
+  }
+  .tier.on:before {
+    border: 5px solid var(--red);
+  }
+  .tier.pop:after {
+    content: 'Populer';
+    position: absolute;
+    top: -8px;
+    right: 10px;
+    background: var(--gold);
+    color: var(--wine-dd);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 999px;
+  }
+  .fld { margin-top: 12px; }
+  .lbl {
+    display: block;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .fld input, .fld textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    font: inherit;
+    font-size: 0.88rem;
+    background: #fff;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .fld input:focus, .fld textarea:focus {
+    border-color: var(--wine);
+  }
+  .secure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    color: var(--mut);
+    margin-top: 12px;
+    text-align: center;
+  }
+  .secure svg { color: #1E7F4F; flex-shrink: 0; }
+  .bank-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .bank-chips span {
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--wine);
+    background: var(--sand);
+    border-radius: 999px;
+    padding: 3px 9px;
+  }
+  .err {
+    display: none;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #FEE2E2;
+    color: #991B1B;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 10px;
+  }
+  .err.show { display: block; }
+
+  /* FAQ */
+  .faq { margin: 0 auto; }
+  details { border-bottom: 1px solid var(--line); }
+  summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 18px 40px 18px 0;
+    position: relative;
+    font: 600 1.05rem var(--serif);
+    color: var(--wine);
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary:after {
+    content: '';
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    border-radius: 50%;
+    background: var(--sand) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fd6542' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M12 6v12M6 12h12'/%3E%3C/svg%3E") center/12px no-repeat;
+    transition: transform .3s;
+  }
+  details[open] summary:after {
+    transform: rotate(45deg);
+    background-color: var(--gold);
+  }
+  details p {
+    color: var(--mut);
+    padding-bottom: 18px;
+    font-size: 0.9rem;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* Closing */
+  .closing {
+    background: radial-gradient(ellipse at top, var(--teal-primary), var(--wine-dd) 70%);
+    color: #fff;
+    text-align: center;
+    overflow: hidden;
+    padding: 60px 0;
+  }
+  .closing:before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--star);
+    background-size: 64px;
+    opacity: 0.12;
+  }
+  .closing h2 {
+    color: #fff;
+    font-size: clamp(1.8rem, 5.5vw, 2.8rem);
+    margin: 0 auto 14px;
+  }
+  .closing h2 i { color: var(--gold); }
+  .closing p {
+    color: rgba(255,255,255,0.8);
+    max-width: 420px;
+    margin: 0 auto 24px;
+    font-size: 0.92rem;
+  }
+
+  /* Footer */
+  footer {
+    background: #fff;
+    border-top: 1px solid var(--line);
+    padding: 36px 0 90px;
+  }
+  .footer-container {
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    text-align: left;
+  }
+
+  /* Fixed Mobile Bottom Bar */
+  .fixed-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    pointer-events: none;
+  }
+  .fixed-bar-inner {
+    max-width: 480px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--line);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: auto;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.06);
+  }
+
+  /* Scroll Reveal System (.rv & .rv.in) */
+  .rv {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity .9s cubic-bezier(0.2, 0.7, 0.2, 1), transform .9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .rv.in {
+    opacity: 1;
+    transform: none;
+  }
+  .rv.d1 { transition-delay: .1s; }
+  .rv.d2 { transition-delay: .2s; }
+  .rv.d3 { transition-delay: .3s; }
+  .rv.d4 { transition-delay: .4s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .hero h1 .u path { animation: none !important; stroke-dashoffset: 0 !important; }
+    .float { animation: none !important; }
+    .marquee .track { animation: none !important; }
+  }
+</style>
+
+<script>
+  import { showToast } from "@/lib/toast";
+  import { formatRupiah } from "@/lib/formatter";
+  import { getIncomingReffCode, getIncomingLeads } from "@/lib/referral";
+
+  const page = document.getElementById("landing-page") as HTMLElement;
+  if (!page) throw new Error("landing-page element not found");
+
+  const programId = page.dataset.programId || "3";
+  const isAuth = page.dataset.isAuth === "true";
+
+  // 1. Scroll Reveal Observer (.rv -> .rv.in)
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const revealElements = document.querySelectorAll(".rv");
+
+  if (!("IntersectionObserver" in window) || reduceMotion) {
+    revealElements.forEach((el) => el.classList.add("in"));
+  } else {
+    const revealObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in");
+            revealObserver.unobserve(entry.target);
+          }
+        });
+      },
+      { rootMargin: "0px 0px -8% 0px" }
+    );
+    revealElements.forEach((el) => revealObserver.observe(el));
+  }
+
+  // 2. Interactive Calendar Animation (Days 1..30 Lighting up sequentially)
+  const daysContainer = document.getElementById("days");
+  const calN = document.getElementById("calN");
+
+  if (daysContainer) {
+    // Generate 30 days
+    daysContainer.innerHTML = "";
+    for (let i = 1; i <= 30; i++) {
+      const d = document.createElement("i");
+      d.textContent = String(i);
+      daysContainer.appendChild(d);
+    }
+
+    const cells = daysContainer.children;
+    let calendarRan = false;
+
+    const runCalendarAnimation = () => {
+      if (calendarRan) return;
+      calendarRan = true;
+
+      if (reduceMotion) {
+        Array.from(cells).forEach((c) => c.classList.add("on"));
+        if (calN) calN.textContent = "30";
+        return;
+      }
+
+      let k = 0;
+      const timer = setInterval(() => {
+        if (k < cells.length) {
+          cells[k].classList.add("on");
+          k++;
+          if (calN) calN.textContent = String(k);
+        }
+        if (k >= 30) {
+          clearInterval(timer);
+        }
+      }, 70);
+    };
+
+    if ("IntersectionObserver" in window) {
+      const calObserver = new IntersectionObserver(
+        (entries, observer) => {
+          if (entries[0].isIntersecting) {
+            runCalendarAnimation();
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.3 }
+      );
+      calObserver.observe(daysContainer);
+    } else {
+      runCalendarAnimation();
+    }
+  }
+
+  // 3. Flow Penyaluran Animated Line & Coin
+  const flowContainer = document.querySelector(".flow");
+  if (flowContainer && "IntersectionObserver" in window) {
+    const flowObserver = new IntersectionObserver(
+      (entries, observer) => {
+        if (entries[0].isIntersecting) {
+          flowContainer.classList.add("in");
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.2 }
+    );
+    flowObserver.observe(flowContainer);
+  } else if (flowContainer) {
+    flowContainer.classList.add("in");
+  }
+
+  // 4. Calculator Logic
+  const calcChips = document.querySelectorAll<HTMLInputElement>("input[name=calc]");
+  const cMonth = document.getElementById("cMonth");
+  const cYear = document.getElementById("cYear");
+  const calcGo = document.getElementById("calcGo");
+
+  function runCalculator() {
+    const checked = document.querySelector<HTMLInputElement>("input[name=calc]:checked");
+    if (!checked) return;
+    const val = Number(checked.value) || 5000;
+    if (cMonth) cMonth.textContent = formatRupiah(val * 30);
+    if (cYear) cYear.textContent = formatRupiah(val * 360);
+  }
+
+  calcChips.forEach((chip) => chip.addEventListener("change", runCalculator));
+  runCalculator();
+
+  calcGo?.addEventListener("click", () => {
+    const checked = document.querySelector<HTMLInputElement>("input[name=calc]:checked");
+    if (!checked) return;
+    const targetVal = Number(checked.value) * 30;
+    const targetRadio = document.querySelector<HTMLInputElement>(`input[name=tier][value="${targetVal}"]`);
+    if (targetRadio) {
+      targetRadio.checked = true;
+      targetRadio.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  });
+
+  // 5. Form & Tiers Management
+  const tiers = document.querySelectorAll<HTMLElement>(".tier");
+  const tierRadios = document.querySelectorAll<HTMLInputElement>("input[name=tier]");
+  const btnSubmit = document.getElementById("btn-submit") as HTMLButtonElement;
+  const stickyAmount = document.getElementById("sticky-amount");
+  const errBox = document.getElementById("err");
+
+  const btnToggleCustom = document.getElementById("btn-toggle-custom");
+  const customWrap = document.getElementById("custom-wrap");
+  const inputCustom = document.getElementById("input-custom-nominal") as HTMLInputElement;
+  const customTotalPreview = document.getElementById("custom-total-preview");
+
+  let selectedNominal = 5000;
+  let commitmentDays = 30;
+  let currentTotal = 150000;
+  let selectedPaymentId = "2";
+  let isCustom = false;
+  let isBusy = false;
+
+  function updateSelectedTier(nominal: number, total: number, isCustomActive = false) {
+    selectedNominal = nominal;
+    currentTotal = total;
+    isCustom = isCustomActive;
+
+    tiers.forEach((t) => {
+      const radio = t.querySelector<HTMLInputElement>("input[name=tier]");
+      const isCardSelected = !isCustom && radio && radio.value === String(currentTotal);
+      if (isCardSelected) {
+        t.classList.add("on");
+        if (radio) radio.checked = true;
+      } else {
+        t.classList.remove("on");
+      }
+    });
+
+    const formatted = formatRupiah(currentTotal);
+    if (btnSubmit && !isBusy) {
+      btnSubmit.textContent = `Lanjut ke Pembayaran - ${formatted}`;
+    }
+    if (stickyAmount) {
+      stickyAmount.textContent = formatted;
+    }
+  }
+
+  tierRadios.forEach((radio) => {
+    radio.addEventListener("change", () => {
+      if (radio.checked) {
+        if (customWrap) customWrap.classList.add("hidden");
+        const total = Number(radio.value);
+        const nominal = total / 30;
+        updateSelectedTier(nominal, total, false);
+
+        // Also sync calculator chip
+        const matchingCalc = document.querySelector<HTMLInputElement>(`input[name=calc][value="${nominal}"]`);
+        if (matchingCalc) {
+          matchingCalc.checked = true;
+          runCalculator();
+        }
+      }
+    });
+  });
+
+  tiers.forEach((tier) => {
+    tier.addEventListener("click", () => {
+      const radio = tier.querySelector<HTMLInputElement>("input[name=tier]");
+      if (radio && !radio.checked) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+  });
+
+  // Custom nominal
+  btnToggleCustom?.addEventListener("click", () => {
+    if (!customWrap) return;
+    const isHidden = customWrap.classList.contains("hidden");
+    customWrap.classList.toggle("hidden", !isHidden);
+    if (isHidden && inputCustom) {
+      inputCustom.focus();
+    }
+  });
+
+  inputCustom?.addEventListener("input", (e) => {
+    const raw = (e.target as HTMLInputElement).value.replace(/\D/g, "");
+    const num = Number(raw) || 0;
+    (e.target as HTMLInputElement).value = num > 0 ? num.toLocaleString("id-ID") : "";
+
+    if (num >= 1000) {
+      const total = num * 30;
+      updateSelectedTier(num, total, true);
+      if (customTotalPreview) {
+        customTotalPreview.textContent = `Total 30 hari: ${formatRupiah(total)}`;
+      }
+    } else {
+      if (customTotalPreview) {
+        customTotalPreview.textContent = "Minimal sedekah Rp1.000 / subuh";
+      }
+    }
+  });
+
+  // 6. Payment Selection Modal
+  const btnOpenPayment = document.getElementById("btn-open-payment");
+  const selectedPaymentBox = document.getElementById("selected-payment-box");
+  const selectedPaymentName = document.getElementById("selected-payment-name");
+  const selectedPaymentImg = document.getElementById("selected-payment-img") as HTMLImageElement;
+
+  const openPaymentModal = () => {
+    (window as any).openPaymentModal?.();
+  };
+  btnOpenPayment?.addEventListener("click", openPaymentModal);
+  selectedPaymentBox?.addEventListener("click", openPaymentModal);
+
+  window.addEventListener("payment:selected", (e: Event) => {
+    const { id, name, image } = (e as CustomEvent).detail;
+    selectedPaymentId = String(id);
+    if (selectedPaymentName) selectedPaymentName.textContent = name;
+    if (selectedPaymentImg && image) {
+      selectedPaymentImg.src = image;
+      selectedPaymentImg.classList.remove("hidden");
+    }
+  });
+
+  // 7. Form Submission
+  const form = document.getElementById("form-section") as HTMLFormElement;
+  const nameInput = document.getElementById("f-name") as HTMLInputElement;
+  const phoneInput = document.getElementById("f-phone") as HTMLInputElement;
+  const emailInput = document.getElementById("f-email") as HTMLInputElement;
+  const atasNamaInput = document.getElementById("f-atas-nama") as HTMLInputElement;
+  const doaInput = document.getElementById("f-doa") as HTMLTextAreaElement;
+  const anonInput = document.getElementById("f-anon") as HTMLInputElement;
+
+  function showError(msg: string) {
+    if (!errBox) return;
+    errBox.textContent = msg;
+    errBox.classList.add("show");
+    errBox.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function hideError() {
+    if (errBox) errBox.classList.remove("show");
+  }
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (isBusy) return;
+    hideError();
+
+    const name = nameInput?.value.trim() ?? "";
+    const rawPhone = phoneInput?.value.trim() ?? "";
+    const phone = rawPhone.startsWith("0") ? rawPhone : rawPhone ? `0${rawPhone}` : "";
+    const email = emailInput?.value.trim() ?? "";
+    const atasNama = atasNamaInput?.value.trim() ?? "";
+    const doa = doaInput?.value.trim() ?? "";
+    const isAnonymous = anonInput?.checked ? 1 : 0;
+
+    if (!name || !phone) {
+      showError("Nama lengkap dan nomor WhatsApp wajib diisi.");
+      if (!name) nameInput?.focus();
+      else phoneInput?.focus();
+      return;
+    }
+
+    if (phone.length < 9) {
+      showError("Nomor WhatsApp tidak valid (minimal 9 digit).");
+      phoneInput?.focus();
+      return;
+    }
+
+    if (selectedNominal < 1000) {
+      showError("Minimal sedekah Rp1.000 per subuh.");
+      return;
+    }
+
+    if (!selectedPaymentId) {
+      showError("Silakan pilih metode pembayaran terlebih dahulu.");
+      openPaymentModal();
+      return;
+    }
+
+    isBusy = true;
+    btnSubmit.disabled = true;
+    btnSubmit.textContent = "Memproses Pendaftaran...";
+
+    const reffCode = getIncomingReffCode();
+    const incomingLeads = getIncomingLeads();
+
+    const payload: Record<string, unknown> = {
+      program_id: Number(programId),
+      range_type: "daily",
+      range: "1",
+      time: "04:30",
+      nominal: selectedNominal,
+      commitment: commitmentDays,
+      type: "commitment",
+      payment_method_id: Number(selectedPaymentId),
+      status: "Pending",
+      name,
+      phone,
+      ...(email ? { email } : {}),
+      ...(atasNama ? { atas_nama: atasNama } : {}),
+      ...(doa ? { doa } : {}),
+      ...(isAnonymous ? { is_anonymous: 1 } : {}),
+      ...(reffCode ? { reff_code: reffCode } : {}),
+      ...(incomingLeads ? { leads: incomingLeads } : {}),
+    };
+
+    try {
+      const res = await fetch(`/api/rutin/store`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.message ?? "Gagal memproses pendaftaran sedekah rutin");
+      }
+
+      const invoice = data?.data?.invoice;
+      if (invoice) {
+        window.location.href = `/invoice/${invoice}`;
+      } else {
+        showToast("Pendaftaran sedekah subuh berhasil dicatat", "success");
+        window.location.href = "/donasi-saya";
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Terjadi kesalahan, silakan coba lagi";
+      showError(msg);
+      isBusy = false;
+      btnSubmit.disabled = false;
+      btnSubmit.textContent = `Lanjut ke Pembayaran - ${formatRupiah(currentTotal)}`;
+    }
+  });
+
+  // Initial state setup (Rp5.000 / hari = Rp150.000)
+  updateSelectedTier(5000, 150000, false);
+</script>
