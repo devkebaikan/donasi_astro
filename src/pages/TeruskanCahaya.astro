@@ -123,8 +123,8 @@ const faqs = [
   description="Meneruskan cahaya Alquran melalui kebaikan dan kepedulian untuk sesama."
 >
   <!-- Top Navigation Bar -->
-  <header class="fixed top-0 left-0 right-0 z-40 ">
-    <div class="container mx-auto max-w-[480px] backdrop-blur-md bg-white/80 border-b border-neutral-200/80 transition-all duration-300 px-4 h-[65px] flex items-center justify-between">
+  <header class="fixed top-0 left-0 right-0 z-40 pointer-events-none">
+    <div class="container mx-auto max-w-[480px] pointer-events-auto backdrop-blur-md bg-white/90 border-b border-neutral-200/80 transition-all duration-300 px-4 h-[65px] flex items-center justify-between shadow-xs">
       <a href="/" class="flex items-center gap-2 group" aria-label="Kembali ke beranda">
         <img
           src="/assets/logo/logo-long-custom.png"
@@ -136,7 +136,7 @@ const faqs = [
       <div class="flex items-center gap-2">
         <a
           href="#form-gabung"
-          class="inline-flex items-center gap-2.5 px-3 py-2 text-xs font-semibold rounded-full bg-secondary-500 text-white shadow-xs hover:bg-secondary-600 active:scale-95 transition-all"
+          class="inline-flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-full bg-secondary-500 text-white shadow-xs hover:bg-secondary-600 active:scale-95 transition-all"
         >
           <span>Gabung</span>
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,21 +157,18 @@ const faqs = [
   >
     <main class="container mx-auto max-w-[480px] bg-white min-h-screen shadow-xs overflow-hidden">
       <!-- ── 1. Hero Section ─────────────────────────────────────────── -->
-      <section class="relative bg-primary-950 text-white overflow-hidden pb-10">
-        <!-- Background Asset with Overlay -->
-        <div class=" inset-0 z-0">
-          <img
-            src="/assets/landingpage/hero/hero-2.avif"
-            alt="Santri dan Guru Ngaji"
-            class="w-full h-full object-cover opacity-25 filter brightness-75 scale-105"
-          />
-          <div class="absolute inset-0 bg-linear-to-b from-primary-950/90 via-primary-900/80 to-primary-950"></div>
-        </div>
+      <section class="relative w-full aspect-16/10 sm:aspect-16/9 overflow-hidden bg-neutral-900">
+        <img
+          src="/assets/landingpage/hero/hero-2.avif"
+          alt="Santri dan Guru Ngaji"
+          class="w-full h-full object-cover"
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-linear-to-t from-neutral-950/40 via-transparent to-transparent"></div>
       </section>
 
       <!-- ── 2. Sub-Hero CTA Section ──────────────────────────────────── -->
       <section class="px-5 py-6 bg-white border-b border-neutral-100 text-center space-y-4">
-    
         <h2 class="text-xl font-bold text-neutral-900 leading-snug">
           Jaga Guru Ngaji Mulai Rp1.000 Sehari, dan Ikut Kajian Live Bersama UAS
         </h2>
@@ -193,26 +190,33 @@ const faqs = [
         </div>
 
         <!-- 3 Trust Badges -->
-        <div class="flex items-center justify-center gap-3 pt-2 text-[11px] text-neutral-500 font-medium">
+        <div class="flex items-center justify-center flex-wrap gap-x-3 gap-y-1.5 pt-1 text-[11px] text-neutral-500 font-medium">
           <span class="inline-flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
             Tanpa potongan otomatis
           </span>
-          <span>•</span>
+          <span class="text-neutral-300">•</span>
           <span class="inline-flex items-center gap-1">
-
+            <svg class="w-3.5 h-3.5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
             Rekening resmi
           </span>
-          <span>•</span>
+          <span class="text-neutral-300">•</span>
           <span class="inline-flex items-center gap-1">
-
+            <svg class="w-3.5 h-3.5 text-primary-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+            </svg>
             Berlaku 1 bulan
           </span>
         </div>
       </section>
 
       <!-- ── 3. Benefit: Kajian Live Bersama UAS ──────────────────────── -->
-      <section class="px-5 py-7 bg-neutral-50/70 border-b border-neutral-100 space-y-4">
-        <div class="text-center space-y-1.5 py-3">
+      <section class="px-5 py-6 bg-neutral-50/70 border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1.5">
           <span class="text-xs font-bold uppercase tracking-wider text-primary-700">Benefit Member</span>
           <h3 class="text-lg font-bold text-neutral-900 leading-snug">
             Kajian Live Bersama UAS Setiap Selasa Malam
@@ -224,7 +228,7 @@ const faqs = [
 
         <!-- 3 Pills Info -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5">
+          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5 shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -236,7 +240,7 @@ const faqs = [
             </div>
           </div>
 
-          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5">
+          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5 shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -248,7 +252,7 @@ const faqs = [
             </div>
           </div>
 
-          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5">
+          <div class="bg-white p-3 rounded-xl border border-neutral-200/80 flex sm:flex-col items-center sm:items-start gap-2.5 shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-50 text-primary-700 flex items-center justify-center shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -268,27 +272,33 @@ const faqs = [
             alt="Kajian Live Zoom Bersama UAS"
             class="w-full h-52 object-cover opacity-85 group-hover:scale-105 transition-transform duration-500"
           />
-          <div class="absolute inset-0 bg-linear-to-t from-neutral-950/90 via-neutral-950/30 to-neutral-950/20"></div>
+          <div class="absolute inset-0 bg-linear-to-t from-neutral-950/90 via-neutral-950/25 to-neutral-950/10"></div>
+
+          <!-- Live Badge -->
+          <div class="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-600/90 text-white text-[10px] font-bold uppercase tracking-wider shadow-xs">
+            <span class="w-2 h-2 rounded-full bg-white animate-ping"></span>
+            <span>Kajian Interaktif UAS</span>
+          </div>
 
           <!-- Play Button Overlay -->
           <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-13 h-13 rounded-full bg-secondary-500 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-              <svg class="w-6 h-6 ml-1" fill="currentColor" viewBox="0 0 24 24">
+            <div class="w-12 h-12 rounded-full bg-secondary-500 text-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+              <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M8 5v14l11-7z" />
               </svg>
             </div>
           </div>
 
-          <div class="absolute bottom-0 left-0 right-0 px-3 pb-3 text-left bg-gradient-to-t from-white to-white/80">
-            <p class="text-xs font-bold text-gray-700 line-clamp-1">Cuplikan member bertanya langsung kepada UAS lewat Zoom</p>
-            <p class="text-[11px] text-gray-500">Bergabung Selasa siang pun tetap langsung menerima link kajian malam itu.</p>
+          <div class="absolute bottom-0 left-0 right-0 p-3.5 text-left bg-linear-to-t from-neutral-950/90 via-neutral-950/60 to-transparent">
+            <p class="text-xs font-bold text-white line-clamp-1">Cuplikan member bertanya langsung kepada UAS lewat Zoom</p>
+            <p class="text-[11px] text-neutral-300 mt-0.5">Bergabung Selasa siang pun tetap langsung menerima link kajian malam itu.</p>
           </div>
         </div>
       </section>
 
       <!-- ── 4. Yang Kamu Dapatkan sebagai Member ─────────────────────── -->
-      <section class="px-5 py-7 bg-white border-b border-neutral-100 space-y-4">
-        <div class="text-center space-y-1 py-3">
+      <section class="px-5 py-6 bg-white border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1">
           <h3 class="text-lg font-bold text-neutral-900">Yang Kamu Dapatkan sebagai Member</h3>
           <p class="text-xs text-neutral-500 leading-relaxed">
             Komunitas ini bukan hanya soal donasi, tapi juga tempat untuk bertumbuh bersama Al-Qur’an.
@@ -297,7 +307,7 @@ const faqs = [
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <!-- Card 1 -->
-          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
@@ -310,7 +320,7 @@ const faqs = [
           </div>
 
           <!-- Card 2 -->
-          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
@@ -323,7 +333,7 @@ const faqs = [
           </div>
 
           <!-- Card 3 -->
-          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -336,7 +346,7 @@ const faqs = [
           </div>
 
           <!-- Card 4 -->
-          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all">
+          <div class="p-3.5 rounded-xl border border-neutral-200/80 bg-neutral-50/50 hover:border-primary-300 hover:bg-primary-50/20 transition-all shadow-xs">
             <div class="w-8 h-8 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center mb-2.5">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -351,8 +361,8 @@ const faqs = [
       </section>
 
       <!-- ── 5. FORM GABUNG KOMUNITAS JAGA NYALA (Sedekah Rutin 30 Hari) ── -->
-      <section id="form-gabung" class="px-5 py-7 bg-primary-50/40 border-b border-primary-100/60 scroll-mt-16 space-y-5">
-        <div class="text-center space-y-1.5 py-5">
+      <section id="form-gabung" class="px-5 py-6 bg-primary-50/40 border-b border-primary-100/60 scroll-mt-20 space-y-5">
+        <div class="text-center space-y-1">
           <h3 class="text-xl font-bold text-neutral-900 leading-snug">
             Gabung Komunitas Jaga Nyala
           </h3>
@@ -381,11 +391,11 @@ const faqs = [
               >
                 {pkg.isPopular && (
                   <span class="absolute -top-2.5 right-3 px-2 py-0.5 rounded-full bg-secondary-500 text-white text-[10px] font-bold shadow-xs">
-                    ★ Direkomendasikan
+                    Nominal Favorit
                   </span>
                 )}
                 <div class="flex items-center gap-3">
-                  <div class="radio-indicator w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors">
+                  <div class="radio-indicator w-4 h-4 rounded-full border-2 border-neutral-300 flex items-center justify-center transition-colors">
                     <span class="radio-dot w-2 h-2 rounded-full bg-primary-600 hidden"></span>
                   </div>
                   <div>
@@ -412,7 +422,7 @@ const faqs = [
             <button
               id="btn-toggle-custom"
               type="button"
-              class="text-xs text-primary-700 hover:text-primary-800 font-semibold underline underline-offset-2 flex items-center gap-1"
+              class="text-xs text-primary-700 hover:text-primary-800 font-semibold underline underline-offset-2 flex items-center gap-1 cursor-pointer"
             >
               <span>Atau masukkan nominal lainnya</span>
             </button>
@@ -438,7 +448,7 @@ const faqs = [
           </div>
 
           <!-- Detail Jadwal Info -->
-          <div class="p-3 rounded-xl bg-white/80 border border-primary-200/70 text-xs text-neutral-600 flex items-center justify-between">
+          <div class="p-3 rounded-xl bg-white/80 border border-primary-200/70 text-xs text-neutral-600 flex items-center justify-between shadow-xs">
             <div class="flex items-center gap-2">
               <div class="w-7 h-7 rounded-lg bg-primary-100 text-primary-700 flex items-center justify-center shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -542,7 +552,7 @@ const faqs = [
             <button
               id="btn-open-payment"
               type="button"
-              class="text-xs font-semibold text-primary-700 hover:text-primary-800 px-2 py-1 rounded bg-primary-50 hover:bg-primary-100 transition-colors"
+              class="text-xs font-semibold text-primary-700 hover:text-primary-800 px-2.5 py-1 rounded bg-primary-50 hover:bg-primary-100 transition-colors cursor-pointer"
             >
               Ganti
             </button>
@@ -602,16 +612,16 @@ const faqs = [
           </button>
 
           <p class="text-[11px] text-center text-neutral-500 flex items-center justify-center gap-1.5">
-            <!-- <svg class="w-3.5 h-3.5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
+            <svg class="w-3.5 h-3.5 text-primary-600 shrink-0" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg> -->
+            </svg>
             <span>Rekening resmi terverifikasi. Tanda terima dikirim via WhatsApp.</span>
           </p>
         </div>
 
         <!-- 3 Langkah Sederhana -->
-        <div class="grid grid-cols-3 gap-2 pt-1 text-center py-5">
-          <div class="p-2.5">
+        <div class="grid grid-cols-3 gap-2 text-center pt-2">
+          <div class="p-3 rounded-xl bg-white border border-neutral-200/80 shadow-xs">
             <div class="w-6 h-6 mx-auto rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center mb-1">
               1
             </div>
@@ -619,7 +629,7 @@ const faqs = [
             <p class="text-[10px] text-neutral-400 mt-0.5">Isi data diri</p>
           </div>
 
-          <div class="p-2.5">
+          <div class="p-3 rounded-xl bg-white border border-neutral-200/80 shadow-xs">
             <div class="w-6 h-6 mx-auto rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center mb-1">
               2
             </div>
@@ -627,7 +637,7 @@ const faqs = [
             <p class="text-[10px] text-neutral-400 mt-0.5">BSI / QRIS</p>
           </div>
 
-          <div class="p-2.5">
+          <div class="p-3 rounded-xl bg-white border border-neutral-200/80 shadow-xs">
             <div class="w-6 h-6 mx-auto rounded-full bg-primary-100 text-primary-700 text-xs font-bold flex items-center justify-center mb-1">
               3
             </div>
@@ -638,8 +648,8 @@ const faqs = [
       </section>
 
       <!-- ── 6. Apa yang Kita Jaga? (Story & Impact) ──────────────────── -->
-      <section class="px-5 py-7 bg-white border-b border-neutral-100 space-y-4">
-        <div class="text-center space-y-1 py-5">
+      <section class="px-5 py-6 bg-white border-b border-neutral-100 space-y-4">
+        <div class="text-center space-y-1">
           <h3 class="text-lg font-bold text-neutral-900 leading-snug">Apa yang Kita Jaga?</h3>
           <p class="text-xs text-neutral-500 leading-relaxed">
             Ada banyak orang dan ruang yang membuat Al-Qur’an tetap hidup di tengah masyarakat.
@@ -726,7 +736,7 @@ const faqs = [
       </section>
 
       <!-- ── 7. Quote Statement Section ──────────────────────────────── -->
-      <section class="px-5 py-7 bg-primary-50/50 border-b border-primary-100 text-center space-y-3">
+      <section class="px-5 py-6 bg-primary-50/50 border-b border-primary-100 text-center space-y-3">
         <span class="text-xs font-bold uppercase tracking-wider text-primary-700">
           Apa Itu Gerakan Jaga Nyala?
         </span>
@@ -742,7 +752,7 @@ const faqs = [
 
       <!-- ── 8. Bagian dari Gerakan SIDAQ ────────────────────────────── -->
       <section class="p-5 bg-white border-b border-neutral-100">
-        <div class="bg-primary-900 rounded-2xl p-5 text-white space-y-3.5 relative overflow-hidden">
+        <div class="bg-primary-900 rounded-2xl p-5 text-white space-y-3.5 relative overflow-hidden shadow-xs">
           <div class="absolute -right-8 -bottom-8 w-36 h-36 bg-primary-800/40 rounded-full"></div>
 
           <div class="relative z-10 space-y-2">
@@ -771,7 +781,7 @@ const faqs = [
       </section>
 
       <!-- ── 9. FAQ Accordion ─────────────────────────────────────────── -->
-      <section class="px-5 py-7 bg-neutral-50/70 border-b border-neutral-100 space-y-4">
+      <section class="px-5 py-6 bg-neutral-50/70 border-b border-neutral-100 space-y-4">
         <div class="text-center space-y-1">
           <span class="text-xs font-bold uppercase tracking-wider text-primary-700">Tanya Jawab</span>
           <h3 class="text-lg font-bold text-neutral-900">Pertanyaan yang Sering Ditanyakan</h3>
@@ -779,10 +789,10 @@ const faqs = [
 
         <div class="space-y-2" id="faq-accordion">
           {faqs.map((faq, idx) => (
-            <div class="faq-item rounded-xl border border-neutral-200 bg-white overflow-hidden transition-all duration-200">
+            <div class="faq-item rounded-xl border border-neutral-200 bg-white overflow-hidden transition-all duration-200 shadow-2xs">
               <button
                 type="button"
-                class="faq-header w-full px-4 py-3.5 text-left text-xs font-bold text-neutral-800 flex items-center justify-between gap-3 hover:text-primary-700 transition-colors"
+                class="faq-header w-full px-4 py-3.5 text-left text-xs font-bold text-neutral-800 flex items-center justify-between gap-3 hover:text-primary-700 transition-colors cursor-pointer"
                 data-index={idx}
               >
                 <span>{faq.q}</span>
@@ -828,17 +838,17 @@ const faqs = [
     </main>
 
     <!-- Floating Sticky Bottom Bar for Mobile -->
-    <div id="sticky-bottom-bar" class="fixed bottom-0 left-0 right-0 z-30 ">
-      <div class="container mx-auto max-w-[480px] flex items-center bg-white/95 backdrop-blur-md border-t border-neutral-200 px-4 py-3 shadow-lg justify-between gap-3">
+    <div id="sticky-bottom-bar" class="fixed bottom-0 left-0 right-0 z-30 pointer-events-none">
+      <div class="container mx-auto max-w-[480px] pointer-events-auto flex items-center bg-white/95 backdrop-blur-md border-t border-neutral-200 px-4 py-3 shadow-lg justify-between gap-3">
         <div>
-          <p class="text-[11px] text-neutral-500 font-medium">Sedekah Rutin Harian</p>
-          <p id="floating-total-display" class="text-sm font-extrabold text-primary-700">
+          <p class="text-[11px] text-neutral-500 font-medium leading-none mb-1">Sedekah Rutin Harian</p>
+          <p id="floating-total-display" class="text-sm font-extrabold text-primary-700 leading-none">
             Rp150.000 <span class="text-[11px] font-normal text-neutral-400">/ 30 hari</span>
           </p>
         </div>
         <a
           href="#form-gabung"
-          class="px-5 py-2.5 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold shadow-md shadow-secondary-500/20 active:scale-95 transition-all flex items-center gap-1.5"
+          class="px-5 py-2.5 rounded-xl bg-secondary-500 hover:bg-secondary-600 text-white text-xs font-bold shadow-md shadow-secondary-500/20 active:scale-95 transition-all flex items-center gap-1.5 shrink-0"
         >
           <span>Gabung Sekarang</span>
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1100,7 +1110,7 @@ const faqs = [
       isSubmitting = false;
       btnSubmit.disabled = false;
       btnSubmit.innerHTML = `
-        <span>🔥 Gabung Jaga Nyala Sekarang</span>
+        <span>Gabung Jaga Nyala Sekarang</span>
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
         </svg>
@@ -1111,4 +1121,3 @@ const faqs = [
   // Initial State Setup
   updateSelection(5000, false);
 </script>
-
