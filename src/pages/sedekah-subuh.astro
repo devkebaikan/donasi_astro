@@ -271,7 +271,11 @@ const routinePackages = [
                 <span id="calN">0</span><small>/ 30 subuh</small>
               </div>
             </div>
-            <div class="days" id="days"></div>
+            <div class="days" id="days">
+              {Array.from({ length: 30 }).map((_, i) => (
+                <i>{i + 1}</i>
+              ))}
+            </div>
             <p class="cal-f">Ilustrasi: setiap kotak adalah satu subuh saat sedekah Anda tercatat.</p>
           </div>
         </div>
@@ -2095,12 +2099,13 @@ const routinePackages = [
   const calN = document.getElementById("calN");
 
   if (daysContainer) {
-    // Generate 30 days
-    daysContainer.innerHTML = "";
-    for (let i = 1; i <= 30; i++) {
-      const d = document.createElement("i");
-      d.textContent = String(i);
-      daysContainer.appendChild(d);
+    // Generate 30 days if not pre-rendered
+    if (daysContainer.children.length === 0) {
+      for (let i = 1; i <= 30; i++) {
+        const d = document.createElement("i");
+        d.textContent = String(i);
+        daysContainer.appendChild(d);
+      }
     }
 
     const cells = daysContainer.children;
